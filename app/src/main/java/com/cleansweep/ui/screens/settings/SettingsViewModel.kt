@@ -34,6 +34,7 @@ import com.cleansweep.data.repository.PreferencesRepository
 import com.cleansweep.data.repository.SimilarityThresholdLevel
 import com.cleansweep.data.repository.SwipeDownAction
 import com.cleansweep.data.repository.SwipeSensitivity
+import com.cleansweep.data.repository.UnselectScanScope
 import com.cleansweep.domain.bus.AppLifecycleEventBus
 import com.cleansweep.domain.bus.FolderUpdateEvent
 import com.cleansweep.domain.bus.FolderUpdateEventBus
@@ -351,6 +352,14 @@ class SettingsViewModel @Inject constructor(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptySet()
+            )
+
+    val unselectAllInSearchScope: StateFlow<UnselectScanScope> =
+        preferencesRepository.unselectAllInSearchScopeFlow
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = UnselectScanScope.GLOBAL
             )
 
 
@@ -1033,6 +1042,12 @@ class SettingsViewModel @Inject constructor(
     fun setDuplicateScanScope(scope: DuplicateScanScope) {
         viewModelScope.launch {
             preferencesRepository.setDuplicateScanScope(scope)
+        }
+    }
+
+    fun setUnselectAllInSearchScope(scope: UnselectScanScope) {
+        viewModelScope.launch {
+            preferencesRepository.setUnselectAllInSearchScope(scope)
         }
     }
 

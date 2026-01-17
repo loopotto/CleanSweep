@@ -81,6 +81,7 @@ import com.cleansweep.data.repository.FolderSelectionMode
 import com.cleansweep.data.repository.SimilarityThresholdLevel
 import com.cleansweep.data.repository.SwipeDownAction
 import com.cleansweep.data.repository.SwipeSensitivity
+import com.cleansweep.data.repository.UnselectScanScope
 import com.cleansweep.ui.components.AppDialog
 import com.cleansweep.ui.components.FolderSearchDialog
 import com.cleansweep.ui.theme.AppTheme
@@ -183,6 +184,7 @@ fun SettingsScreen(
     val screenshotDeletesVideo by viewModel.screenshotDeletesVideo.collectAsState()
     val screenshotJpegQuality by viewModel.screenshotJpegQuality.collectAsState()
     val similarityThresholdLevel by viewModel.similarityThresholdLevel.collectAsState()
+    val unselectAllInSearchScope by viewModel.unselectAllInSearchScope.collectAsState()
 
     // Duplicate Scan Scope states
     val duplicateScanScope by viewModel.duplicateScanScope.collectAsState()
@@ -527,6 +529,15 @@ fun SettingsScreen(
                                 description = "Autofocus on search bar when opening the app",
                                 checked = searchAutofocusEnabled,
                                 onCheckedChange = { viewModel.setSearchAutofocusEnabled(it) })
+                        },
+                        SettingContent(keywords = listOf("unselect all behavior", "search", "global", "visible")) {
+                            ExposedDropdownMenu(
+                                title = "'Unselect All' Behavior in Search",
+                                description = getUnselectAllScopeDescription(unselectAllInSearchScope),
+                                options = UnselectScanScope.entries,
+                                selectedOption = unselectAllInSearchScope,
+                                onOptionSelected = { viewModel.setUnselectAllInSearchScope(it) },
+                                getDisplayName = { getUnselectAllScopeDisplayName(it) })
                         }
                     )
                 ),
@@ -1617,5 +1628,19 @@ private fun getAddFolderFocusTargetDisplayName(target: AddFolderFocusTarget): St
         AddFolderFocusTarget.SEARCH_PATH -> "Search Path"
         AddFolderFocusTarget.FOLDER_NAME -> "New Folder Name"
         AddFolderFocusTarget.NONE -> "None"
+    }
+}
+
+private fun getUnselectAllScopeDisplayName(scope: UnselectScanScope): String {
+    return when (scope) {
+        UnselectScanScope.GLOBAL -> "Unselect Everything"
+        UnselectScanScope.VISIBLE_ONLY -> "Unselect Visible Only"
+    }
+}
+
+private fun getUnselectAllScopeDescription(scope: UnselectScanScope): String {
+    return when (scope) {
+        UnselectScanScope.GLOBAL -> "Clears the entire selection, even items hidden by the current search filter."
+        UnselectScanScope.VISIBLE_ONLY -> "Only unselects items currently visible in the search results. Hidden selections remain selected."
     }
 }

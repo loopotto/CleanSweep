@@ -28,6 +28,7 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -50,7 +51,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -89,6 +92,7 @@ fun SessionSetupScreen(
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val searchAutofocusEnabled by viewModel.searchAutofocusEnabled.collectAsState()
     val context = LocalContext.current
     val isExpandedScreen = windowSizeClass.widthSizeClass > WindowWidthSizeClass.Compact
@@ -189,6 +193,11 @@ fun SessionSetupScreen(
     }
 
     Scaffold(
+        modifier = Modifier.pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        },
         topBar = {
             if (uiState.isContextualSelectionMode) {
                 ContextualTopAppBar(
@@ -214,8 +223,13 @@ fun SessionSetupScreen(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                val areAllSelected =
-                    uiState.allFolderDetails.isNotEmpty() && uiState.selectedBuckets.size == uiState.allFolderDetails.size
+                // Determine selection state based on visible folders (search results)
+                val visibleFolders = uiState.folderCategories.flatMap { it.folders }
+                val areAllVisibleSelected = visibleFolders.isNotEmpty() && visibleFolders.all { it.path in uiState.selectedBuckets }
+
+                // If the list is empty (no results), we disable select all or show unselect if things are selected
+                val isSelectAllMode = !areAllVisibleSelected
+
                 if (isExpandedScreen) {
                     // For larger screens, stack the FABs vertically at the end.
                     Column(
@@ -223,16 +237,16 @@ fun SessionSetupScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         ExtendedFloatingActionButton(
-                            onClick = { if (areAllSelected) viewModel.unselectAll() else viewModel.selectAll() },
+                            onClick = { if (isSelectAllMode) viewModel.selectAll() else viewModel.unselectAll() },
                             containerColor = MaterialTheme.colorScheme.secondary,
                             contentColor = MaterialTheme.colorScheme.onSecondary,
                         ) {
                             Icon(
-                                imageVector = if (areAllSelected) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                imageVector = if (isSelectAllMode) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
                                 contentDescription = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (areAllSelected) "Unselect All" else "Select All")
+                            Text(if (isSelectAllMode) "Select All" else "Unselect All")
                         }
                         ExtendedFloatingActionButton(
                             onClick = {
@@ -261,17 +275,17 @@ fun SessionSetupScreen(
                             .padding(horizontal = 16.dp)
                     ) {
                         ExtendedFloatingActionButton(
-                            onClick = { if (areAllSelected) viewModel.unselectAll() else viewModel.selectAll() },
+                            onClick = { if (isSelectAllMode) viewModel.selectAll() else viewModel.unselectAll() },
                             containerColor = MaterialTheme.colorScheme.secondary,
                             contentColor = MaterialTheme.colorScheme.onSecondary,
                             modifier = Modifier.align(Alignment.CenterStart)
                         ) {
                             Icon(
-                                imageVector = if (areAllSelected) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                imageVector = if (isSelectAllMode) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
                                 contentDescription = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (areAllSelected) "Unselect All" else "Select All")
+                            Text(if (isSelectAllMode) "Select All" else "Unselect All")
                         }
                         ExtendedFloatingActionButton(
                             onClick = {
@@ -310,9 +324,19 @@ fun SessionSetupScreen(
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
-                    onSearch = { keyboardController?.hide() }
+                    onSearch = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }
                 ),
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") }
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                trailingIcon = if (uiState.searchQuery.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { viewModel.updateSearchQuery("") }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                        }
+                    }
+                } else null
             )
             PullToRefreshBox(
                 isRefreshing = uiState.isRefreshing,

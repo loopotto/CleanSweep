@@ -94,6 +94,11 @@ enum class SwipeDownAction {
     OPEN_WITH
 }
 
+enum class UnselectScanScope {
+    GLOBAL,
+    VISIBLE_ONLY
+}
+
 
 @Singleton
 class PreferencesRepository @Inject constructor(
@@ -152,6 +157,7 @@ class PreferencesRepository @Inject constructor(
         val SHOW_CONFIRM_FORGET_FOLDER = booleanPreferencesKey("show_confirm_forget_folder")
         val SHOW_CONFIRM_RESET_SOURCE_FAVS = booleanPreferencesKey("show_confirm_reset_source_favs")
         val SHOW_CONFIRM_RESET_TARGET_FAVS = booleanPreferencesKey("show_confirm_reset_target_favs")
+        val UNSELECT_ALL_IN_SEARCH_SCOPE = stringPreferencesKey("unselect_all_in_search_scope")
     }
 
     val themeFlow: Flow<AppTheme> = context.dataStore.data
@@ -441,6 +447,15 @@ class PreferencesRepository @Inject constructor(
     val showConfirmResetTargetFavsFlow: Flow<Boolean> = context.dataStore.data
         .map { preferences -> preferences[PreferencesKeys.SHOW_CONFIRM_RESET_TARGET_FAVS] ?: true }
 
+    val unselectAllInSearchScopeFlow: Flow<UnselectScanScope> = context.dataStore.data
+        .map { preferences ->
+            val scopeName = preferences[PreferencesKeys.UNSELECT_ALL_IN_SEARCH_SCOPE] ?: UnselectScanScope.GLOBAL.name
+            try {
+                UnselectScanScope.valueOf(scopeName)
+            } catch (e: IllegalArgumentException) {
+                UnselectScanScope.GLOBAL
+            }
+        }
 
     suspend fun setTheme(theme: AppTheme) {
         context.dataStore.edit { preferences ->
@@ -853,6 +868,12 @@ class PreferencesRepository @Inject constructor(
             preferences[PreferencesKeys.SHOW_CONFIRM_FORGET_FOLDER] = true
             preferences[PreferencesKeys.SHOW_CONFIRM_RESET_SOURCE_FAVS] = true
             preferences[PreferencesKeys.SHOW_CONFIRM_RESET_TARGET_FAVS] = true
+        }
+    }
+
+    suspend fun setUnselectAllInSearchScope(scope: UnselectScanScope) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.UNSELECT_ALL_IN_SEARCH_SCOPE] = scope.name
         }
     }
 }

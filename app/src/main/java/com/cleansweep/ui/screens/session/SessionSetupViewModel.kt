@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cleansweep.data.repository.FolderSelectionMode
 import com.cleansweep.data.repository.PreferencesRepository
+import com.cleansweep.data.repository.UnselectScanScope
 import com.cleansweep.domain.bus.FolderUpdateEvent
 import com.cleansweep.domain.bus.FolderUpdateEventBus
 import com.cleansweep.domain.model.FolderDetails
@@ -415,18 +416,29 @@ class SessionSetupViewModel @Inject constructor(
 
     fun selectAll() {
         _uiState.update { state ->
-            state.copy(
-                selectedBuckets = state.folderCategories.flatMap { it.folders }.map { it.path }
-            )
+            val visiblePaths = state.folderCategories.flatMap { it.folders }.map { it.path }
+            val newSelection = (state.selectedBuckets + visiblePaths).distinct()
+            state.copy(selectedBuckets = newSelection)
         }
     }
 
     fun unselectAll() {
-        _uiState.update { state ->
-            state.copy(
-                selectedBuckets = emptyList(),
-                recursivelySelectedRoots = emptySet()
-            )
+        viewModelScope.launch {
+            val scope = preferencesRepository.unselectAllInSearchScopeFlow.first()
+            _uiState.update { state ->
+                val isSearching = state.searchQuery.isNotEmpty()
+
+                if (isSearching && scope == UnselectScanScope.VISIBLE_ONLY) {
+                    val visiblePaths = state.folderCategories.flatMap { it.folders }.map { it.path }.toSet()
+                    val newSelection = state.selectedBuckets.filter { it !in visiblePaths }
+                    state.copy(selectedBuckets = newSelection)
+                } else {
+                    state.copy(
+                        selectedBuckets = emptyList(),
+                        recursivelySelectedRoots = emptySet()
+                    )
+                }
+            }
         }
     }
 
