@@ -162,6 +162,7 @@ fun SettingsScreen(
     val compactFolderView by viewModel.compactFolderView.collectAsState()
     val hideFilename by viewModel.hideFilename.collectAsState()
     val invertSwipe by viewModel.invertSwipe.collectAsState()
+    val fullScreenSwipe by viewModel.fullScreenSwipe.collectAsState()
     val folderSelectionMode by viewModel.folderSelectionMode.collectAsState()
     val rememberProcessedMedia by viewModel.rememberProcessedMedia.collectAsState()
     val unfavoriteRemovesFromBar by viewModel.unfavoriteRemovesFromBar.collectAsState()
@@ -411,6 +412,13 @@ fun SettingsScreen(
                                 onOptionSelected = { viewModel.setSwipeDownAction(it) },
                                 getDisplayName = { getSwipeDownActionDisplayName(it) }
                             )
+                        },
+                        SettingContent(keywords = listOf("full screen swipe", "gesture area", "background")) {
+                            SettingSwitch(
+                                title = "Full Screen Swipe",
+                                description = "Allow swiping on the background area, not just the image itself.",
+                                checked = fullScreenSwipe,
+                                onCheckedChange = { viewModel.setFullScreenSwipe(it) })
                         },
                         SettingContent(keywords = listOf("default video speed", "playback")) {
                             val videoSpeedOptions = listOf(1.0f, 1.5f, 2.0f)

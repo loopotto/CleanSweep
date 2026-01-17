@@ -352,7 +352,8 @@ fun SwiperScreen(
                                 },
                                 isPendingConversion = uiState.isCurrentItemPendingConversion,
                                 screenshotDeletesVideo = screenshotDeletesVideo,
-                                folderNameLayout = folderNameLayout
+                                folderNameLayout = folderNameLayout,
+                                fullScreenSwipe = uiState.fullScreenSwipe
                             )
                             Box(modifier = Modifier
                                 .fillMaxHeight()
@@ -413,7 +414,8 @@ fun SwiperScreen(
                                 },
                                 isPendingConversion = uiState.isCurrentItemPendingConversion,
                                 screenshotDeletesVideo = screenshotDeletesVideo,
-                                folderNameLayout = folderNameLayout
+                                folderNameLayout = folderNameLayout,
+                                fullScreenSwipe = uiState.fullScreenSwipe
                             )
                             BottomFolderBar(
                                 targetFolders = uiState.targetFolders,
@@ -618,7 +620,8 @@ private fun MainContent(
     onTap: (MediaItem) -> Unit,
     isPendingConversion: Boolean,
     screenshotDeletesVideo: Boolean,
-    folderNameLayout: FolderNameLayout
+    folderNameLayout: FolderNameLayout,
+    fullScreenSwipe: Boolean
 ) {
     Column(modifier) {
         if (folderNameLayout == FolderNameLayout.ABOVE) {
@@ -647,7 +650,8 @@ private fun MainContent(
                 onToggleMute = onToggleMute,
                 onTap = onTap,
                 isPendingConversion = isPendingConversion,
-                screenshotDeletesVideo = screenshotDeletesVideo
+                screenshotDeletesVideo = screenshotDeletesVideo,
+                fullScreenSwipe = fullScreenSwipe
             )
         }
     }
@@ -1228,7 +1232,8 @@ private fun MediaItemCard(
     isVideoMuted: Boolean,
     onToggleMute: () -> Unit,
     isPendingConversion: Boolean,
-    screenshotDeletesVideo: Boolean
+    screenshotDeletesVideo: Boolean,
+    fullScreenSwipe: Boolean
 ) {
     var swipeOffsetX by remember { mutableFloatStateOf(0f) }
     var swipeOffsetY by remember { mutableFloatStateOf(0f) }
@@ -1279,239 +1284,247 @@ private fun MediaItemCard(
         val heightByWidth = maxCardWidth / cardAspectRatio
         val (cardWidth, cardHeight) = if (widthByHeight <= maxCardWidth) widthByHeight to maxCardHeight else maxCardWidth to heightByWidth
 
+        val gestureModifier = Modifier.pointerInput(item.id, swipeDownAction) {
+            forEachGesture {
+                coroutineScope {
+                    awaitPointerEventScope {
+                        var wasDragging = false
+                        var wasTransforming = false
+                        var longPressFired = false
+
+                        val down = awaitFirstDown(requireUnconsumed = true)
+                        val longPressJob = launch {
+                            delay(viewConfiguration.longPressTimeoutMillis)
+                            longPressFired = true
+                            if (scale > 1f) {
+                                scale = 1f
+                                panOffset = Offset.Zero
+                            } else {
+                                val dpOffset = with(density) {
+                                    DpOffset(globalPosition.x.toDp() + down.position.x.toDp(), globalPosition.y.toDp() + down.position.y.toDp())
+                                }
+                                onLongPress(dpOffset)
+                            }
+                        }
+
+                        do {
+                            val event = awaitPointerEvent()
+                            val anyPressed = event.changes.any { it.pressed }
+
+                            if (event.changes.size > 1) {
+                                longPressJob.cancel()
+                                wasTransforming = true
+                                val zoom = event.calculateZoom()
+                                val pan = event.calculatePan()
+                                val newScale = scale * zoom
+
+                                if (newScale < 1f) {
+                                    scale = 1f
+                                    panOffset = Offset.Zero
+                                } else {
+                                    scale = newScale.coerceIn(1f, 5f)
+                                    if (scale > 1f) {
+                                        val xMax = (cardWidth.toPx() * (scale - 1)) / 2
+                                        val yMax = (cardHeight.toPx() * (scale - 1)) / 2
+                                        panOffset = Offset(
+                                            x = (panOffset.x + pan.x * scale).coerceIn(-xMax, xMax),
+                                            y = (panOffset.y + pan.y * scale).coerceIn(-yMax, yMax)
+                                        )
+                                    }
+                                }
+                                event.changes.forEach { it.consume() }
+                            } else if (!wasTransforming) {
+                                val change = event.changes.first()
+                                val dragAmount = change.positionChange()
+
+                                if (dragAmount.getDistance() > viewConfiguration.touchSlop) {
+                                    longPressJob.cancel()
+                                    wasDragging = true
+                                    if (abs(dragAmount.x) > abs(dragAmount.y) && scale <= 1f) {
+                                        swipeOffsetX += dragAmount.x
+                                    } else if (abs(dragAmount.y) > abs(dragAmount.x) && scale <= 1f) {
+                                        if (swipeDownAction != SwipeDownAction.NONE) {
+                                            // Prevent dragging card upwards
+                                            swipeOffsetY = (swipeOffsetY + dragAmount.y).coerceAtLeast(0f)
+                                        }
+                                    }
+                                    change.consume()
+                                }
+                            }
+                        } while (anyPressed)
+
+                        longPressJob.cancel()
+
+                        if (wasDragging) {
+                            when {
+                                swipeOffsetX < -swipeThreshold -> onSwipeLeft()
+                                swipeOffsetX > swipeThreshold -> onSwipeRight()
+                                swipeOffsetY > swipeDownThreshold -> {
+                                    onSwipeDown()
+                                    swipeOffsetY = 0f
+                                }
+                                else -> {
+                                    swipeOffsetX = 0f
+                                    swipeOffsetY = 0f
+                                }
+                            }
+                        } else if (!wasTransforming && !longPressFired) {
+                            if (scale > 1f) {
+                                scale = 1f
+                                panOffset = Offset.Zero
+                            } else {
+                                onTap(item)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Box(
             modifier = Modifier
-                .width(cardWidth)
-                .height(cardHeight)
-                .align(Alignment.Center)
-                .onGloballyPositioned {
-                    globalPosition = it.localToWindow(Offset.Zero)
-                }
-                .pointerInput(item.id, swipeDownAction) {
-                    forEachGesture {
-                        coroutineScope {
-                            awaitPointerEventScope {
-                                var wasDragging = false
-                                var wasTransforming = false
-                                var longPressFired = false
-
-                                val down = awaitFirstDown(requireUnconsumed = true)
-                                val longPressJob = launch {
-                                    delay(viewConfiguration.longPressTimeoutMillis)
-                                    longPressFired = true
-                                    if (scale > 1f) {
-                                        scale = 1f
-                                        panOffset = Offset.Zero
-                                    } else {
-                                        val dpOffset = with(density) {
-                                            DpOffset(globalPosition.x.toDp() + down.position.x.toDp(), globalPosition.y.toDp() + down.position.y.toDp())
-                                        }
-                                        onLongPress(dpOffset)
-                                    }
-                                }
-
-                                do {
-                                    val event = awaitPointerEvent()
-                                    val anyPressed = event.changes.any { it.pressed }
-
-                                    if (event.changes.size > 1) {
-                                        longPressJob.cancel()
-                                        wasTransforming = true
-                                        val zoom = event.calculateZoom()
-                                        val pan = event.calculatePan()
-                                        val newScale = scale * zoom
-
-                                        if (newScale < 1f) {
-                                            scale = 1f
-                                            panOffset = Offset.Zero
-                                        } else {
-                                            scale = newScale.coerceIn(1f, 5f)
-                                            if (scale > 1f) {
-                                                val xMax = (cardWidth.toPx() * (scale - 1)) / 2
-                                                val yMax = (cardHeight.toPx() * (scale - 1)) / 2
-                                                panOffset = Offset(
-                                                    x = (panOffset.x + pan.x * scale).coerceIn(-xMax, xMax),
-                                                    y = (panOffset.y + pan.y * scale).coerceIn(-yMax, yMax)
-                                                )
-                                            }
-                                        }
-                                        event.changes.forEach { it.consume() }
-                                    } else if (!wasTransforming) {
-                                        val change = event.changes.first()
-                                        val dragAmount = change.positionChange()
-
-                                        if (dragAmount.getDistance() > viewConfiguration.touchSlop) {
-                                            longPressJob.cancel()
-                                            wasDragging = true
-                                            if (abs(dragAmount.x) > abs(dragAmount.y) && scale <= 1f) {
-                                                swipeOffsetX += dragAmount.x
-                                            } else if (abs(dragAmount.y) > abs(dragAmount.x) && scale <= 1f) {
-                                                if (swipeDownAction != SwipeDownAction.NONE) {
-                                                    // Prevent dragging card upwards
-                                                    swipeOffsetY = (swipeOffsetY + dragAmount.y).coerceAtLeast(0f)
-                                                }
-                                            }
-                                            change.consume()
-                                        }
-                                    }
-                                } while (anyPressed)
-
-                                longPressJob.cancel()
-
-                                if (wasDragging) {
-                                    when {
-                                        swipeOffsetX < -swipeThreshold -> onSwipeLeft()
-                                        swipeOffsetX > swipeThreshold -> onSwipeRight()
-                                        swipeOffsetY > swipeDownThreshold -> {
-                                            onSwipeDown()
-                                            swipeOffsetY = 0f
-                                        }
-                                        else -> {
-                                            swipeOffsetX = 0f
-                                            swipeOffsetY = 0f
-                                        }
-                                    }
-                                } else if (!wasTransforming && !longPressFired) {
-                                    if (scale > 1f) {
-                                        scale = 1f
-                                        panOffset = Offset.Zero
-                                    } else {
-                                        onTap(item)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                .graphicsLayer {
-                    translationX = if (animatedScale > 1f) animatedPanOffset.x else animatedOffsetX
-                    translationY = if (animatedScale > 1f) animatedPanOffset.y else animatedOffsetY
-                    scaleX = animatedScale
-                    scaleY = animatedScale
-                    rotationZ = if (animatedScale > 1f) 0f else rotation
-                    clip = false
-                },
-        ) {
-            Card(modifier = Modifier
                 .fillMaxSize()
-                .align(Alignment.Center), shape = MaterialTheme.shapes.medium, colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.2f))) {
-                Box(modifier = Modifier
+                .then(if (fullScreenSwipe) gestureModifier else Modifier)
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(cardWidth)
+                    .height(cardHeight)
+                    .align(Alignment.Center)
+                    .onGloballyPositioned {
+                        globalPosition = it.localToWindow(Offset.Zero)
+                    }
+                    .then(if (!fullScreenSwipe) gestureModifier else Modifier)
+                    .graphicsLayer {
+                        translationX = if (animatedScale > 1f) animatedPanOffset.x else animatedOffsetX
+                        translationY = if (animatedScale > 1f) animatedPanOffset.y else animatedOffsetY
+                        scaleX = animatedScale
+                        scaleY = animatedScale
+                        rotationZ = if (animatedScale > 1f) 0f else rotation
+                        clip = false
+                    },
+            ) {
+                Card(modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Transparent)
-                    .clip(MaterialTheme.shapes.medium)) {
-                    if (item.isVideo) {
-                        VideoPlayer(
-                            exoPlayer = exoPlayer,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        val loader = if (item.mimeType == "image/gif") gifImageLoader else imageLoader
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current).data(item.uri).crossfade(true).build(),
-                            imageLoader = loader,
-                            contentDescription = item.displayName,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit,
-                            alignment = Alignment.Center
-                        )
-                    }
-                    if (leftBorderAlpha > 0f) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val intensity = (leftBorderAlpha * 0.7f).coerceAtMost(0.7f)
-                            drawRect(brush = Brush.radialGradient(0.0f to leftColor.copy(alpha = intensity), 0.15f to leftColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = androidx.compose.ui.geometry.Offset(0f, size.height), radius = size.maxDimension * (1.0f + leftBorderAlpha)))
-                        }
-                    }
-                    if (rightBorderAlpha > 0f) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val intensity = (rightBorderAlpha * 0.6f).coerceAtMost(0.6f)
-                            drawRect(brush = Brush.radialGradient(0.0f to rightColor.copy(alpha = intensity), 0.15f to rightColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = androidx.compose.ui.geometry.Offset(size.width, size.height), radius = size.maxDimension * (1.0f + rightBorderAlpha)))
-                        }
-                    }
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    .align(Alignment.Center), shape = MaterialTheme.shapes.medium, colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.2f))) {
+                    Box(modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Transparent)
+                        .clip(MaterialTheme.shapes.medium)) {
                         if (item.isVideo) {
-                            val muteDesc = if (isVideoMuted) "Unmute video" else "Mute video"
-                            TooltipBox(
-                                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                                tooltip = { PlainTooltip { Text(muteDesc) } },
-                                state = rememberTooltipState()
-                            ) {
-                                IconButton(
-                                    onClick = onToggleMute,
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(8.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = if (isVideoMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                                        contentDescription = muteDesc,
-                                        tint = Color.White
-                                    )
-                                }
-                            }
-                            if (isPendingConversion && !screenshotDeletesVideo) {
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopStart)
-                                        .padding(8.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.Black.copy(alpha = 0.5f))
-                                        .padding(8.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Photo,
-                                        contentDescription = "Pending conversion to image",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
+                            VideoPlayer(
+                                exoPlayer = exoPlayer,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            val loader = if (item.mimeType == "image/gif") gifImageLoader else imageLoader
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current).data(item.uri).crossfade(true).build(),
+                                imageLoader = loader,
+                                contentDescription = item.displayName,
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit,
+                                alignment = Alignment.Center
+                            )
+                        }
+                        if (leftBorderAlpha > 0f) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                val intensity = (leftBorderAlpha * 0.7f).coerceAtMost(0.7f)
+                                drawRect(brush = Brush.radialGradient(0.0f to leftColor.copy(alpha = intensity), 0.15f to leftColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = androidx.compose.ui.geometry.Offset(0f, size.height), radius = size.maxDimension * (1.0f + leftBorderAlpha)))
                             }
                         }
-
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                        if (rightBorderAlpha > 0f) {
+                            Canvas(modifier = Modifier.fillMaxSize()) {
+                                val intensity = (rightBorderAlpha * 0.6f).coerceAtMost(0.6f)
+                                drawRect(brush = Brush.radialGradient(0.0f to rightColor.copy(alpha = intensity), 0.15f to rightColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = androidx.compose.ui.geometry.Offset(size.width, size.height), radius = size.maxDimension * (1.0f + rightBorderAlpha)))
+                            }
+                        }
+                        Box(modifier = Modifier.fillMaxSize()) {
                             if (item.isVideo) {
-                                TextButton(
-                                    onClick = {
-                                        val nextSpeed = when (videoPlaybackSpeed) {
-                                            1.0f -> 1.5f
-                                            1.5f -> 2.0f
-                                            else -> 1.0f
-                                        }
-                                        onSetVideoPlaybackSpeed(nextSpeed)
-                                    },
-                                    colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
-                                    contentPadding = PaddingValues(4.dp),
-                                    modifier = Modifier
-                                        .align(Alignment.End)
-                                        .padding(end = 8.dp)
+                                val muteDesc = if (isVideoMuted) "Unmute video" else "Mute video"
+                                TooltipBox(
+                                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                    tooltip = { PlainTooltip { Text(muteDesc) } },
+                                    state = rememberTooltipState()
                                 ) {
-                                    Text(
-                                        "${videoPlaybackSpeed}x",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    IconButton(
+                                        onClick = onToggleMute,
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (isVideoMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                                            contentDescription = muteDesc,
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+                                if (isPendingConversion && !screenshotDeletesVideo) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.TopStart)
+                                            .padding(8.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.Black.copy(alpha = 0.5f))
+                                            .padding(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Photo,
+                                            contentDescription = "Pending conversion to image",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
                                 }
                             }
 
-                            if (!hideFilename) {
-                                Surface(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-                                ) {
-                                    Text(
-                                        text = item.displayName,
-                                        style = MaterialTheme.typography.bodyMedium,
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                if (item.isVideo) {
+                                    TextButton(
+                                        onClick = {
+                                            val nextSpeed = when (videoPlaybackSpeed) {
+                                                1.0f -> 1.5f
+                                                1.5f -> 2.0f
+                                                else -> 1.0f
+                                            }
+                                            onSetVideoPlaybackSpeed(nextSpeed)
+                                        },
+                                        colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
+                                        contentPadding = PaddingValues(4.dp),
                                         modifier = Modifier
-                                            .padding(8.dp)
-                                            .fillMaxWidth(),
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
+                                            .align(Alignment.End)
+                                            .padding(end = 8.dp)
+                                    ) {
+                                        Text(
+                                            "${videoPlaybackSpeed}x",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+
+                                if (!hideFilename) {
+                                    Surface(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+                                    ) {
+                                        Text(
+                                            text = item.displayName,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            modifier = Modifier
+                                                .padding(8.dp)
+                                                .fillMaxWidth(),
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
                                 }
                             }
                         }

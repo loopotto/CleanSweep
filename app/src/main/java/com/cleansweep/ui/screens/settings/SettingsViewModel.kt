@@ -166,6 +166,13 @@ class SettingsViewModel @Inject constructor(
             initialValue = false
         )
 
+    val fullScreenSwipe: StateFlow<Boolean> = preferencesRepository.fullScreenSwipeFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+
     val folderSelectionMode: StateFlow<FolderSelectionMode> =
         preferencesRepository.folderSelectionModeFlow
             .stateIn(
@@ -564,6 +571,12 @@ class SettingsViewModel @Inject constructor(
     fun setInvertSwipe(enabled: Boolean) {
         viewModelScope.launch {
             preferencesRepository.setInvertSwipe(enabled)
+        }
+    }
+
+    fun setFullScreenSwipe(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setFullScreenSwipe(enabled)
         }
     }
 

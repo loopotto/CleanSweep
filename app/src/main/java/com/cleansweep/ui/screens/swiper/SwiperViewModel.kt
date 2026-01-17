@@ -134,6 +134,8 @@ data class SwiperUiState(
     val isSkipButtonHidden: Boolean = true,
     val sessionSkippedMediaIds: Set<String> = emptySet(),
     val useFullScreenSummarySheet: Boolean = false,
+    val fullScreenSwipe: Boolean = false,
+
 
     // Pre-processed lists for Summary Sheet performance
     val toDelete: List<PendingChange> = emptyList(),
@@ -407,6 +409,11 @@ class SwiperViewModel @Inject constructor(
         viewModelScope.launch {
             val initialExpandedState = preferencesRepository.bottomBarExpandedFlow.first()
             _uiState.update { it.copy(isFolderBarExpanded = initialExpandedState) }
+        }
+        viewModelScope.launch {
+            preferencesRepository.fullScreenSwipeFlow.collect { enabled ->
+                _uiState.update { it.copy(fullScreenSwipe = enabled) }
+            }
         }
     }
 
