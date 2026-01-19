@@ -4,7 +4,6 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
-
  * the Free Software Foundation, either version 3 of the License, or any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -88,6 +87,7 @@ data class DuplicatesUiState(
     val detailedGroup: ScanResultGroup? = null,
     val detailViewColumnCount: Int = 2,
     val gridViewColumnCount: Int = 2,
+    val showConfirmDeleteAllExact: Boolean = true,
     // Scan Scope properties
     val scanScope: DuplicateScanScope = DuplicateScanScope.ALL_FILES,
     val includeList: Set<String> = emptySet(),
@@ -172,6 +172,13 @@ class DuplicatesViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesRepository.duplicateScanExcludeListFlow.collect { list ->
                 _uiState.update { it.copy(excludeList = list) }
+            }
+        }
+
+        // Collect preference for confirm dialog
+        viewModelScope.launch {
+            preferencesRepository.showConfirmDeleteAllExactFlow.collectLatest { show ->
+                _uiState.update { it.copy(showConfirmDeleteAllExact = show) }
             }
         }
 
@@ -469,6 +476,44 @@ class DuplicatesViewModel @Inject constructor(
             }
         }
         _uiState.update { it.copy(selectedForDeletion = newSelection, spaceToReclaim = reclaimableSpace) }
+    }
+
+    fun setShowConfirmDeleteAllExact(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesRepository.setShowConfirmDeleteAllExact(enabled)
+        }
+    }
+
+    fun deleteAllExactDuplicates() {
+        val allIds = mutableSetOf<String>()
+        val currentState = _uiState.value
+
+        // Only process EXACT duplicates (DuplicateGroup), ignore SimilarGroup
+        val exactGroups = currentState.resultGroups.filterIsInstance<DuplicateGroup>()
+
+        if (exactGroups.isEmpty()) {
+            _uiState.update { it.copy(toastMessage = "No exact duplicates found.") }
+            return
+        }
+
+        exactGroups.forEach { group ->
+            // Sort by date added (oldest first), then by ID for deterministic behavior
+            val sorted = group.items.sortedWith(compareBy<MediaItem> { it.dateAdded }.thenBy { it.id })
+            if (sorted.size > 1) {
+                // Keep the first one (oldest), mark the rest for deletion
+                val toDelete = sorted.drop(1).map { it.id }
+                allIds.addAll(toDelete)
+            }
+        }
+
+        if (allIds.isEmpty()) {
+            _uiState.update { it.copy(toastMessage = "No duplicates found to delete.") }
+            return
+        }
+
+        updateSelection(allIds)
+        // Trigger the existing deletion logic which consumes the selection we just set
+        deleteSelectedFiles()
     }
 
     fun deleteSelectedFiles() {

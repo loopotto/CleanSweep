@@ -158,6 +158,7 @@ class PreferencesRepository @Inject constructor(
         val SHOW_CONFIRM_FORGET_FOLDER = booleanPreferencesKey("show_confirm_forget_folder")
         val SHOW_CONFIRM_RESET_SOURCE_FAVS = booleanPreferencesKey("show_confirm_reset_source_favs")
         val SHOW_CONFIRM_RESET_TARGET_FAVS = booleanPreferencesKey("show_confirm_reset_target_favs")
+        val SHOW_CONFIRM_DELETE_ALL_EXACT = booleanPreferencesKey("show_confirm_delete_all_exact")
         val UNSELECT_ALL_IN_SEARCH_SCOPE = stringPreferencesKey("unselect_all_in_search_scope")
     }
 
@@ -452,6 +453,9 @@ class PreferencesRepository @Inject constructor(
 
     val showConfirmResetTargetFavsFlow: Flow<Boolean> = context.dataStore.data
         .map { preferences -> preferences[PreferencesKeys.SHOW_CONFIRM_RESET_TARGET_FAVS] ?: true }
+
+    val showConfirmDeleteAllExactFlow: Flow<Boolean> = context.dataStore.data
+        .map { preferences -> preferences[PreferencesKeys.SHOW_CONFIRM_DELETE_ALL_EXACT] ?: true }
 
     val unselectAllInSearchScopeFlow: Flow<UnselectScanScope> = context.dataStore.data
         .map { preferences ->
@@ -873,6 +877,10 @@ class PreferencesRepository @Inject constructor(
         context.dataStore.edit { prefs -> prefs[PreferencesKeys.SHOW_CONFIRM_RESET_TARGET_FAVS] = enabled }
     }
 
+    suspend fun setShowConfirmDeleteAllExact(enabled: Boolean) {
+        context.dataStore.edit { prefs -> prefs[PreferencesKeys.SHOW_CONFIRM_DELETE_ALL_EXACT] = enabled }
+    }
+
     suspend fun resetDialogConfirmations() {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SHOW_CONFIRM_MARK_AS_SORTED] = true
@@ -880,6 +888,7 @@ class PreferencesRepository @Inject constructor(
             preferences[PreferencesKeys.SHOW_CONFIRM_FORGET_FOLDER] = true
             preferences[PreferencesKeys.SHOW_CONFIRM_RESET_SOURCE_FAVS] = true
             preferences[PreferencesKeys.SHOW_CONFIRM_RESET_TARGET_FAVS] = true
+            preferences[PreferencesKeys.SHOW_CONFIRM_DELETE_ALL_EXACT] = true
         }
     }
 

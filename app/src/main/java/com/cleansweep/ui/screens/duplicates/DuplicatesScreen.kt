@@ -95,6 +95,7 @@ fun DuplicatesScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showConfirmDeleteDialog by remember { mutableStateOf(false) }
+    var showConfirmDeleteAllExactDialog by remember { mutableStateOf(false) }
     val displayedUnscannableFiles by viewModel.displayedUnscannableFiles.collectAsState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -153,6 +154,53 @@ fun DuplicatesScreen(
         )
     }
 
+    if (showConfirmDeleteAllExactDialog) {
+        var doNotAskAgain by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showConfirmDeleteAllExactDialog = false },
+            title = { Text("Delete All Exact Duplicates?") },
+            text = {
+                Column {
+                    Text("This will automatically keep the oldest file in each group of exact duplicates and delete the rest.\n\nNote: even groups flagged as exact duplicates might have false positives. Reviewing manually is recommended.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { doNotAskAgain = !doNotAskAgain },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = doNotAskAgain,
+                            onCheckedChange = { doNotAskAgain = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Do not ask again")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (doNotAskAgain) {
+                            viewModel.setShowConfirmDeleteAllExact(false)
+                        }
+                        viewModel.deleteAllExactDuplicates()
+                        showConfirmDeleteAllExactDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete All")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmDeleteAllExactDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     if (uiState.showUnscannableFilesDialog) {
         UnscannableFilesDialog(
             filePaths = displayedUnscannableFiles,
@@ -184,6 +232,25 @@ fun DuplicatesScreen(
                 },
                 actions = {
                     if (uiState.scanState == ScanState.Complete) {
+                        val hasExactDuplicates = uiState.resultGroups.any { it is DuplicateGroup }
+                        if (hasExactDuplicates) {
+                            TooltipBox(
+                                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                tooltip = { PlainTooltip { Text("Delete All Exact Duplicates") } },
+                                state = rememberTooltipState()
+                            ) {
+                                IconButton(onClick = {
+                                    if (uiState.showConfirmDeleteAllExact) {
+                                        showConfirmDeleteAllExactDialog = true
+                                    } else {
+                                        viewModel.deleteAllExactDuplicates()
+                                    }
+                                }) {
+                                    Icon(Icons.Outlined.DeleteSweep, contentDescription = "Delete All Exact Duplicates", tint = MaterialTheme.colorScheme.error)
+                                }
+                            }
+                        }
+
                         TooltipBox(
                             positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                             tooltip = { PlainTooltip { Text("New Scan") } },
