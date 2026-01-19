@@ -109,12 +109,11 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    val debouncedSearchQuery: StateFlow<String>
-        get() = _uiState
-            .map { it.searchQuery }
-            .debounce(200L)
-            .distinctUntilChanged()
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
+    val debouncedSearchQuery: StateFlow<String> = _uiState
+        .map { it.searchQuery }
+        .debounce(200L)
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "")
 
     val displayedUnindexedFiles: StateFlow<List<String>> = uiState.map { state ->
         if (state.showHiddenUnindexedFiles) {
