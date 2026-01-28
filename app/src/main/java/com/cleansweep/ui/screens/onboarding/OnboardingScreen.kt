@@ -260,26 +260,25 @@ fun OnboardingScreen(
             horizontalArrangement = if (isLastPage) Arrangement.Center else Arrangement.SpaceBetween
         ) {
             if (!isLastPage) {
-                OutlinedButton(
-                    onClick = {
-                        scope.launch {
-                            if (pagerState.currentPage > 0) {
+                if (pagerState.currentPage > 0) {
+                    OutlinedButton(
+                        onClick = {
+                            scope.launch {
                                 pagerState.animateScrollToPage(pagerState.currentPage - 1)
                             }
-                        }
-                    },
-                    enabled = pagerState.currentPage > 0,
-                    modifier = Modifier
-                        .height(56.dp)
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
-                ) {
-                    Text(
-                        "Previous",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium
-                    )
+                        },
+                        modifier = Modifier
+                            .height(56.dp)
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
+                    ) {
+                        Text(
+                            "Previous",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
 
                 Button(
@@ -288,10 +287,16 @@ fun OnboardingScreen(
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
                     },
-                    modifier = Modifier
-                        .height(56.dp)
-                        .weight(1f)
-                        .padding(start = 8.dp),
+                    modifier = if (pagerState.currentPage > 0) {
+                        Modifier
+                            .height(56.dp)
+                            .weight(1f)
+                            .padding(start = 8.dp)
+                    } else {
+                        Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                    },
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
                 ) {
                     Text(
