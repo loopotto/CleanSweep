@@ -44,9 +44,18 @@ We take your privacy seriously. CleanSweep is designed from the ground up to res
 *   **Your Files Stay Yours:** Your photos and videos are never uploaded or shared. All processing happens securely on your device.
 
 ## Gallery
-*(Coming soon!)*
+<p align="center">
+  <img src="docs/images/01.png" width="45%" alt="Folder Selection" />
+  &nbsp;
+  <img src="docs/images/02.png" width="45%" alt="Swipe to Sort" />
+</p>
+<p align="center">
+  <img src="docs/images/03.png" width="45%" alt="Duplicate Finder" />
+  &nbsp;
+  <img src="docs/images/04.png" width="45%" alt="Quickly Organize" />
+</p>
 
-*Note: Screenshots will show the default theme. AMOLED theme has a slightly different look on purpose!*
+*Note: AMOLED theme has a slightly different look on purpose!*
 
 ## Getting Started
 
