@@ -93,7 +93,7 @@ To ensure a smooth and collaborative process, please read our **[Contributing Gu
 **Note:** Feature requests from project supporters, such as donors and contributors, will be prioritized.
 
 ## Donating
-*(Coming soon!)*
+If you enjoy using CleanSweep and want to support its development, check out our **[Funding Page](FUNDING.md)** for crypto donation options.
 
 ## License
 

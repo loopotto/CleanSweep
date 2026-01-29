@@ -41,6 +41,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Info
@@ -59,6 +60,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
@@ -193,6 +195,7 @@ fun SettingsScreen(
     val duplicateScanExcludeList by viewModel.duplicateScanExcludeList.collectAsState()
 
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     LaunchedEffect(uiState.toastMessage) {
         uiState.toastMessage?.let { message ->
             android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
@@ -220,6 +223,7 @@ fun SettingsScreen(
     val focusRequester = remember { FocusRequester() }
 
     var showAboutSortMediaDialog by remember { mutableStateOf(false) }
+    var showFundingDialog by remember { mutableStateOf(false) }
 
 
     LaunchedEffect(uiState.isSearchActive) {
@@ -677,11 +681,24 @@ fun SettingsScreen(
                 SettingSection(
                     title = "About",
                     items = listOf(
+                        SettingContent(keywords = listOf("donate", "funding", "crypto", "bitcoin", "support")) {
+                            SettingsItem(
+                                title = "Support Development",
+                                summary = "Support the project",
+                                onClick = { showFundingDialog = true }
+                            )
+                        },
                         SettingContent(keywords = listOf("version", "build")) {
                             SettingsItem(
                                 title = "Version",
                                 summary = viewModel.appVersion,
-                                onLongClick = viewModel::copyAppVersionToClipboard
+                                onLongClick = {
+                                    clipboardManager.setText(AnnotatedString(viewModel.appVersion))
+                                    // Only show a toast for Android 12 and lower, as 13+ has a system UI for clipboard
+                                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                                        android.widget.Toast.makeText(context, "App version copied: ${viewModel.appVersion}", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             )
                         },
                         SettingContent(keywords = listOf("about cleansweep", "info")) {
@@ -778,6 +795,10 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+
+    if (showFundingDialog) {
+        FundingDialog(onDismiss = { showFundingDialog = false })
     }
 
     if (uiState.showUnindexedFilesDialog) {
@@ -1651,4 +1672,71 @@ private fun getUnselectAllScopeDescription(scope: UnselectScanScope): String {
         UnselectScanScope.GLOBAL -> "Clears the entire selection, even items hidden by the current search filter."
         UnselectScanScope.VISIBLE_ONLY -> "Only unselects items currently visible in the search results. Hidden selections remain selected."
     }
+}
+
+@Composable
+private fun FundingDialog(onDismiss: () -> Unit) {
+    val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
+
+    data class CryptoOption(val name: String, val network: String, val address: String)
+
+    val options = remember {
+        listOf(
+            CryptoOption("Bitcoin", "BTC", "bc1qmzse7fuatzjws5a0n4evm9pjnj9sqmy0y6epu6"),
+            CryptoOption("Ethereum", "ETH (ERC20)", "0xb4e7a72a06b606fecb1deb965573da07fcd86107"),
+            CryptoOption("Solana", "SOL", "4sXJt424WjL3zcazC7mAccZAzeEpNreg2cpQQ8r7wMWr"),
+            CryptoOption("BNB", "BSC (BEP20)", "0xb4e7a72a06b606fecb1deb965573da07fcd86107"),
+            CryptoOption("USDT", "ETH/BSC", "0xb4e7a72a06b606fecb1deb965573da07fcd86107"),
+            CryptoOption("XRP", "Ripple", "rp6jyrwvSrkKghyqXznZZuqM9TedrKiKEb"),
+            CryptoOption("Litecoin", "LTC", "ltc1q8ey9y66frmlqg800m266vucjjux2672f6v2ffl"),
+            CryptoOption("Tron", "TRC20", "TFSu7BfSjaiV1CioQgLaVAJsmNtPq4Cv1J"),
+            CryptoOption("Monero", "XMR", "42Bh2WEy8LG6D4US4wCJ9aRKtuaKWgUM3Y35xBeCDgmvhWYhoJG9MbPPkW7o3GAGF1MNskK3jwXcGjByFDNrugZhEkqBrMT")
+        )
+    }
+
+    AppDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Support Development") },
+        text = {
+            Column {
+                Text(
+                    text = "CleanSweep is free and open source. If you find it useful, consider supporting its development.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.height(16.dp))
+                LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
+                    items(options) { option ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    clipboardManager.setText(AnnotatedString(option.address))
+                                    android.widget.Toast.makeText(context, "Address copied", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = option.name, style = MaterialTheme.typography.titleSmall)
+                                Text(text = option.network, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(text = option.address, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy Address", tint = MaterialTheme.colorScheme.primary)
+                        }
+                        HorizontalDivider()
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = "Feel free to include your GitHub username in the transaction description!",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+        },
+        buttons = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        }
+    )
 }

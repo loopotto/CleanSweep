@@ -17,11 +17,8 @@
 
 package com.cleansweep.ui.screens.settings
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -971,15 +968,6 @@ class SettingsViewModel @Inject constructor(
             "resetTarget" -> _uiState.update { it.copy(dontAskAgainResetTargetFavorites = isChecked) }
             "forgetFolder" -> _uiState.update { it.copy(dontAskAgainForgetFolder = isChecked) }
         }
-    }
-
-    fun copyAppVersionToClipboard() {
-        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clipData = ClipData.newPlainText("App Version", appVersion)
-        clipboardManager.setPrimaryClip(clipData)
-        // Only show a toast for Android 12 and lower.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2)
-            showToast("App version copied to clipboard: $appVersion")
     }
 
     fun refreshIndexingStatus() {
