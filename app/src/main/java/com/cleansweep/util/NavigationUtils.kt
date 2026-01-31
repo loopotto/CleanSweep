@@ -37,7 +37,7 @@ fun rememberIsUsingGestureNavigation(): Boolean {
     val isGestureNav by remember(navBarInsets) {
         derivedStateOf {
             // A simple heuristic: if the navigation bar is very thin, it's gesture navigation.
-            navBarInsets < with(density) { 20.dp.toPx() }
+            navBarInsets < with(density) { 40.dp.toPx() }
         }
     }
     return isGestureNav

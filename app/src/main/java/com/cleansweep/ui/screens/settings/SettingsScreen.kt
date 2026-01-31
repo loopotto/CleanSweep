@@ -65,14 +65,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cleansweep.data.repository.AddFolderFocusTarget
@@ -215,8 +211,7 @@ fun SettingsScreen(
         uri?.let { viewModel.importTargetFavorites(it) }
     }
 
-    val isUsingGestureNav = rememberIsUsingGestureNavigation()
-    val bottomPadding = if (isUsingGestureNav) 16.dp else 48.dp
+    val isGestureMode = rememberIsUsingGestureNavigation()
     val supportsDynamicColors = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -761,7 +756,7 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = bottomPadding)
+                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = if (isGestureMode) 16.dp else 48.dp)
         ) {
             filteredSections.forEach { section ->
                 Column(

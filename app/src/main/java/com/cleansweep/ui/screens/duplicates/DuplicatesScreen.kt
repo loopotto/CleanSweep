@@ -76,6 +76,7 @@ import com.cleansweep.domain.model.DuplicateGroup
 import com.cleansweep.domain.model.ScanResultGroup
 import com.cleansweep.domain.model.SimilarGroup
 import com.cleansweep.ui.components.FastScrollbar
+import com.cleansweep.util.rememberIsUsingGestureNavigation
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -1385,7 +1386,6 @@ private fun GridGroupCard(
                     text = { Text(if (isAllSelected) "Unselect All" else "Select All") },
                     onClick = { onToggleSelectAll(group); showMenu = false }
                 )
-                // --- MODIFICATION: Added Keep Oldest/Newest ---
                 DropdownMenuItem(
                     text = { Text("Keep Oldest") },
                     onClick = { onSelectAllButOldest(group); showMenu = false }
@@ -1394,7 +1394,6 @@ private fun GridGroupCard(
                     text = { Text("Keep Newest") },
                     onClick = { onSelectAllButNewest(group); showMenu = false }
                 )
-                // --- END MODIFICATION ---
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 DropdownMenuItem(
                     text = { Text("Hide group") },
@@ -1627,7 +1626,7 @@ private fun MediaItemRow(
             val imageRequest = remember(item.uri) {
                 ImageRequest.Builder(context)
                     .data(item.uri)
-                    .size(128) // Request a 128x128 thumbnail
+                    .size(128)
                     .build()
             }
             AsyncImage(
@@ -1675,8 +1674,20 @@ private fun BottomActionBar(
     actionButtonIcon: ImageVector = Icons.Default.Delete
 ) {
     val context = LocalContext.current
+    val isGestureMode = rememberIsUsingGestureNavigation()
     Surface(modifier = Modifier.fillMaxWidth(), shadowElevation = 8.dp) {
-        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(
+            modifier = Modifier
+                .navigationBarsPadding()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = if (isGestureMode) 0.dp else 4.dp
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text("Reclaim Space: ${android.text.format.Formatter.formatShortFileSize(context, spaceToReclaim)}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                 val fileCountText = if (selectedCount == 1) "1 file" else "$selectedCount files"
@@ -1732,7 +1743,6 @@ private fun DetailImageCard(
                 contentScale = ContentScale.Crop
             )
 
-            // Selection checkbox
             Checkbox(
                 checked = isSelected,
                 onCheckedChange = { onToggleSelection() },
@@ -1746,7 +1756,6 @@ private fun DetailImageCard(
                 )
             )
 
-            // Context Menu for "Open"
             DropdownMenu(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false },
@@ -1778,7 +1787,6 @@ private fun DetailImageCard(
                 )
             }
 
-            // Bottom-left info: Path
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -1797,7 +1805,6 @@ private fun DetailImageCard(
                 )
             }
 
-            // Bottom-right info: Size
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)

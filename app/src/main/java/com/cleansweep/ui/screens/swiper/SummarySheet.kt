@@ -211,6 +211,7 @@ private fun SummarySheetContent(
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val isGestureMode = rememberIsUsingGestureNavigation()
 
     val threshold = when (viewMode) {
         SummaryViewMode.LIST -> LIST_MODE_THRESHOLD
@@ -234,17 +235,16 @@ private fun SummarySheetContent(
     }
 
     val containerModifier = if (shouldMaximize) {
-        Modifier.fillMaxSize().padding(vertical = 8.dp)
+        Modifier.fillMaxSize().padding(top = 8.dp)
     } else {
-        Modifier.fillMaxWidth().wrapContentHeight().padding(vertical = 8.dp)
+        Modifier.fillMaxWidth().wrapContentHeight().padding(top = 8.dp)
     }
 
     Column(modifier = containerModifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = "Review Changes (${pendingChanges.size})", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
@@ -428,8 +428,9 @@ private fun SummarySheetContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .navigationBarsPadding()
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp, bottom = 16.dp),
+                .padding(top = 16.dp, bottom = if (isGestureMode) 4.dp else 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val cancelButtonText = if (pendingChanges.size <= 1) "Cancel" else "Cancel All"

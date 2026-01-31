@@ -299,7 +299,7 @@ fun SwiperScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(top = paddingValues.calculateTopPadding())
                 .focusRequester(focusRequester)
                 .focusable()
                 .onKeyEvent { event ->
@@ -555,7 +555,8 @@ fun SwiperScreen(
                 sheetState = sheetState,
                 containerColor = containerColor,
                 tonalElevation = tonalElevation,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                contentWindowInsets = { WindowInsets(0) }
             ) {
                 SummarySheet(
                     pendingChanges = uiState.pendingChanges,
@@ -959,7 +960,11 @@ private fun BottomFolderBar(
             color = barColor,
             tonalElevation = barElevation
         ) {
-            Column(modifier = Modifier.animateContentSize()) {
+            Column(
+                modifier = Modifier
+                    .animateContentSize()
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+            ) {
                 if (folderName != null) {
                     FolderNameHeader(folderName)
                 }
