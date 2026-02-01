@@ -465,6 +465,8 @@ class DuplicateScanService : LifecycleService() {
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val notificationBuilder = NotificationCompat.Builder(this, RESULT_CHANNEL_ID)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
@@ -529,7 +531,7 @@ class DuplicateScanService : LifecycleService() {
         val resultChannel = NotificationChannel(
             RESULT_CHANNEL_ID,
             "Duplicate Scan Results",
-            NotificationManager.IMPORTANCE_DEFAULT
+            NotificationManager.IMPORTANCE_HIGH
         ).apply {
             description = "Shows the final result of the duplicate files scan."
         }
