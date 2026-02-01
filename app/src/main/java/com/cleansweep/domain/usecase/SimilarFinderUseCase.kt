@@ -19,20 +19,19 @@ package com.cleansweep.domain.usecase
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.media.MediaMetadataRetriever
-import android.os.Build
 import android.util.Log
 import android.util.Size
 import androidx.core.graphics.scale
 import com.cleansweep.data.db.dao.PHashDao
-import com.cleansweep.data.db.dao.SimilarGroupDao
 import com.cleansweep.data.db.entity.PHashCache
+import com.cleansweep.data.db.entity.SimilarityDenial
 import com.cleansweep.data.model.MediaItem
 import com.cleansweep.data.repository.PreferencesRepository
 import com.cleansweep.data.repository.SimilarityThresholdLevel
 import com.cleansweep.domain.model.SimilarGroup
+import com.cleansweep.domain.repository.DuplicatesRepository
 import com.cleansweep.domain.util.PHashUtil
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -49,12 +48,14 @@ import kotlin.math.min
 class SimilarFinderUseCase @Inject constructor(
     @ApplicationContext private val context: Context,
     private val pHashDao: PHashDao,
-    private val similarGroupDao: SimilarGroupDao,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
+    private val duplicatesRepository: DuplicatesRepository
 ) {
     private val TAG = "SimilarMediaFinder"
 
-    // Data class to hold the results of the scan, including skipped files.
+    /**
+     * Data class to hold the results of the scan, including skipped files.
+     */
     data class SimilarScanResult(
         val groups: List<SimilarGroup>,
         val skippedFilePaths: List<String>
@@ -107,6 +108,9 @@ class SimilarFinderUseCase @Inject constructor(
         }
     }
 
+    /**
+     * Scans the provided media items and finds groups that are visually similar.
+     */
     suspend fun findSimilar(
         allMediaItems: List<MediaItem>,
         onProgress: (itemsProcessed: Int) -> Unit,
@@ -157,15 +161,12 @@ class SimilarFinderUseCase @Inject constructor(
         }
 
         val similarityLevel = preferencesRepository.similarityThresholdLevelFlow.first()
-        val finalGroups = groupSimilarMedia(fullHashMap, allCurrentPaths, allDeviceMediaMap, similarityLevel)
+        val denialKeys = duplicatesRepository.getSimilarityDenialKeys()
+
+        val finalGroups = groupSimilarMedia(fullHashMap, allCurrentPaths, allDeviceMediaMap, similarityLevel, denialKeys)
 
         Log.d(TAG, "Similar media scan finished.")
         return@withContext SimilarScanResult(finalGroups, skippedFiles)
-    }
-
-    suspend fun clearPHashCache() = withContext(Dispatchers.IO) {
-        pHashDao.clearAll()
-        Log.d(TAG, "pHash cache cleared successfully.")
     }
 
     private data class HashingResult(val newHashes: List<PHashCache>, val skippedFilePaths: List<String>)
@@ -208,7 +209,8 @@ class SimilarFinderUseCase @Inject constructor(
         fullHashMap: Map<String, PHashCache>,
         allPaths: Set<String>,
         allDeviceMediaMap: Map<String, MediaItem>,
-        similarityLevel: SimilarityThresholdLevel
+        similarityLevel: SimilarityThresholdLevel,
+        denialKeys: Set<String>
     ): List<SimilarGroup> = coroutineScope {
         val imagePaths = allPaths.filter { allDeviceMediaMap[it]?.isVideo == false }
         val videoPaths = allPaths.filter { allDeviceMediaMap[it]?.isVideo == true }
@@ -216,8 +218,8 @@ class SimilarFinderUseCase @Inject constructor(
         val imageBuckets = buildBuckets(fullHashMap, imagePaths)
         val videoBuckets = buildBuckets(fullHashMap, videoPaths)
 
-        val imageGroupsDeferred = async { groupImages(imageBuckets, fullHashMap, similarityLevel) }
-        val videoGroupsDeferred = async { groupVideos(videoBuckets, fullHashMap, similarityLevel) }
+        val imageGroupsDeferred = async { groupImages(imageBuckets, fullHashMap, similarityLevel, denialKeys) }
+        val videoGroupsDeferred = async { groupVideos(videoBuckets, fullHashMap, similarityLevel, denialKeys) }
 
         val imageGroups = imageGroupsDeferred.await()
         val videoGroups = videoGroupsDeferred.await()
@@ -252,7 +254,8 @@ class SimilarFinderUseCase @Inject constructor(
     private suspend fun groupImages(
         imageBuckets: Map<String, List<String>>,
         fullHashMap: Map<String, PHashCache>,
-        similarityLevel: SimilarityThresholdLevel
+        similarityLevel: SimilarityThresholdLevel,
+        denialKeys: Set<String>
     ): Map<String, Set<String>> = coroutineScope {
         val groups = mutableMapOf<String, MutableSet<String>>()
         val visited = mutableSetOf<String>()
@@ -292,6 +295,9 @@ class SimilarFinderUseCase @Inject constructor(
                     if (pathA == pathB || pathB in visited) continue
                     val cacheB = fullHashMap[pathB] ?: continue
 
+                    // Logical Denial check: Have these files been flagged as different by the user?
+                    if (SimilarityDenial.createKey(pathA, pathB) in denialKeys) continue
+
                     val pHashThreshold = if (isScreenshot(pathA) || isScreenshot(pathB)) pHashScreenshotThreshold else pHashSimilarityThreshold
                     if (PHashUtil.hammingDistance(cacheA.pHash, cacheB.pHash) <= pHashThreshold) {
                         val histA = cacheA.histogram
@@ -315,7 +321,8 @@ class SimilarFinderUseCase @Inject constructor(
     private suspend fun groupVideos(
         videoBuckets: Map<String, List<String>>,
         fullHashMap: Map<String, PHashCache>,
-        similarityLevel: SimilarityThresholdLevel
+        similarityLevel: SimilarityThresholdLevel,
+        denialKeys: Set<String>
     ): Map<String, Set<String>> = coroutineScope {
         val groups = mutableMapOf<String, MutableSet<String>>()
         val visited = mutableSetOf<String>()
@@ -348,6 +355,10 @@ class SimilarFinderUseCase @Inject constructor(
                 for (pathB in searchSpacePaths) {
                     if (pathA == pathB || pathB in visited) continue
                     val cacheB = fullHashMap[pathB] ?: continue
+
+                    // Logical Denial check: Have these files been flagged as different by the user?
+                    if (SimilarityDenial.createKey(pathA, pathB) in denialKeys) continue
+
                     if (areVideoHashesSimilar(cacheA.pHash, cacheB.pHash, videoPHashThreshold)) {
                         currentGroup.add(pathB)
                     }

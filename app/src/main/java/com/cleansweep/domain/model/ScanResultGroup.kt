@@ -18,6 +18,7 @@
 package com.cleansweep.domain.model
 
 import com.cleansweep.data.model.MediaItem
+import java.security.MessageDigest
 
 /**
  * A sealed interface representing a group of scan results.
@@ -26,6 +27,19 @@ import com.cleansweep.data.model.MediaItem
 sealed interface ScanResultGroup {
     val items: List<MediaItem>
     val uniqueId: String
+
+    /**
+     * A stable identifier based strictly on the current set of items in the group.
+     * This ID is used for "Hide Group" functionality, ensuring that if a new
+     * duplicate is added to the folder, the group composition changes and it reappears.
+     */
+    val compositionId: String
+        get() {
+            val sortedPaths = items.map { it.id }.sorted().joinToString("|")
+            return MessageDigest.getInstance("MD5")
+                .digest(sortedPaths.toByteArray())
+                .joinToString("") { "%02x".format(it) }
+        }
 
     /**
      * Creates a new instance of the group with an updated list of items.

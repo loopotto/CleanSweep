@@ -383,7 +383,9 @@ class DuplicateScanService : LifecycleService() {
 
                 val hiddenGroupIds = duplicatesRepository.getHiddenGroupIds()
                 val finalFilteredResults = if (hiddenGroupIds.isNotEmpty()) {
-                    combinedResults.filterNot { it.uniqueId in hiddenGroupIds }
+                    // We filter groups by compositionId to satisfy the requirement that a group
+                    // only stays hidden if its exact membership remains unchanged.
+                    combinedResults.filterNot { it.compositionId in hiddenGroupIds }
                 } else {
                     combinedResults
                 }

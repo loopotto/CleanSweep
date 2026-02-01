@@ -691,13 +691,33 @@ class DuplicatesViewModel @Inject constructor(
         }
     }
 
-    fun hideGroup(group: ScanResultGroup) {
+    /**
+     * Flags a group as "incorrect," recording a logical denial for all item pairs
+     * within the group. This specifically corrects the similarity algorithm.
+     */
+    fun flagAsIncorrect(group: ScanResultGroup) {
         viewModelScope.launch {
-            duplicatesRepository.hideGroupId(group.uniqueId)
+            duplicatesRepository.addSimilarityDenials(group.items)
             _uiState.update {
                 it.copy(
                     resultGroups = it.resultGroups.filterNot { g -> g.uniqueId == group.uniqueId },
-                    toastMessage = "Group hidden and will not appear in future scans."
+                    toastMessage = "Algorithm corrected. These items won't be grouped again."
+                )
+            }
+        }
+    }
+
+    /**
+     * Hides a specific group composition. If the group membership changes
+     * (e.g., another duplicate is added), the group will reappear.
+     */
+    fun hideGroup(group: ScanResultGroup) {
+        viewModelScope.launch {
+            duplicatesRepository.hideGroupId(group.compositionId)
+            _uiState.update {
+                it.copy(
+                    resultGroups = it.resultGroups.filterNot { g -> g.compositionId == group.compositionId },
+                    toastMessage = "Group hidden. It will only reappear if its membership changes."
                 )
             }
         }

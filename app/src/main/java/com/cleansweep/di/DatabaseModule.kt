@@ -24,7 +24,7 @@ import com.cleansweep.data.db.dao.FileSignatureDao
 import com.cleansweep.data.db.dao.FolderDetailsDao
 import com.cleansweep.data.db.dao.PHashDao
 import com.cleansweep.data.db.dao.ScanResultCacheDao
-import com.cleansweep.data.db.dao.SimilarGroupDao
+import com.cleansweep.data.db.dao.SimilarityDenialDao
 import com.cleansweep.data.db.dao.UnreadableFileCacheDao
 import dagger.Module
 import dagger.Provides
@@ -44,7 +44,10 @@ object DatabaseModule {
             context,
             CleanSweepDatabase::class.java,
             CleanSweepDatabase.DATABASE_NAME
-        ).addMigrations(CleanSweepDatabase.MIGRATION_1_2).build()
+        ).addMigrations(
+            CleanSweepDatabase.MIGRATION_1_2,
+            CleanSweepDatabase.MIGRATION_2_3
+        ).build()
     }
 
     @Provides
@@ -57,12 +60,6 @@ object DatabaseModule {
     @Singleton
     fun providePHashDao(database: CleanSweepDatabase): PHashDao {
         return database.pHashDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideSimilarGroupDao(database: CleanSweepDatabase): SimilarGroupDao {
-        return database.similarGroupDao()
     }
 
     @Provides
@@ -81,5 +78,11 @@ object DatabaseModule {
     @Singleton
     fun provideScanResultCacheDao(database: CleanSweepDatabase): ScanResultCacheDao {
         return database.scanResultCacheDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSimilarityDenialDao(database: CleanSweepDatabase): SimilarityDenialDao {
+        return database.similarityDenialDao()
     }
 }

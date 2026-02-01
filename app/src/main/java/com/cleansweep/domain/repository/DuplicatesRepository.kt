@@ -21,7 +21,9 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.cleansweep.data.db.dao.ScanResultCacheDao
+import com.cleansweep.data.db.dao.SimilarityDenialDao
 import com.cleansweep.data.db.dao.UnreadableFileCacheDao
+import com.cleansweep.data.db.entity.SimilarityDenial
 import com.cleansweep.data.db.entity.UnreadableFileCache
 import com.cleansweep.data.model.MediaItem
 import com.cleansweep.domain.model.ScanResultGroup
@@ -53,7 +55,8 @@ data class PersistedScanResult(
 class DuplicatesRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val unreadableFileCacheDao: UnreadableFileCacheDao,
-    private val scanResultCacheDao: ScanResultCacheDao
+    private val scanResultCacheDao: ScanResultCacheDao,
+    private val similarityDenialDao: SimilarityDenialDao
 ) {
     companion object {
         private const val PREFS_NAME = "duplicates_prefs"
@@ -63,6 +66,42 @@ class DuplicatesRepository @Inject constructor(
     private val prefs: SharedPreferences by lazy {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
+
+    // --- Logical Denial (Flag as Incorrect) ---
+
+    /**
+     * Retrieves all denied similarity pairs as a set of unique keys.
+     * Each key is formatted as "pathA|pathB" where pathA < pathB.
+     */
+    suspend fun getSimilarityDenialKeys(): Set<String> = withContext(Dispatchers.IO) {
+        similarityDenialDao.getAllDenialKeys().toSet()
+    }
+
+    /**
+     * Records all possible item pairs within a group as "incorrect matches."
+     * This prevents the algorithm from ever linking these specific files again.
+     */
+    suspend fun addSimilarityDenials(items: List<MediaItem>) = withContext(Dispatchers.IO) {
+        if (items.size < 2) return@withContext
+
+        val denials = mutableListOf<SimilarityDenial>()
+        for (i in items.indices) {
+            for (j in i + 1 until items.size) {
+                val pathA = items[i].id
+                val pathB = items[j].id
+                denials.add(
+                    SimilarityDenial(
+                        pairKey = SimilarityDenial.createKey(pathA, pathB),
+                        pathA = pathA,
+                        pathB = pathB
+                    )
+                )
+            }
+        }
+        similarityDenialDao.insertDenials(denials)
+    }
+
+    // --- Hidden Groups ---
 
     suspend fun getHiddenGroupIds(): Set<String> = withContext(Dispatchers.IO) {
         prefs.getStringSet(KEY_HIDDEN_GROUP_IDS, emptySet()) ?: emptySet()

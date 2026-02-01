@@ -42,10 +42,10 @@ interface ScanResultCacheDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertMediaItemRefs(items: List<MediaItemRefCacheEntry>)
 
-    @Query("SELECT * FROM scan_result_groups WHERE uniqueId != 'UNSCANNABLE_SUMMARY' AND scopeType = :scopeType ORDER BY timestamp DESC")
+    @Query("SELECT * FROM scan_result_groups WHERE groupType != 'UNSCANNABLE_SUMMARY' AND scopeType = :scopeType ORDER BY timestamp DESC")
     suspend fun getAllScanResultGroups(scopeType: String): List<ScanResultGroupCacheEntry>
 
-    @Query("SELECT * FROM scan_result_groups WHERE uniqueId = 'UNSCANNABLE_SUMMARY' AND scopeType = :scopeType LIMIT 1")
+    @Query("SELECT * FROM scan_result_groups WHERE groupType = 'UNSCANNABLE_SUMMARY' AND scopeType = :scopeType LIMIT 1")
     suspend fun getUnscannableFilesEntry(scopeType: String): ScanResultGroupCacheEntry?
 
     @Query("SELECT * FROM media_item_refs WHERE groupId = :groupId")

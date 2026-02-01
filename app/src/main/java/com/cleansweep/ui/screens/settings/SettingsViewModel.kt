@@ -35,6 +35,7 @@ import com.cleansweep.data.repository.UnselectScanScope
 import com.cleansweep.domain.bus.AppLifecycleEventBus
 import com.cleansweep.domain.bus.FolderUpdateEvent
 import com.cleansweep.domain.bus.FolderUpdateEventBus
+import com.cleansweep.domain.repository.DuplicatesRepository
 import com.cleansweep.domain.repository.MediaRepository
 import com.cleansweep.domain.usecase.SimilarFinderUseCase
 import com.cleansweep.domain.util.HiddenFileFilter
@@ -97,6 +98,7 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val preferencesRepository: PreferencesRepository,
     private val mediaRepository: MediaRepository,
+    private val duplicatesRepository: DuplicatesRepository,
     private val similarFinderUseCase: SimilarFinderUseCase,
     private val appLifecycleEventBus: AppLifecycleEventBus,
     private val folderUpdateEventBus: FolderUpdateEventBus,
@@ -697,7 +699,8 @@ class SettingsViewModel @Inject constructor(
 
     private fun performSimilarityThresholdChange(level: SimilarityThresholdLevel) {
         viewModelScope.launch {
-            similarFinderUseCase.clearPHashCache()
+            // Clearing results is sufficient when the threshold changes.
+            duplicatesRepository.clearAllScanResults()
             preferencesRepository.setSimilarityThresholdLevel(level)
         }
     }

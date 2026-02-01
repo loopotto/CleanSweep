@@ -836,6 +836,7 @@ private fun ResultsView(
                     onSelectAllButOldest = viewModel::selectAllButOldest,
                     onSelectAllButNewest = viewModel::selectAllButNewest,
                     onHideGroup = viewModel::hideGroup,
+                    onFlagAsIncorrect = viewModel::flagAsIncorrect,
                     onOpenFile = { mediaItem ->
                         val intent = viewModel.getOpenFileIntent(mediaItem)
                         try {
@@ -857,6 +858,7 @@ private fun ResultsView(
                     onSelectAllButOldest = viewModel::selectAllButOldest,
                     onSelectAllButNewest = viewModel::selectAllButNewest,
                     onHideGroup = viewModel::hideGroup,
+                    onFlagAsIncorrect = viewModel::flagAsIncorrect,
                     onShowUnscannableFiles = viewModel::showUnscannableFiles,
                     onDismissUnscannableSummary = viewModel::dismissUnscannableSummaryCard,
                     onDismissStaleResultsBanner = viewModel::dismissStaleResultsBanner,
@@ -1085,6 +1087,7 @@ private fun ListView(
     onSelectAllButOldest: (ScanResultGroup) -> Unit,
     onSelectAllButNewest: (ScanResultGroup) -> Unit,
     onHideGroup: (ScanResultGroup) -> Unit,
+    onFlagAsIncorrect: (ScanResultGroup) -> Unit,
     onOpenFile: (MediaItem) -> Unit,
     onShowUnscannableFiles: () -> Unit,
     onDismissUnscannableSummary: () -> Unit,
@@ -1126,7 +1129,7 @@ private fun ListView(
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                     when (group) {
                         is DuplicateGroup -> DuplicateGroupCard(group, uiState.selectedForDeletion, onToggleSelection, onToggleSelectAll, onSelectAllButOldest, onSelectAllButNewest, onHideGroup, onOpenFile)
-                        is SimilarGroup -> SimilarMediaGroupCard(group, uiState.selectedForDeletion, onToggleSelection, onToggleSelectAll, onSelectAllButOldest, onSelectAllButNewest, onHideGroup, onOpenFile)
+                        is SimilarGroup -> SimilarMediaGroupCard(group, uiState.selectedForDeletion, onToggleSelection, onToggleSelectAll, onSelectAllButOldest, onSelectAllButNewest, onHideGroup, onFlagAsIncorrect, onOpenFile)
                     }
                 }
             }
@@ -1149,6 +1152,7 @@ private fun GridView(
     onSelectAllButOldest: (ScanResultGroup) -> Unit,
     onSelectAllButNewest: (ScanResultGroup) -> Unit,
     onHideGroup: (ScanResultGroup) -> Unit,
+    onFlagAsIncorrect: (ScanResultGroup) -> Unit,
     onShowUnscannableFiles: () -> Unit,
     onDismissUnscannableSummary: () -> Unit,
     onDismissStaleResultsBanner: () -> Unit,
@@ -1253,7 +1257,8 @@ private fun GridView(
                         onToggleSelectAll = onToggleSelectAll,
                         onSelectAllButOldest = onSelectAllButOldest,
                         onSelectAllButNewest = onSelectAllButNewest,
-                        onHideGroup = onHideGroup
+                        onHideGroup = onHideGroup,
+                        onFlagAsIncorrect = onFlagAsIncorrect
                     )
                 }
             }
@@ -1277,7 +1282,8 @@ private fun GridGroupCard(
     onToggleSelectAll: (ScanResultGroup) -> Unit,
     onSelectAllButOldest: (ScanResultGroup) -> Unit,
     onSelectAllButNewest: (ScanResultGroup) -> Unit,
-    onHideGroup: (ScanResultGroup) -> Unit
+    onHideGroup: (ScanResultGroup) -> Unit,
+    onFlagAsIncorrect: (ScanResultGroup) -> Unit
 ) {
     val groupIds = remember(group.items) { group.items.map { it.id }.toSet() }
     val selectedInGroup = remember(selectedIds, groupIds) { selectedIds.intersect(groupIds) }
@@ -1395,6 +1401,13 @@ private fun GridGroupCard(
                     onClick = { onSelectAllButNewest(group); showMenu = false }
                 )
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                if (group is SimilarGroup) {
+                    DropdownMenuItem(
+                        text = { Text("Flag as incorrect") },
+                        onClick = { onFlagAsIncorrect(group); showMenu = false },
+                        leadingIcon = { Icon(Icons.Default.NotInterested, contentDescription = null) }
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text("Hide group") },
                     onClick = { onHideGroup(group); showMenu = false },
@@ -1511,6 +1524,7 @@ private fun SimilarMediaGroupCard(
     onSelectAllButOldest: (ScanResultGroup) -> Unit,
     onSelectAllButNewest: (ScanResultGroup) -> Unit,
     onHideGroup: (ScanResultGroup) -> Unit,
+    onFlagAsIncorrect: (ScanResultGroup) -> Unit,
     onOpenFile: (MediaItem) -> Unit
 ) {
     val totalSize = remember(group.items) { group.items.sumOf { it.size } }
@@ -1549,6 +1563,11 @@ private fun SimilarMediaGroupCard(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        DropdownMenuItem(
+                            text = { Text("Flag as incorrect") },
+                            onClick = { onFlagAsIncorrect(group); showMenu = false },
+                            leadingIcon = { Icon(Icons.Default.NotInterested, contentDescription = null) }
+                        )
                         DropdownMenuItem(
                             text = { Text("Hide group") },
                             onClick = { onHideGroup(group); showMenu = false },
