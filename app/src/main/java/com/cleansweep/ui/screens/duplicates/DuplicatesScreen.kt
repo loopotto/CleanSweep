@@ -896,7 +896,7 @@ private fun StaleResultsWarningCard(
         Column {
             Row(
                 modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 4.dp),
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     modifier = Modifier.weight(1f),
@@ -939,7 +939,11 @@ private fun StaleResultsWarningCard(
                 onClick = onRescan,
                 modifier = Modifier
                     .align(Alignment.End)
-                    .padding(end = 8.dp, bottom = 8.dp)
+                    .padding(end = 8.dp, bottom = 8.dp),
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                ),
+                contentPadding = ButtonDefaults.TextButtonWithIconContentPadding
             ) {
                 Text(stringResource(R.string.rescan))
             }
