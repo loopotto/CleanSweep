@@ -36,8 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.cleansweep.R
 import com.cleansweep.data.repository.SummaryViewMode
 import com.cleansweep.ui.components.FastScrollbar
 import com.cleansweep.ui.components.SheetItemCard
@@ -60,7 +62,8 @@ fun SummarySheet(
     onRevertChange: (PendingChange) -> Unit,
     viewMode: SummaryViewMode = SummaryViewMode.LIST,
     onToggleViewMode: () -> Unit = {},
-    applyChangesButtonLabel: String = "Apply Changes",
+    applyChangesButtonLabel: String = stringResource(R.string.apply_changes_button),
+    cancelChangesButtonLabel: String = stringResource(R.string.cancel),
     sheetScrollState: LazyListState = rememberLazyListState(),
     isMaximized: Boolean = false,
     onDynamicHeightChange: (Boolean) -> Unit = {}
@@ -70,8 +73,8 @@ fun SummarySheet(
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDialog = false },
-            title = { Text("Confirm Changes") },
-            text = { Text("Are you sure you want to apply these changes? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.confirm_changes_title)) },
+            text = { Text(stringResource(R.string.confirm_changes_body)) },
             confirmButton = {
                 Button(onClick = {
                     showConfirmDialog = false
@@ -82,7 +85,7 @@ fun SummarySheet(
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmDialog = false }) {
-                    Text("Cancel")
+                    Text(cancelChangesButtonLabel)
                 }
             }
         )
@@ -107,6 +110,7 @@ fun SummarySheet(
         onResetChanges = onResetChanges,
         onRevertChange = onRevertChange,
         applyChangesButtonLabel = applyChangesButtonLabel,
+        cancelChangesButtonLabel = cancelChangesButtonLabel,
         sheetScrollState = sheetScrollState,
         isMaximized = isMaximized,
         onDynamicHeightChange = onDynamicHeightChange
@@ -135,7 +139,7 @@ private fun RevertableSheetItemCard(
         ) {
             Icon(
                 imageVector = Icons.Default.Restore,
-                contentDescription = "Revert change",
+                contentDescription = stringResource(R.string.undo_last_action),
                 tint = Color.White,
                 modifier = Modifier.padding(4.dp)
             )
@@ -158,13 +162,11 @@ private fun calculateRowCount(
 ): Int {
     var rowCount: Double = 0.0
 
-    // 1. Calculate headers size, weighted at 0.5 per header
     if (groupedMoves.isNotEmpty()) rowCount += groupedMoves.size * 0.5
     if (toDelete.isNotEmpty()) rowCount += 0.5
     if (toKeep.isNotEmpty()) rowCount += 0.5
     if (toConvert.isNotEmpty()) rowCount += 0.5
 
-    // 2. Count item rows based on mode
     when (viewMode) {
         SummaryViewMode.LIST -> {
             rowCount += pendingChanges.size
@@ -205,6 +207,7 @@ private fun SummarySheetContent(
     onResetChanges: () -> Unit,
     onRevertChange: (PendingChange) -> Unit,
     applyChangesButtonLabel: String,
+    cancelChangesButtonLabel: String,
     sheetScrollState: LazyListState,
     isMaximized: Boolean,
     onDynamicHeightChange: (Boolean) -> Unit
@@ -247,7 +250,7 @@ private fun SummarySheetContent(
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = "Review Changes (${pendingChanges.size})", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            Text(text = stringResource(R.string.summary_title_format, pendingChanges.size), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             IconButton(onClick = onToggleViewMode) {
                 Icon(
                     imageVector = when (viewMode) {
@@ -255,7 +258,7 @@ private fun SummarySheetContent(
                         SummaryViewMode.GRID -> Icons.Default.GridView
                         SummaryViewMode.COMPACT -> Icons.Default.Apps
                     },
-                    contentDescription = "Change view mode"
+                    contentDescription = stringResource(R.string.toggle_view_mode)
                 )
             }
         }
@@ -277,11 +280,10 @@ private fun SummarySheetContent(
                 state = sheetScrollState,
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                // "Move to" has the highest visual priority
                 groupedMoves.forEach { (folderId, changesInGroup) ->
                     item {
                         val folderName = folderIdNameMap[folderId] ?: folderId.substringAfterLast('/')
-                        CategoryHeader(title = "Move to: $folderName (${changesInGroup.size})", icon = Icons.AutoMirrored.Filled.DriveFileMove, iconTint = MaterialTheme.colorScheme.primary)
+                        CategoryHeader(title = stringResource(R.string.move_to_folder_header, folderName, changesInGroup.size), icon = Icons.AutoMirrored.Filled.DriveFileMove, iconTint = MaterialTheme.colorScheme.primary)
                     }
                     if (viewMode == SummaryViewMode.LIST) {
                         items(changesInGroup, key = { "move_${it.item.id}" }) { change ->
@@ -316,7 +318,7 @@ private fun SummarySheetContent(
                 }
 
                 if (toConvert.isNotEmpty()) {
-                    item { CategoryHeader(title = "To Convert to Image (${toConvert.size})", icon = Icons.Default.Image, iconTint = MaterialTheme.colorScheme.tertiary) }
+                    item { CategoryHeader(title = stringResource(R.string.convert_to_image_header, toConvert.size), icon = Icons.Default.Image, iconTint = MaterialTheme.colorScheme.tertiary) }
                     if (viewMode == SummaryViewMode.LIST) {
                         items(toConvert, key = { "convert_${it.item.id}" }) { change ->
                             MediaItemRow(change = change, subtitle = null, onRevert = { onRevertChange(change) })
@@ -350,7 +352,7 @@ private fun SummarySheetContent(
                 }
 
                 if (toDelete.isNotEmpty()) {
-                    item { CategoryHeader(title = "To Delete (${toDelete.size})", icon = Icons.Default.Delete, iconTint = MaterialTheme.colorScheme.error) }
+                    item { CategoryHeader(title = stringResource(R.string.delete_header, toDelete.size), icon = Icons.Default.Delete, iconTint = MaterialTheme.colorScheme.error) }
                     if (viewMode == SummaryViewMode.LIST) {
                         items(toDelete, key = { "delete_${it.item.id}" }) { change ->
                             MediaItemRow(change = change, subtitle = null, onRevert = { onRevertChange(change) })
@@ -384,10 +386,10 @@ private fun SummarySheetContent(
                 }
 
                 if (toKeep.isNotEmpty()) {
-                    item { CategoryHeader(title = "To Keep (${toKeep.size})", icon = Icons.Default.Check, iconTint = MaterialTheme.colorScheme.secondary) }
+                    item { CategoryHeader(title = stringResource(R.string.keep_header, toKeep.size), icon = Icons.Default.Check, iconTint = MaterialTheme.colorScheme.secondary) }
                     if (viewMode == SummaryViewMode.LIST) {
                         items(toKeep, key = { "keep_${it.item.id}" }) { change ->
-                            MediaItemRow(change = change, subtitle = "In: ${change.item.bucketName}", onRevert = { onRevertChange(change) })
+                            MediaItemRow(change = change, subtitle = stringResource(R.string.current_path_prefix, change.item.bucketName), onRevert = { onRevertChange(change) })
                         }
                     } else {
                         val columns = if (viewMode == SummaryViewMode.GRID) 4 else 8
@@ -433,8 +435,7 @@ private fun SummarySheetContent(
                 .padding(top = 16.dp, bottom = if (isGestureMode) 4.dp else 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            val cancelButtonText = if (pendingChanges.size <= 1) "Cancel" else "Cancel All"
-            OutlinedButton(onClick = { onResetChanges(); onDismiss() }, modifier = Modifier.weight(1f)) { Text(cancelButtonText) }
+            OutlinedButton(onClick = { onResetChanges(); onDismiss() }, modifier = Modifier.weight(1f)) { Text(cancelChangesButtonLabel) }
             Button(onClick = onConfirm, modifier = Modifier.weight(1f), enabled = !isApplyingChanges && pendingChanges.isNotEmpty()) {
                 if (isApplyingChanges) {
                     CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
@@ -477,7 +478,7 @@ private fun MediaItemRow(change: PendingChange, subtitle: String? = null, onReve
             ) {
                 Icon(
                     imageVector = Icons.Default.Restore,
-                    contentDescription = "Revert change",
+                    contentDescription = stringResource(R.string.undo_last_action),
                     tint = Color.White,
                     modifier = Modifier.padding(4.dp)
                 )

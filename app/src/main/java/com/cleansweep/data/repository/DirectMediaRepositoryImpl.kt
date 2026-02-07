@@ -29,6 +29,7 @@ import androidx.core.net.toUri
 import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.size.Size
+import com.cleansweep.R
 import com.cleansweep.data.db.dao.FolderDetailsDao
 import com.cleansweep.data.db.entity.FolderDetailsCache
 import com.cleansweep.data.model.MediaItem
@@ -70,8 +71,8 @@ class DirectMediaRepositoryImpl @Inject constructor(
     private val appLifecycleEventBus: AppLifecycleEventBus
 ) : MediaRepository {
 
-    private val LOG_TAG = "DirectMediaRepo"
-    private val DIMENSION_LOG_TAG = "ImageDimensionDebug"
+    private val logTag ="DirectMediaRepo"
+    private val dimensionlogTag ="ImageDimensionDebug"
 
     private var folderDetailsCache: List<FolderDetails>? = null
     private var lastFileDiscoveryCache: List<File>? = null
@@ -82,6 +83,9 @@ class DirectMediaRepositoryImpl @Inject constructor(
     private val _isPerformingBackgroundRefresh = MutableStateFlow(false)
     override val isPerformingBackgroundRefresh: StateFlow<Boolean> = _isPerformingBackgroundRefresh.asStateFlow()
     private val isBackgroundRefreshRunning = AtomicBoolean(false)
+
+    // Translated folder name used for exclusion filters
+    private val localizedToEditFolderName: String by lazy { context.getString(R.string.folder_name_to_edit) }
 
 
     init {
@@ -102,7 +106,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
     private fun listenForFolderUpdates() {
         externalScope.launch(Dispatchers.IO) {
             folderUpdateEventBus.events.collect { event ->
-                Log.d(LOG_TAG, "Repository received folder update event: $event")
+                Log.d(logTag, "Repository received folder update event: $event")
                 when (event) {
                     is FolderUpdateEvent.FolderBatchUpdate -> {
                         val pathsToDelete = mutableListOf<String>()
@@ -249,11 +253,11 @@ class DirectMediaRepositoryImpl @Inject constructor(
             emit(emptyList())
             return@flow
         }
-        Log.d(LOG_TAG, "Starting batched media fetch for buckets: $bucketIds")
+        Log.d(logTag, "Starting batched media fetch for buckets: $bucketIds")
 
         // Step 1: Pre-fetch all available MediaStore data for the target buckets into a map for fast lookups.
         val mediaStoreDataMap = getMediaStoreDataForBuckets(bucketIds)
-        Log.d(LOG_TAG, "Pre-fetched ${mediaStoreDataMap.size} items from MediaStore.")
+        Log.d(logTag, "Pre-fetched ${mediaStoreDataMap.size} items from MediaStore.")
 
         // Step 2: Get a lightweight list of all File objects from the file system, NON-RECURSIVELY.
         val fileSystemFiles = withContext(Dispatchers.IO) {
@@ -263,12 +267,12 @@ class DirectMediaRepositoryImpl @Inject constructor(
                         .listFiles { file -> file.isFile && isMediaFile(file) }
                         ?.toList() ?: emptyList()
                 } catch (e: Exception) {
-                    Log.e(LOG_TAG, "Error reading files from bucket: $bucketPath", e)
+                    Log.e(logTag, "Error reading files from bucket: $bucketPath", e)
                     emptyList<File>()
                 }
             }.toSet()
         }
-        Log.d(LOG_TAG, "Direct non-recursive file scan found ${fileSystemFiles.size} total files.")
+        Log.d(logTag, "Direct non-recursive file scan found ${fileSystemFiles.size} total files.")
 
 
         // Step 3: Combine and sort the list of File objects to establish the processing order.
@@ -279,7 +283,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 .filter { it.exists() }
                 .sortedByDescending { it.lastModified() }
         }
-        Log.d(LOG_TAG, "Discovered and sorted ${sortedFileIndex.size} unique files.")
+        Log.d(logTag, "Discovered and sorted ${sortedFileIndex.size} unique files.")
 
         // Step 4: Process the sorted list, stream results, and track un-indexed files.
         val initialBatchSize = 5
@@ -311,61 +315,16 @@ class DirectMediaRepositoryImpl @Inject constructor(
         if (batch.isNotEmpty()) {
             emit(batch)
         }
-        Log.d(LOG_TAG, "Finished streaming all items.")
+        Log.d(logTag, "Finished streaming all items.")
 
         // Step 5: Proactively index any files that were missed by MediaStore for the next session.
         if (unindexedPathsToScan.isNotEmpty()) {
-            Log.d(LOG_TAG, "Found ${unindexedPathsToScan.size} un-indexed files. Triggering background scan.")
+            Log.d(logTag, "Found ${unindexedPathsToScan.size} un-indexed files. Triggering background scan.")
             externalScope.launch {
                 scanFolders(unindexedPathsToScan)
             }
         }
     }.flowOn(Dispatchers.Default)
-
-    override fun getAllMediaItems(): Flow<MediaItem> = flow {
-        Log.d(LOG_TAG, "Starting true streaming pipeline for all media items.")
-
-        suspend fun processDirectory(directory: File, mediaStoreMap: Map<String, MediaStoreCache>) {
-            currentCoroutineContext().ensureActive()
-            if (directory.name == "To Edit" || !directory.exists() || !directory.isDirectory || !directory.canRead() || directory.name.startsWith('.') || !isSafeDestination(directory.absolutePath)) {
-                return
-            }
-
-            try {
-                val files = directory.listFiles()
-                if (files.isNullOrEmpty()) return
-
-                val subdirectories = mutableListOf<File>()
-                for (file in files) {
-                    if (file.isDirectory) {
-                        subdirectories.add(file)
-                    } else if (isMediaFile(file)) {
-                        val mediaItem = mediaStoreMap[file.absolutePath]?.let { cache ->
-                            createMediaItemFromMediaStore(file, cache)
-                        } ?: createMediaItemFromFile(file)
-
-                        mediaItem?.let { emit(it) }
-                    }
-                }
-
-                // Recurse into subdirectories after processing files in the current one
-                for (subDir in subdirectories) {
-                    processDirectory(subDir, mediaStoreMap)
-                }
-
-            } catch (e: Exception) {
-                Log.w(LOG_TAG, "Failed to access directory: ${directory.path}", e)
-            }
-        }
-
-        val mediaStoreDataMap = getMediaStoreDataForBuckets(null)
-        Log.d(LOG_TAG, "Pre-fetched ${mediaStoreDataMap.size} total items from MediaStore.")
-        Environment.getExternalStorageDirectory()?.let {
-            processDirectory(it, mediaStoreDataMap)
-        }
-
-        Log.d(LOG_TAG, "Finished streaming all media items from pipelined scan.")
-    }.flowOn(Dispatchers.IO)
 
 
     private suspend fun getMediaStoreDataForBuckets(bucketPaths: List<String>?): Map<String, MediaStoreCache> = withContext(Dispatchers.IO) {
@@ -449,7 +408,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Failed to pre-fetch MediaStore data", e)
+            Log.e(logTag, "Failed to pre-fetch MediaStore data", e)
         }
         return@withContext cacheMap
     }
@@ -510,7 +469,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(DIMENSION_LOG_TAG, "Failed to get dimensions for video: ${file.path}", e)
+                    Log.e(dimensionlogTag, "Failed to get dimensions for video: ${file.path}", e)
                 }
             } else { // Is image
                 try {
@@ -520,7 +479,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                         height = it.intrinsicHeight
                     }
                 } catch (e: Exception) {
-                    Log.e(DIMENSION_LOG_TAG, "Failed to get dimensions for image: ${file.path}", e)
+                    Log.e(dimensionlogTag, "Failed to get dimensions for image: ${file.path}", e)
                 }
             }
 
@@ -539,7 +498,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 height = height
             )
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Failed to create MediaItem for file: ${file.path}", e)
+            Log.e(logTag, "Failed to create MediaItem for file: ${file.path}", e)
             null
         }
     }
@@ -600,7 +559,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun findFileById(mediaId: String): File? {
+    private fun findFileById(mediaId: String): File? {
         return try {
             val file = File(mediaId)
             if (file.exists() && file.isFile) {
@@ -620,7 +579,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
 
         var indexedSuccess = true
         if (indexedItems.isNotEmpty()) {
-            Log.d(LOG_TAG, "Deleting ${indexedItems.size} indexed media items using ContentResolver.")
+            Log.d(logTag, "Deleting ${indexedItems.size} indexed media items using ContentResolver.")
             try {
                 // All media items from MediaStore share this base URI
                 val queryUri = MediaStore.Files.getContentUri("external")
@@ -630,20 +589,20 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 val selectionArgs = ids.map { it.toString() }.toTypedArray()
 
                 val rowsDeleted = context.contentResolver.delete(queryUri, selection, selectionArgs)
-                Log.d(LOG_TAG, "ContentResolver deleted $rowsDeleted rows.")
+                Log.d(logTag, "ContentResolver deleted $rowsDeleted rows.")
                 if (rowsDeleted != indexedItems.size) {
-                    Log.w(LOG_TAG, "MediaStore delete mismatch. Expected: ${indexedItems.size}, Actual: $rowsDeleted.")
+                    Log.w(logTag, "MediaStore delete mismatch. Expected: ${indexedItems.size}, Actual: $rowsDeleted.")
                     indexedSuccess = false
                 }
             } catch (e: Exception) {
-                Log.e(LOG_TAG, "Error deleting indexed media.", e)
+                Log.e(logTag, "Error deleting indexed media.", e)
                 indexedSuccess = false
             }
         }
 
         var unindexedSuccess = true
         if (unindexedItems.isNotEmpty()) {
-            Log.d(LOG_TAG, "Deleting ${unindexedItems.size} un-indexed media items using direct File API.")
+            Log.d(logTag, "Deleting ${unindexedItems.size} un-indexed media items using direct File API.")
             var successCount = 0
             val deletedPaths = mutableListOf<String>()
             unindexedItems.forEach { item ->
@@ -652,7 +611,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                     deletedPaths.add(item.id)
                     successCount++
                 } else {
-                    Log.w(LOG_TAG, "Failed to delete un-indexed file: ${item.id}")
+                    Log.w(logTag, "Failed to delete un-indexed file: ${item.id}")
                 }
             }
             if (deletedPaths.isNotEmpty()) {
@@ -752,20 +711,6 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 } catch (e: Exception) {
                     false
                 }
-            }
-        }
-    }
-
-    override fun searchFolders(query: String): Flow<List<String>> {
-        return observeAllFolders().map { allFolders ->
-            if (query.isBlank()) {
-                emptyList()
-            } else {
-                allFolders
-                    .filter { (path, name) ->
-                        name.contains(query, ignoreCase = true) || path.contains(query, ignoreCase = true)
-                    }
-                    .map { it.first }
             }
         }
     }
@@ -916,6 +861,11 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 continue
             }
 
+            // Exclude translated 'To Edit' folder
+            if (directory.name == localizedToEditFolderName) {
+                continue
+            }
+
             try {
                 val files = directory.listFiles()
                 if (files != null) {
@@ -928,7 +878,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                     files.filter { it.isDirectory }.forEach { queue.add(it) }
                 }
             } catch (e: Exception) {
-                Log.w(LOG_TAG, "findViableTargetFolders: Failed to access directory: ${directory.path}", e)
+                Log.w(logTag, "findViableTargetFolders: Failed to access directory: ${directory.path}", e)
             }
         }
         return@withContext targetFolders
@@ -958,7 +908,8 @@ class DirectMediaRepositoryImpl @Inject constructor(
             currentCoroutineContext().ensureActive()
             val directory = queue.poll() ?: continue
 
-            if (directory.name == "To Edit" || !directory.exists() || !directory.canRead() || directory.name.startsWith(".") || !isSafeDestination(directory.absolutePath)) {
+            // Check using translated folder name for exclusion
+            if (directory.name == localizedToEditFolderName || !directory.exists() || !directory.canRead() || directory.name.startsWith(".") || !isSafeDestination(directory.absolutePath)) {
                 continue
             }
 
@@ -980,7 +931,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.w(LOG_TAG, "Failed to access directory during single-pass scan: ${directory.path}", e)
+                Log.w(logTag, "Failed to access directory during single-pass scan: ${directory.path}", e)
             }
         }
 
@@ -1067,7 +1018,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Could not list files in $folderPath during single rescan", e)
+            Log.e(logTag, "Could not list files in $folderPath during single rescan", e)
         }
 
         if (itemCount > 0) {
@@ -1172,42 +1123,12 @@ class DirectMediaRepositoryImpl @Inject constructor(
         }.sortedBy { it.second.lowercase(Locale.ROOT) }
     }
 
-    override suspend fun getMediaCount(): Int = withContext(Dispatchers.IO) {
-        var count = 0
-        val queue: Queue<File> = ArrayDeque()
-        Environment.getExternalStorageDirectory()?.let { queue.add(it) }
-
-        while (queue.isNotEmpty()) {
-            currentCoroutineContext().ensureActive()
-            val directory = queue.poll() ?: continue
-
-            if (!directory.exists() || !directory.canRead() || directory.name.startsWith(".") || !isSafeDestination(directory.absolutePath)) {
-                continue
-            }
-
-            try {
-                directory.listFiles()?.let { files ->
-                    for (file in files) {
-                        if (file.isDirectory) {
-                            queue.add(file)
-                        } else if (isMediaFile(file)) {
-                            count++
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(LOG_TAG, "getMediaCount: Could not list files in ${directory.path}", e)
-            }
-        }
-        return@withContext count
-    }
-
     override suspend fun getUnindexedMediaPaths(): List<String> = withContext(Dispatchers.IO) {
-        Log.d(LOG_TAG, "Starting scan for unindexed media paths.")
+        Log.d(logTag, "Starting scan for unindexed media paths.")
         val fileSystemPaths = getAllMediaFilePaths()
         val mediaStorePaths = getMediaStoreKnownPaths()
         val unindexedPaths = fileSystemPaths - mediaStorePaths
-        Log.d(LOG_TAG, "Differential check found ${unindexedPaths.size} unindexed paths.")
+        Log.d(logTag, "Differential check found ${unindexedPaths.size} unindexed paths.")
         return@withContext unindexedPaths.toList()
     }
 
@@ -1231,7 +1152,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Failed to query MediaStore for all paths", e)
+            Log.e(logTag, "Failed to query MediaStore for all paths", e)
         }
         return@withContext mediaStorePaths
     }
@@ -1261,7 +1182,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.w(LOG_TAG, "Could not access or list files in: ${directory.path}", e)
+                Log.w(logTag, "Could not access or list files in: ${directory.path}", e)
             }
         }
         return@withContext fileSystemPaths
@@ -1306,14 +1227,14 @@ class DirectMediaRepositoryImpl @Inject constructor(
 
     override suspend fun scanPathsAndWait(paths: List<String>): Boolean = withContext(Dispatchers.IO) {
         if (paths.isEmpty()) return@withContext true
-        Log.d(LOG_TAG, "Requesting synchronous MediaScanner for paths: $paths")
+        Log.d(logTag, "Requesting synchronous MediaScanner for paths: $paths")
 
         return@withContext suspendCancellableCoroutine { continuation ->
             val pathsToScan = paths.toTypedArray()
             val scanCount = AtomicInteger(paths.size)
 
             val listener = MediaScannerConnection.OnScanCompletedListener { path, uri ->
-                Log.d(LOG_TAG, "MediaScanner finished for $path. New URI: $uri")
+                Log.d(logTag, "MediaScanner finished for $path. New URI: $uri")
                 if (scanCount.decrementAndGet() == 0) {
                     if (continuation.isActive) {
                         continuation.resume(true)
@@ -1329,7 +1250,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
             try {
                 MediaScannerConnection.scanFile(context, pathsToScan, null, listener)
             } catch (e: Exception) {
-                Log.e(LOG_TAG, "MediaScannerConnection.scanFile threw an exception", e)
+                Log.e(logTag, "MediaScannerConnection.scanFile threw an exception", e)
                 if (continuation.isActive) {
                     continuation.resume(false)
                 }
@@ -1357,7 +1278,7 @@ class DirectMediaRepositoryImpl @Inject constructor(
         }
 
         if (mediaItems.size != paths.size) {
-            Log.w(LOG_TAG, "Path-to-MediaItem conversion mismatch. In: ${paths.size}, Out: ${mediaItems.size}. Some files may not be in MediaStore or failed to convert.")
+            Log.w(logTag, "Path-to-MediaItem conversion mismatch. In: ${paths.size}, Out: ${mediaItems.size}. Some files may not be in MediaStore or failed to convert.")
         }
         return@withContext mediaItems
     }
@@ -1383,10 +1304,10 @@ class DirectMediaRepositoryImpl @Inject constructor(
     override suspend fun triggerFullMediaStoreScan(): Boolean = withContext(Dispatchers.IO) {
         val unindexedPaths = getUnindexedMediaPaths()
         if (unindexedPaths.isEmpty()) {
-            Log.d(LOG_TAG, "Triggering full scan: No unindexed media found.")
+            Log.d(logTag, "Triggering full scan: No unindexed media found.")
             return@withContext true
         }
-        Log.d(LOG_TAG, "Triggering full scan for ${unindexedPaths.size} items.")
+        Log.d(logTag, "Triggering full scan for ${unindexedPaths.size} items.")
         return@withContext scanPathsAndWait(unindexedPaths)
     }
 }

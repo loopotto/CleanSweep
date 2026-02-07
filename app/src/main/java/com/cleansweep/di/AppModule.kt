@@ -45,7 +45,7 @@ object AppModule {
     @Qualifier
     annotation class ApplicationScope
 
-    // --- NEW: Qualifier for the GIF ImageLoader ---
+    // Qualifier for the GIF ImageLoader ---
     @Retention(AnnotationRetention.BINARY)
     @Qualifier
     annotation class GifImageLoader
@@ -66,7 +66,7 @@ object AppModule {
             .build()
     }
 
-    // --- NEW: Provider for the GIF-specific ImageLoader ---
+    // --- Provider for the GIF-specific ImageLoader ---
     @Provides
     @Singleton
     @GifImageLoader

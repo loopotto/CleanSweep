@@ -17,10 +17,12 @@
 
 package com.cleansweep.ui.screens.session
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cleansweep.R
 import com.cleansweep.data.repository.FolderSelectionMode
 import com.cleansweep.data.repository.PreferencesRepository
 import com.cleansweep.data.repository.UnselectScanScope
@@ -32,6 +34,7 @@ import com.cleansweep.ui.components.FolderSearchManager
 import com.cleansweep.ui.navigation.RESET_SEARCH_RESULT_KEY
 import com.cleansweep.util.FileOperationsHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -87,6 +90,7 @@ data class SessionSetupUiState(
 
 @HiltViewModel
 class SessionSetupViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
     private val preferencesRepository: PreferencesRepository,
     private val fileOperationsHelper: FileOperationsHelper,
@@ -111,7 +115,7 @@ class SessionSetupViewModel @Inject constructor(
 
 
     companion object {
-        private const val TAG = "SessionSetupViewModel"
+        private const val logTag ="SessionSetupViewModel"
         private const val MIN_REFRESH_DISPLAY_TIME_MS = 500L
     }
 
@@ -150,13 +154,13 @@ class SessionSetupViewModel @Inject constructor(
             }
 
             if (initialFolders.isNotEmpty()) {
-                Log.d(TAG, "Initialized ViewModel with ${initialFolders.size} folders.")
+                Log.d(logTag, "Initialized ViewModel with ${initialFolders.size} folders.")
                 if (hasCache) {
                     // If we started from a cache, trigger a non-blocking background check for external changes.
                     mediaRepository.checkForChangesAndInvalidate()
                 }
             } else {
-                Log.d(TAG, "Initialization complete. No media folders were found.")
+                Log.d(logTag, "Initialization complete. No media folders were found.")
             }
 
             // Step 4: Start observing all other flows for ongoing updates.
@@ -168,7 +172,7 @@ class SessionSetupViewModel @Inject constructor(
 
     fun handleResetResult() {
         if (_uiState.value.searchQuery.isNotEmpty()) {
-            Log.d(TAG, "Reset result received. Clearing search query.")
+            Log.d(logTag, "Reset result received. Clearing search query.")
             updateSearchQuery("")
         }
         // Consume the result
@@ -192,7 +196,7 @@ class SessionSetupViewModel @Inject constructor(
         viewModelScope.launch {
             folderUpdateEventBus.events.collect { event ->
                 if (event is FolderUpdateEvent.FullRefreshRequired) {
-                    Log.d(TAG, "FullRefreshRequired event received. Triggering a manual refresh.")
+                    Log.d(logTag, "FullRefreshRequired event received. Triggering a manual refresh.")
                     hasInitializedSelection = false // Reset selection logic
                     refreshFolders()
                 }
@@ -224,8 +228,9 @@ class SessionSetupViewModel @Inject constructor(
                 processFolderDetails(foldersToProcess, favorites, showFavorites, query, sortOption)
 
             }.filterNotNull().catch { e ->
-                Log.e(TAG, "Error in folder processing flow", e)
-                _uiState.update { it.copy(error = "Failed to load media folders: ${e.message}", isSearching = false) }
+                Log.e(logTag, "Error in folder processing flow", e)
+                val errorMessage = context.getString(R.string.failed_load_folders, e.message)
+                _uiState.update { it.copy(error = errorMessage, isSearching = false) }
             }.collect { (newCategories, newFavorites, allFolders) ->
                 _uiState.update { currentState ->
                     val allAvailableFolderPaths = allFolders.map { it.path }.toSet()
@@ -269,13 +274,13 @@ class SessionSetupViewModel @Inject constructor(
         val userFolders = nonFavoriteFolders.filter { !it.isSystemFolder }
 
         val categories = listOfNotNull(
-            if (showFavorites && favoriteFolders.isNotEmpty()) FolderCategory("Favorite Folders", favoriteFolders) else null,
-            if (systemFolders.isNotEmpty()) FolderCategory("System Folders", systemFolders) else null,
-            if (userFolders.isNotEmpty()) FolderCategory("User Folders", userFolders) else null
+            if (showFavorites && favoriteFolders.isNotEmpty()) FolderCategory(context.getString(R.string.favorite_folders_category), favoriteFolders) else null,
+            if (systemFolders.isNotEmpty()) FolderCategory(context.getString(R.string.system_folders_category), systemFolders) else null,
+            if (userFolders.isNotEmpty()) FolderCategory(context.getString(R.string.user_folders_category), userFolders) else null
         )
 
         val sortedCategories = categories.map { category ->
-            val primarySort: Comparator<FolderDetails> = if (category.name == "System Folders") {
+            val primarySort: Comparator<FolderDetails> = if (category.name == context.getString(R.string.system_folders_category)) {
                 compareByDescending { it.isPrimarySystemFolder }
             } else {
                 compareBy { 0 }
@@ -312,7 +317,7 @@ class SessionSetupViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(selectedBuckets = initialSelection)
             }
-            Log.d(TAG, "Initial selection has been set with mode: $folderSelectionMode")
+            Log.d(logTag, "Initial selection has been set with mode: $folderSelectionMode")
         }
     }
 
@@ -320,28 +325,29 @@ class SessionSetupViewModel @Inject constructor(
     fun refreshFolders() {
         viewModelScope.launch {
             if (_isManualRefreshing.value) {
-                Log.d(TAG, "Refresh: Manual refresh already in progress. Ignoring request.")
+                Log.d(logTag, "Refresh: Manual refresh already in progress. Ignoring request.")
                 return@launch
             }
-            Log.d(TAG, "Refreshing folders...")
+            Log.d(logTag, "Refreshing folders...")
             val startTime = System.currentTimeMillis()
             _isManualRefreshing.value = true
             try {
                 mediaRepository.getMediaFoldersWithDetails(forceRefresh = true)
             } catch (e: Exception) {
-                Log.e(TAG, "Error refreshing folders", e)
+                Log.e(logTag, "Error refreshing folders", e)
+                val errorMessage = context.getString(R.string.failed_refresh_folders, e.message)
                 _uiState.update {
-                    it.copy(error = "Failed to refresh media folders: ${e.message}")
+                    it.copy(error = errorMessage)
                 }
             } finally {
                 withContext(NonCancellable) {
                     val elapsedTime = System.currentTimeMillis() - startTime
                     val remainingTime = MIN_REFRESH_DISPLAY_TIME_MS - elapsedTime
                     if (remainingTime > 0) {
-                        Log.d(TAG, "Refresh finished in ${elapsedTime}ms. Delaying for ${remainingTime}ms.")
+                        Log.d(logTag, "Refresh finished in ${elapsedTime}ms. Delaying for ${remainingTime}ms.")
                         delay(remainingTime)
                     }
-                    Log.d(TAG, "Refresh flow finished. Resetting isManualRefreshing flag.")
+                    Log.d(logTag, "Refresh flow finished. Resetting isManualRefreshing flag.")
                     _isManualRefreshing.value = false
                 }
             }
@@ -479,12 +485,12 @@ class SessionSetupViewModel @Inject constructor(
                 mediaRepository.handleFolderRename(oldPath, newPath)
                 preferencesRepository.updateFolderPath(oldPath, newPath)
                 _uiState.update { it.copy(
-                    toastMessage = "Folder renamed successfully",
+                    toastMessage = context.getString(R.string.folder_renamed),
                     showRenameDialogForPath = null
                 )}
             }.onFailure { error ->
                 _uiState.update { it.copy(
-                    toastMessage = "Error: ${error.message}",
+                    toastMessage = context.getString(R.string.error_prefix, error.message),
                     showRenameDialogForPath = null
                 )}
             }
@@ -537,11 +543,17 @@ class SessionSetupViewModel @Inject constructor(
             finalPathsToHide.forEach { preferencesRepository.addPermanentlySortedFolder(it) }
             mediaRepository.removeFoldersFromCache(finalPathsToHide)
 
+            val message = context.resources.getQuantityString(
+                R.plurals.folders_hidden_toast,
+                folderPathsToMark.size,
+                folderPathsToMark.size
+            )
+
             _uiState.update {
                 val updatedSelection = it.selectedBuckets.filterNot { path -> path in finalPathsToHide }
                 it.copy(
                     selectedBuckets = updatedSelection,
-                    toastMessage = if (folderPathsToMark.size > 1) "${folderPathsToMark.size} folders hidden." else "Folder hidden.",
+                    toastMessage = message,
                     showMarkAsSortedConfirmation = false,
                     foldersToMarkAsSorted = emptyList(),
                     dontAskAgainMarkAsSorted = false
@@ -589,10 +601,15 @@ class SessionSetupViewModel @Inject constructor(
             val result = fileOperationsHelper.moveFolderContents(sourcePath, destinationPath)
             result.onSuccess { (movedCount, failedCount) ->
                 mediaRepository.handleFolderMove(sourcePath, destinationPath)
-                val message = "Moved $movedCount files." + if (failedCount > 0) " $failedCount failed." else ""
+                val baseMessage = context.resources.getQuantityString(R.plurals.moved_files_success_msg, movedCount, movedCount)
+                val message = if (failedCount > 0) {
+                    baseMessage + context.resources.getQuantityString(R.plurals.moved_files_failed_suffix, failedCount, failedCount)
+                } else {
+                    baseMessage
+                }
                 _uiState.update { it.copy(toastMessage = message) }
             }.onFailure { error ->
-                _uiState.update { it.copy(toastMessage = "Error: ${error.message}") }
+                _uiState.update { it.copy(toastMessage = context.getString(R.string.error_prefix, error.message)) }
             }
         }
     }
@@ -709,10 +726,10 @@ class SessionSetupViewModel @Inject constructor(
             }
 
             val message = when {
-                favoritesAdded > 0 && favoritesRemoved > 0 -> "$favoritesAdded folders favorited, $favoritesRemoved unfavorited."
-                favoritesAdded > 0 -> "$favoritesAdded folders added to favorites."
-                favoritesRemoved > 0 -> "$favoritesRemoved folders removed from favorites."
-                else -> "No changes applied. System folders cannot be favorited."
+                favoritesAdded > 0 && favoritesRemoved > 0 -> context.getString(R.string.favorites_added_removed_msg, favoritesAdded, favoritesRemoved)
+                favoritesAdded > 0 -> context.resources.getQuantityString(R.plurals.favorites_added_msg, favoritesAdded, favoritesAdded)
+                favoritesRemoved > 0 -> context.resources.getQuantityString(R.plurals.favorites_removed_msg, favoritesRemoved, favoritesRemoved)
+                else -> context.getString(R.string.no_changes_system_folders)
             }
             _uiState.update { it.copy(toastMessage = message) }
             exitContextualSelectionMode()

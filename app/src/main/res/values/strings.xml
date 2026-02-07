@@ -1,4 +1,603 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<!--
+  ~ CleanSweep
+  ~ Copyright (c) 2025 LoopOtto
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">CleanSweep</string>
+
+    <!-- General / Common -->
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="retry">Retry</string>
+    <string name="close">Close</string>
+    <string name="back">Back</string>
+    <string name="settings">Settings</string>
+    <string name="more_options">More options</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="unknown_error">An unknown error occurred</string>
+    <string name="error_prefix">Error: %1$s</string>
+    <string name="warning">Warning</string>
+    <string name="done">Done</string>
+    <string name="open">Open</string>
+    <string name="open_with">Open with</string>
+    <string name="open_full_screen">Open full-screen</string>
+    <string name="share">Share</string>
+    <string name="rename">Rename</string>
+    <string name="select_all">Select All</string>
+    <string name="unselect_all">Unselect All</string>
+    <string name="loading">Loading…</string>
+    <string name="ok">OK</string>
+    <string name="create">Create</string>
+    <string name="skip">Skip</string>
+    <string name="reset">Reset</string>
+
+    <!-- File Operations -->
+    <string name="filename_copied">Filename copied!</string>
+    <string name="folder_renamed_success">Folder renamed successfully.</string>
+    <plurals name="files_deleted_success">
+        <item quantity="one">1 file deleted successfully.</item>
+        <item quantity="other">%1$d files deleted successfully.</item>
+    </plurals>
+    <string name="could_not_delete_all">Error: Could not delete all selected files.</string>
+    <string name="no_files_found_on_disk">No selected files were found on disk. They may have been deleted externally.</string>
+    <plurals name="files_not_found_deleting_remaining">
+        <item quantity="one">1 file was not found and will be skipped.</item>
+        <item quantity="other">%1$d files were not found and will be skipped.</item>
+    </plurals>
+    <string name="no_files_selected_delete">No files selected for deletion.</string>
+    <string name="no_app_to_share">No app to share this file to.</string>
+    <string name="no_app_to_open">No app can open this file.</string>
+    <string name="error_creating_uri">Error preparing file for sharing.</string>
+    <string name="file_size_label">Size: %1$s</string>
+    <string name="export_filename_default">target_favorites.json</string>
+
+    <!-- Session Setup Screen -->
+    <string name="select_folders_title">Select Folders</string>
+    <string name="start_session">Start Session</string>
+    <string name="search_hint">Search</string>
+    <string name="clear_search">Clear search</string>
+    <string name="scanning_device_message">Scanning device for media folders…</string>
+    <string name="no_media_folders_found">No media folders found</string>
+    <string name="no_media_folders_desc">This can happen on a new device. Try adding some photos or videos, or pull down to re-scan.</string>
+    <string name="no_results_found">No results found</string>
+    <string name="no_search_results_desc">Your search for \"%1$s\" did not match any folder names.</string>
+    <string name="find_duplicates">Find Duplicates</string>
+    <string name="sort">Sort</string>
+    <string name="sort_name_az">Name (A-Z)</string>
+    <string name="sort_name_za">Name (Z-A)</string>
+    <string name="sort_size_largest">Size (Largest first)</string>
+    <string name="sort_size_smallest">Size (Smallest first)</string>
+    <string name="sort_count_most">Item Count (Most first)</string>
+    <string name="sort_count_fewest">Item Count (Fewest first)</string>
+    <plurals name="context_selected_count">
+        <item quantity="one">1 Selected</item>
+        <item quantity="other">%1$d Selected</item>
+    </plurals>
+    <string name="close_selection_mode">Close selection mode</string>
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="remove_from_favorites">Remove from Favorites</string>
+    <string name="mark_as_sorted">Mark as Sorted</string>
+    <string name="mark_permanently_as_sorted">Mark Permanently as Sorted</string>
+    <string name="mark_sorted_title_single">Mark as Sorted?</string>
+    <string name="mark_sorted_body_single">Are you sure you want to permanently hide \'%1$s\' from this list? This folder won\'t show up here even if you add new media to it. You can reset this in the settings.</string>
+    <string name="mark_sorted_body_recursive">Are you sure you want to permanently hide \'%1$s\' and its subfolders from this list? These folders won\'t show up here even if you add new media to them. You can reset this in the settings.</string>
+    <plurals name="mark_sorted_title_multiple">
+        <item quantity="one">Mark 1 Folder as Sorted?</item>
+        <item quantity="other">Mark %1$d Folders as Sorted?</item>
+    </plurals>
+    <plurals name="mark_sorted_body_multiple">
+        <item quantity="one">Are you sure you want to permanently hide this folder (including any selected subfolders) from this list? You can reset this in the settings.</item>
+        <item quantity="other">Are you sure you want to permanently hide these %1$d folders (including any selected subfolders) from this list? You can reset this in the settings.</item>
+    </plurals>
+    <string name="move_to_ellipsis">Move to…</string>
+    <string name="search_destination_label">Search or select destination</string>
+    <string name="move_action">Move</string>
+    <plurals name="folder_item_desc">
+        <item quantity="one">1 item · %2$s</item>
+        <item quantity="other">%1$d items · %2$s</item>
+    </plurals>
+    <string name="includes_subfolders">Includes sub-folders.</string>
+    <string name="select_folder_and_subfolders">Select folder and sub-folders</string>
+    <string name="deselect_subfolders">Deselect sub-folders</string>
+    <string name="favorite">Favorite</string>
+    <string name="unfavorite">Unfavorite</string>
+
+    <!-- Swiper Screen -->
+    <string name="unsaved_changes_title">Unsaved Changes</string>
+    <string name="unsaved_changes_message">You have unsaved changes. Are you sure you want to exit?</string>
+    <string name="exit_anyway">Exit Anyway</string>
+    <string name="review_changes">Review Changes</string>
+    <string name="no_more_items">No more items to sort!</string>
+    <string name="all_organized_title">All media has been organized. Great job!</string>
+    <string name="review_skipped_items">Review Skipped Items</string>
+    <string name="select_different_folders">Select Different Folders</string>
+    <string name="reset_single_folder">Reset Single Folder</string>
+    <string name="reset_all_sorted_media">Reset All Sorted Media</string>
+    <string name="close_app">Close App</string>
+    <string name="add_target_folder">Add Target Folder</string>
+    <string name="skip_item">Skip Item</string>
+    <string name="undo_last_action">Undo Last Action</string>
+    <string name="expand">Expand</string>
+    <string name="collapse">Collapse</string>
+    <string name="remove_from_bar">Remove from bar</string>
+    <string name="move_to_to_edit">Move to \'To Edit\'</string>
+    <string name="screenshot">Screenshot</string>
+    <string name="mute_video">Mute video</string>
+    <string name="unmute_video">Unmute video</string>
+    <string name="pending_conversion_desc">Pending conversion to image</string>
+    <string name="forget_sorted_media_title">Forget Sorted Media</string>
+    <string name="search_folder_reset_label">Search for a folder to reset…</string>
+    <string name="forget_action">Forget</string>
+    <string name="forget_confirm_title">Confirm Action</string>
+    <string name="forget_confirm_body">Are you sure you want to forget all sorted media history for the folder \'%1$s\'? This folder will reappear for sorting if it still contains media.</string>
+    <string name="forget_success_toast">\'%1$s\' history has been reset.</string>
+    <string name="no_sorted_history_toast">No sorted media history found.</string>
+    <string name="changes_applied_success">Changes applied successfully!</string>
+    <string name="failed_apply_changes">Failed to apply one or more changes.</string>
+    <string name="added_screenshot_toast">Added screenshot to pending changes</string>
+    <string name="could_not_find_parent">Could not find parent folder.</string>
+    <string name="refreshed_external_changes">Refreshed to account for external file changes.</string>
+    <plurals name="target_favorite_removed_toast">
+        <item quantity="one">1 target favorite was removed as it no longer exists.</item>
+        <item quantity="other">%1$d target favorites were removed as they no longer exist.</item>
+    </plurals>
+    <string name="target_favorite_removed_single_toast" tools:ignore="UnusedResources">1 target favorite was removed as it no longer exists.</string>
+    <plurals name="files_skipped_missing_toast">
+        <item quantity="one">1 file was not found and will be skipped.</item>
+        <item quantity="other">%1$d files were not found and will be skipped.</item>
+    </plurals>
+    <string name="select_parent_location_toast">Please select a parent folder location.</string>
+    <string name="select_folder_import_toast">Please select a folder to import.</string>
+    <string name="video_no_audio_toast">Video has no audio track.</string>
+    <string name="failed_load_media_prefix">Failed to load media: %1$s</string>
+    <string name="apply_changes_button">Apply Changes</string>
+    <string name="folder_name_to_edit">To Edit</string>
+    <string name="cancel_all_changes">Cancel All</string>
+    <string name="summary_title_format">Review Changes (%1$d)</string>
+    <string name="move_to_folder_header">Move to: %1$s (%2$d)</string>
+    <string name="convert_to_image_header">To Convert to Image (%1$d)</string>
+    <string name="delete_header">To Delete (%1$d)</string>
+    <string name="keep_header">To Keep (%1$d)</string>
+    <string name="confirm_changes_title">Confirm Changes</string>
+    <string name="confirm_changes_body">Are you sure you want to apply these changes to your files?</string>
+
+    <!-- Plurals -->
+    <plurals name="skipped_session_items_plurals">
+        <item quantity="one">You skipped 1 item during this session.</item>
+        <item quantity="other">You skipped %d items during this session.</item>
+    </plurals>
+    <plurals name="files_selected_count_plurals">
+        <item quantity="one">1 file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <plurals name="unreadable_files_count_plurals">
+        <item quantity="one">1 file could not be read</item>
+        <item quantity="other">%d files could not be read</item>
+    </plurals>
+
+    <!-- Duplicates Screen -->
+    <string name="duplicate_finder_title">Duplicate Finder</string>
+    <string name="scanning_phase">Scanning…</string>
+    <string name="scanning_preparing_phase">Preparing…</string>
+    <string name="scanning_cancelling_phase">Cancelling…</string>
+    <plurals name="scan_result_title">
+        <item quantity="one">Scan Result (1 group)</item>
+        <item quantity="other">Scan Result (%1$d groups)</item>
+    </plurals>
+    <string name="delete_all_exact_duplicates">Delete All Exact Duplicates</string>
+    <string name="new_scan">New Scan</string>
+    <string name="change_grid_columns">Change grid columns</string>
+    <string name="toggle_view_mode">Toggle View Mode</string>
+    <string name="confirm_deletion_title">Confirm Deletion</string>
+    <string name="confirm_deletion_body">Are you sure you want to permanently delete the selected files? This action cannot be undone.</string>
+    <string name="delete_all_exact_title">Delete All Exact Duplicates?</string>
+    <string name="delete_all_exact_body">This will automatically keep the oldest file in each group of exact duplicates and delete the rest.\n\nNote: even groups flagged as exact duplicates might have false positives. Reviewing manually is recommended.</string>
+    <string name="do_not_ask_again">Do not ask again</string>
+    <string name="delete_all">Delete All</string>
+    <string name="view_group_title">View Group</string>
+    <plurals name="view_group_items_title">
+        <item quantity="one">View Group (1 item)</item>
+        <item quantity="other">View Group (%1$d items)</item>
+    </plurals>
+    <string name="change_layout_columns">Change layout columns</string>
+    <string name="keep_oldest">Keep Oldest</string>
+    <string name="keep_newest">Keep Newest</string>
+    <string name="flag_as_incorrect">Flag as incorrect</string>
+    <string name="hide_group">Hide group</string>
+    <string name="scan_exact_duplicates_title">Exact Duplicates</string>
+    <string name="scan_exact_duplicates_desc">Finds files that are 100% identical.</string>
+    <string name="scan_similar_media_title">Similar Media</string>
+    <string name="scan_similar_media_desc">Finds media that look alike (e.g. burst shots, similar videos).</string>
+    <string name="scan_first_time_note">Note: The first scan may take some time. The process will continue in the background if you leave the app.</string>
+    <string name="start_scan">Start Scan</string>
+    <string name="view_last_scan_results">View Last Scan Results</string>
+    <plurals name="scan_limited_to_folders">
+        <item quantity="one">Scan is limited to 1 folder.</item>
+        <item quantity="other">Scan is limited to %1$d folders.</item>
+    </plurals>
+    <plurals name="scan_ignores_folders">
+        <item quantity="one">Scan will ignore 1 folder.</item>
+        <item quantity="other">Scan will ignore %1$d folders.</item>
+    </plurals>
+    <string name="scan_filter_active">Scan Filter Active</string>
+    <string name="manage">Manage</string>
+    <string name="no_folders_in_list">No folders are in this list. Tap Manage to add some.</string>
+    <plurals name="list_more_items_suffix">
+        <item quantity="one">• …and 1 more</item>
+        <item quantity="other">• …and %1$d more</item>
+    </plurals>
+    <string name="cancel_scan">Cancel Scan</string>
+    <string name="no_exact_or_similar_found">No exact duplicates or similar media were found. Well done!</string>
+    <string name="no_exact_found">No exact duplicates were found. Well done!</string>
+    <string name="no_similar_found">No similar media were found. Well done!</string>
+    <string name="stale_results_warning">Showing results from %1$s</string>
+    <string name="run_new_scan_hint">Run a new scan for the latest results.</string>
+    <string name="dismiss_warning">Dismiss warning</string>
+    <string name="rescan">Rescan</string>
+    <string name="unreadable_files_hint">These might be corrupt or inaccessible. Tap for details.</string>
+    <string name="unreadable_files_dialog_title">Unreadable Files</string>
+    <string name="no_unreadable_user_files">No unreadable user files found. This is the ideal state. Any remaining files are likely hidden system or temporary files, which can be viewed with the toggle below.</string>
+    <string name="no_unreadable_files_device">No unreadable files were found on your device.</string>
+    <string name="show_hidden_temp_files">Show hidden/temporary files</string>
+    <string name="unknown_location">Unknown Location</string>
+    <plurals name="duplicates_found_count">
+        <item quantity="one">1 Duplicate Found</item>
+        <item quantity="other">%1$d Duplicates Found</item>
+    </plurals>
+    <plurals name="similar_media_found_count">
+        <item quantity="one">1 Similar Media Found</item>
+        <item quantity="other">%1$d Similar Media Found</item>
+    </plurals>
+    <string name="size_per_file">Size per file: %1$s</string>
+    <string name="total_group_size">Total group size: %1$s</string>
+    <plurals name="copies_count_suffix">
+        <item quantity="one">+ 1 copy</item>
+        <item quantity="other">+ %1$d copies</item>
+    </plurals>
+    <plurals name="similar_count_suffix">
+        <item quantity="one">+ 1 similar</item>
+        <item quantity="other">+ %1$d similar</item>
+    </plurals>
+    <string name="selection_state">Selection State</string>
+    <string name="primary_image_desc">Primary image for group</string>
+    <string name="video">Video</string>
+    <string name="reclaim_space_format">Reclaim Space: %1$s</string>
+    <string name="files_selected_format">%1$s selected</string>
+    <string name="algorithm_corrected_toast">Algorithm corrected. These items won\'t be grouped again.</string>
+    <string name="group_hidden_toast">Group hidden. It will only reappear if its membership changes.</string>
+    <string name="notification_permission_required">Notification permission is required to show scan progress in the background.</string>
+    <string name="scan_already_in_progress">A scan is already in progress.</string>
+    <string name="select_one_scan_type">Please select at least one scan type.</string>
+    <string name="scan_cancelled_toast">Scan cancelled</string>
+    <string name="scan_complete_selection_cleared">Scan complete. Selections have been cleared.</string>
+    <string name="no_valid_cache_toast">Could not find any valid cached results.</string>
+    <string name="no_exact_duplicates_toast">No exact duplicates found.</string>
+    <string name="no_duplicates_to_delete_toast">No duplicates found to delete.</string>
+    <string name="sorted_media_reset_toast">Sorted media history has been reset.</string>
+    <string name="info_icon_desc">Information</string>
+
+    <!-- Session Setup ViewModel -->
+    <string name="failed_load_folders">Failed to load media folders: %1$s</string>
+    <string name="failed_refresh_folders">Failed to refresh media folders: %1$s</string>
+    <string name="folder_renamed">Folder renamed successfully</string>
+    <plurals name="moved_files_success_msg">
+        <item quantity="one">Moved 1 file.</item>
+        <item quantity="other">Moved %1$d files.</item>
+    </plurals>
+    <plurals name="moved_files_failed_suffix">
+        <item quantity="one"> 1 failed.</item>
+        <item quantity="other"> %1$d failed.</item>
+    </plurals>
+    <string name="favorites_added_removed_msg" tools:ignore="PluralsCandidate">%1$d folders favorited, %2$d unfavorited.</string>
+    <plurals name="favorites_added_msg">
+        <item quantity="one">1 folder added to favorites.</item>
+        <item quantity="other">%1$d folders added to favorites.</item>
+    </plurals>
+    <plurals name="favorites_removed_msg">
+        <item quantity="one">1 folder removed from favorites.</item>
+        <item quantity="other">%1$d folders removed from favorites.</item>
+    </plurals>
+    <string name="no_changes_system_folders">No changes applied. System folders cannot be favorited.</string>
+    <string name="folder_hidden_toast">Folder hidden.</string>
+    <plurals name="folders_hidden_toast">
+        <item quantity="one">1 folder hidden.</item>
+        <item quantity="other">%1$d folders hidden.</item>
+    </plurals>
+    <string name="favorite_folders_category">Favorite Folders</string>
+    <string name="system_folders_category">System Folders</string>
+    <string name="user_folders_category">User Folders</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_previous">Previous</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_grant_permission">Grant All Files Access</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_close_dialog_title">Close CleanSweep</string>
+    <string name="onboarding_close_dialog_body">CleanSweep cannot function without All Files Access permission. We tried to but it ended up being required for CleanSweep to work properly for most users.</string>
+    <string name="permission_screen_title">All Files Access Required</string>
+    <string name="permission_screen_desc">CleanSweep needs All Files Access permission to organize your photos and videos across all folders on your device.</string>
+    <string name="permission_screen_instruction">Please grant the permission in your device settings to use CleanSweep.</string>
+    <string name="open_settings">Open Settings</string>
+
+    <!-- Onboarding Pages -->
+    <string name="onboarding_p1_title">Welcome to CleanSweep</string>
+    <string name="onboarding_p1_desc">Take control of your gallery. A simple, powerful way to sort thousands of photos and videos.\nReclaim your time and your storage space.</string>
+    <string name="onboarding_p2_title">Simple Swiping</string>
+    <string name="onboarding_p2_desc">Swipe right to keep, swipe left to delete. Made a mistake? The Undo button has your back! Not sure yet? Use the Skip button to decide later.</string>
+    <string name="onboarding_p3_title">Powerful Sorting</string>
+    <string name="onboarding_p3_desc">Tap folders to instantly move files. Long-press an item to quickly send it to a \'To Edit\' folder or access other shortcuts.</string>
+    <string name="onboarding_p4_title">Find Similar Photos</string>
+    <string name="onboarding_p4_desc">Our duplicate finder goes beyond exact copies to also find visually similar photos and videos. You can even adjust the sensitivity in the settings!</string>
+    <string name="onboarding_p5_title">Video Superpowers</string>
+    <string name="onboarding_p5_desc">Fly through videos with playback speed controls. You can even capture a perfect moment by saving a single frame as a new photo.</string>
+    <string name="onboarding_p6_title">You\'re in Control</string>
+    <string name="onboarding_p6_desc">You\'ve learned the basics. Now you\'re ready to organize your media faster than ever before.</string>
+
+    <!-- Settings Screen -->
+    <string name="search_settings_placeholder">Search settings…</string>
+    <string name="close_search">Close search</string>
+    <string name="search_settings_icon_desc">Search settings</string>
+    <string name="appearance_section_title">Appearance</string>
+    <string name="behavior_section_title">Behavior</string>
+    <string name="duplicate_finder_section_title">Duplicate Finder</string>
+    <string name="advanced_section_title">Advanced</string>
+    <string name="help_support_section_title">Help &amp; Support</string>
+    <string name="about_section_title">About</string>
+    <string name="no_settings_found">No settings found for \"%1$s\"</string>
+
+    <!-- Language Settings -->
+    <string name="language_title">Language</string>
+    <string name="language_desc">Choose your preferred language.</string>
+    <string name="language_system">System Default</string>
+    <string name="language_english">English</string>
+    <string name="language_italian">Italiano</string>
+
+    <!-- Theme Settings -->
+    <string name="theme_title">Theme</string>
+    <string name="theme_system_display">Follow System</string>
+    <string name="theme_light_display">Light</string>
+    <string name="theme_dark_display">Dark</string>
+    <string name="theme_darker_display">Darker</string>
+    <string name="theme_amoled_display">AMOLED</string>
+    <string name="theme_system_desc">Automatically switch themes based on system settings</string>
+    <string name="theme_light_desc">A bright, light-colored theme</string>
+    <string name="theme_dark_desc">A dark theme for low-light environments</string>
+    <string name="theme_darker_desc">A darker theme following Material Design standards</string>
+    <string name="theme_amoled_desc">A pure black theme optimized for AMOLED displays</string>
+    <string name="dynamic_colors_title">Use Dynamic Colors</string>
+    <string name="dynamic_colors_desc">Use colors from your system theme</string>
+    <string name="dynamic_colors_req_android_12">Requires Android 12 or newer</string>
+    <string name="accent_color_title">Accent Color</string>
+    <string name="customize_colors_title">Customize colors</string>
+
+    <!-- UI Layout Settings -->
+    <string name="folder_name_position_title">Folder Name Position</string>
+    <string name="folder_name_position_desc">Choose where to display the current folder name on the sorting screen.</string>
+    <string name="folder_name_layout_above">Above Media Card</string>
+    <string name="folder_name_layout_below">Below Media Card</string>
+    <string name="folder_name_layout_hidden">Hidden</string>
+    <string name="compact_folder_view_title">Compact Folder View</string>
+    <string name="compact_folder_view_desc">Show folders in a more compact list style</string>
+    <string name="legacy_folder_icons_title">Use Initial-based Folder Icons</string>
+    <string name="legacy_folder_icons_desc">Use the first letter of a folder\'s name as its icon</string>
+    <string name="hide_media_filename_title">Hide Media Filename</string>
+    <string name="hide_media_filename_desc">Hide the filename overlay on media cards</string>
+    <string name="folder_bar_layout_title">Folder Bar Layout</string>
+    <string name="folder_bar_layout_desc">Choose the scrolling direction for the \'Move to\' bar.</string>
+    <string name="layout_horizontal">Horizontal</string>
+    <string name="layout_vertical">Vertical</string>
+    <string name="skip_partial_expansion_title">Skip Partial Expansion</string>
+    <string name="skip_partial_expansion_desc">The summary sheet will open directly to its full size.</string>
+    <string name="use_full_screen_summary_title">Use Full-Screen Summary</string>
+    <string name="use_full_screen_summary_desc">When enabled, the sheet\'s maximum height will fill the screen when needed.</string>
+
+    <!-- Swipe & Gesture Settings -->
+    <string name="swipe_sensitivity_title">Swipe Sensitivity</string>
+    <string name="swipe_sensitivity_desc">Adjust how far you need to swipe to trigger an action.</string>
+    <string name="sensitivity_low">Low</string>
+    <string name="sensitivity_medium">Medium</string>
+    <string name="sensitivity_high">High</string>
+    <string name="swipe_down_action_title">Swipe Down Action</string>
+    <string name="swipe_down_action_desc">Assign a shortcut to the swipe down gesture on a media card.</string>
+    <string name="action_none">None</string>
+    <string name="full_screen_swipe_title">Full Screen Swipe</string>
+    <string name="full_screen_swipe_desc">Allow swiping on the background area, not just the image itself.</string>
+
+    <!-- Video & Media Settings -->
+    <string name="default_video_speed_title">Default Video Speed</string>
+    <string name="default_video_speed_desc">Set the default playback speed for videos.</string>
+    <string name="screenshot_deletes_video_title">Screenshot also deletes original video</string>
+    <string name="screenshot_deletes_video_desc">When taking a screenshot from a video, automatically queue the video for deletion.</string>
+    <string name="screenshot_quality_title">Screenshot Quality (JPEG)</string>
+    <string name="screenshot_quality_desc">Higher quality results in larger file sizes. Default is 90.</string>
+    <string name="quality_high">High (95)</string>
+    <string name="quality_good">Good (90)</string>
+    <string name="quality_balanced">Balanced (85)</string>
+    <string name="quality_low">Low (75)</string>
+
+    <!-- Folder Selection Settings -->
+    <string name="folder_selection_mode_title">Folder Selection Mode</string>
+    <string name="mode_all_folders">All Folders</string>
+    <string name="mode_remember_previous">Remember Previous</string>
+    <string name="mode_none">None</string>
+    <string name="desc_mode_all">Select all folders by default</string>
+    <string name="desc_mode_remember">Remember and select previously chosen folders</string>
+    <string name="desc_mode_none">Don\'t select any folders by default</string>
+    <string name="invert_swipe_title">Invert Swipe Actions</string>
+    <string name="invert_swipe_desc">Invert the swipe actions: left to keep, right to delete</string>
+    <string name="hide_skip_button_title">Hide Skip Button</string>
+    <string name="hide_skip_button_desc">If enabled, the \'Skip\' button will be hidden from the bottom bar.</string>
+    <string name="add_fav_by_default_title">Add to Favorites by Default</string>
+    <string name="add_fav_by_default_desc">Pre-select the \'Add to Favorites\' toggle when adding a new target folder.</string>
+    <string name="unfav_removes_from_bar_title">Unfavorite Also Removes</string>
+    <string name="unfav_removes_from_bar_desc">If enabled, unfavoriting a folder also hides it for the session.</string>
+    <string name="hint_on_existing_folder_title">Hint on Existing Folder Name</string>
+    <string name="hint_on_existing_folder_desc">Show a hint if a folder with the same name exists while you type.</string>
+    <string name="initial_dialog_focus_title">Initial Dialog Focus</string>
+    <string name="initial_dialog_focus_desc">When adding a folder, choose which field gets focus first.</string>
+    <string name="focus_search_path">Search Path</string>
+    <string name="focus_folder_name">New Folder Name</string>
+    <string name="show_favorites_setup_title">Show Favorites in Setup</string>
+    <string name="show_favorites_setup_desc">Show favorite folders during the setup process</string>
+    <string name="default_album_location_title">Default Album Location</string>
+    <string name="default_album_location_desc">Choose the default folder where new albums are created.</string>
+    <string name="search_custom_folder">Search for Custom Folder</string>
+    <string name="no_default_folder_selected">No default folder selected</string>
+    <string name="current_path_prefix">Current: %1$s</string>
+    <string name="remember_organized_media_title">Remember Organized Media</string>
+    <string name="remember_organized_media_desc">Skip showing media you\'ve already moved in future sessions</string>
+    <string name="reset_organized_media_history">Reset All Sorted Media History</string>
+    <string name="forget_sorted_media_folder_title">Forget Sorted Media in Folder</string>
+    <string name="forget_sorted_media_folder_desc">Choose a folder to make its media appear for sorting again.</string>
+    <string name="select_folder_to_forget">Select Folder to Forget</string>
+    <string name="search_autofocus_title">Search Autofocus Enabled</string>
+    <string name="search_autofocus_desc">Autofocus on search bar when opening the app</string>
+    <string name="unselect_all_behavior_title">\'Unselect All\' Behavior in Search</string>
+    <string name="unselect_everything">Unselect Everything</string>
+    <string name="unselect_visible_only">Unselect Visible Only</string>
+    <string name="desc_unselect_global">Clears the entire selection, even items hidden by the current search filter.</string>
+    <string name="desc_unselect_visible">Only unselects items currently visible in the search results. Hidden selections remain selected.</string>
+
+    <!-- Duplicate Finder Settings -->
+    <string name="similarity_level_title">Similarity Level</string>
+    <string name="similarity_level_strict">Strict</string>
+    <string name="similarity_level_balanced">Balanced</string>
+    <string name="similarity_level_loose">Loose</string>
+    <string name="similarity_level_strict_desc">Fewer matches, very low chance of false positives.</string>
+    <string name="similarity_level_balanced_desc">A good balance between accuracy and number of matches.</string>
+    <string name="similarity_level_loose_desc">More matches, but may include unrelated media.</string>
+    <string name="scan_scope_title">Scan Scope</string>
+    <string name="scan_scope_all">Scan All Files</string>
+    <string name="scan_scope_include">Include Specific Folders</string>
+    <string name="scan_scope_exclude">Exclude Specific Folders</string>
+    <string name="scan_scope_all_desc">Scan all media on your device.</string>
+    <plurals name="scan_scope_include_desc">
+        <item quantity="one">Only scan media within the 1 selected folder.</item>
+        <item quantity="other">Only scan media within the %1$d selected folders.</item>
+    </plurals>
+    <plurals name="scan_scope_exclude_desc">
+        <item quantity="one">Scan all media except for the 1 selected folder.</item>
+        <item quantity="other">Scan all media except for the %1$d selected folders.</item>
+    </plurals>
+    <string name="manage_include_list">Manage Include List</string>
+    <string name="manage_exclude_list">Manage Exclude List</string>
+    <string name="manage_list_format">%1$s (%2$d)</string>
+
+    <!-- Advanced Settings -->
+    <string name="media_indexing_status_title">Media Indexing Status</string>
+    <string name="export_target_favorites_title">Export Target Favorites</string>
+    <string name="export_target_favorites_desc">Save your favorite target folders to a file.</string>
+    <string name="import_target_favorites_title">Import Target Favorites</string>
+    <string name="import_target_favorites_desc">Load favorite target folders from a file.</string>
+    <string name="reset_dialog_warnings_title">Reset Dialog Warnings</string>
+    <string name="reset_dialog_warnings_desc">Reshow all confirmation dialogs.</string>
+
+    <!-- Help & Support Settings -->
+    <string name="onboarding_tutorial_title">Onboarding Tutorial</string>
+    <string name="onboarding_tutorial_desc">Replay the onboarding experience to learn app features.</string>
+    <string name="replay_tutorial_button">Replay Tutorial</string>
+
+    <!-- About Settings -->
+    <string name="support_development_title">Support Development</string>
+    <string name="support_development_desc">Support the project</string>
+    <string name="version_title">Version</string>
+    <string name="app_version_copied">App version copied: %1$s</string>
+    <string name="about_cleansweep_title">About CleanSweep</string>
+    <string name="about_cleansweep_desc">Learn more about CleanSweep</string>
+    <string name="github_title">GitHub</string>
+    <string name="github_summary">github.com/LoopOtto/CleanSweep</string>
+    <string name="gitlab_title">GitLab</string>
+    <string name="gitlab_summary">gitlab.com/LoopOtto/CleanSweep (read-only mirror)</string>
+    <string name="open_source_licenses_title">Open-Source Licenses</string>
+    <string name="open_source_licenses_desc">View open-source licenses</string>
+
+    <!-- Settings Dialogs & Toasts -->
+    <string name="onboarding_replay_toast">Onboarding tutorial will be shown on next app launch.</string>
+    <string name="no_target_favs_export">No target favorites to export.</string>
+    <string name="no_existing_favs_export">No existing favorite folders found to export.</string>
+    <plurals name="exported_favs_toast">
+        <item quantity="one">Exported 1 favorite.</item>
+        <item quantity="other">Exported %1$d favorites.</item>
+    </plurals>
+    <plurals name="exported_favs_skipped_suffix">
+        <item quantity="one"> 1 non-existent favorite was skipped.</item>
+        <item quantity="other"> %1$d non-existent favorites were skipped.</item>
+    </plurals>
+    <string name="import_no_paths_found">No valid folder paths found in the selected file.</string>
+    <plurals name="imported_favs_success">
+        <item quantity="one">Imported 1 favorite successfully.</item>
+        <item quantity="other">Imported %1$d favorites successfully.</item>
+    </plurals>
+    <plurals name="imported_favs_missing">
+        <item quantity="one">Imported 1 folder. The folder was not found on disk.</item>
+        <item quantity="other">Imported %1$d folders. Some folders were not found.</item>
+    </plurals>
+    <string name="import_invalid_format">Import failed: Invalid file format.</string>
+    <plurals name="created_missing_folders_toast">
+        <item quantity="one">Created and imported 1 missing folder.</item>
+        <item quantity="other">Created and imported %1$d missing folders.</item>
+    </plurals>
+    <string name="could_not_create_folders">Could not create the missing folders.</string>
+    <string name="folder_list_refreshed_toast">Folder list refreshed, please reopen the dialog.</string>
+    <string name="no_history_to_reset">No sorted media history to reset.</string>
+    <string name="all_dialog_warnings_reset">All dialog warnings have been reset.</string>
+    <string name="sorted_history_reset_success">Sorted media history has been reset.</string>
+    <string name="folder_history_forgotten">Sorted history for \'%1$s\' has been forgotten.</string>
+    <string name="no_source_favs_to_reset">No source favorites to reset.</string>
+    <string name="source_favs_cleared">Source folder favorites cleared.</string>
+    <string name="no_target_favs_to_reset">No target favorites to reset.</string>
+    <string name="target_favs_cleared">Target folder favorites cleared.</string>
+    <string name="full_device_scan_complete">Full device scan completed.</string>
+    <string name="scan_failed_interrupted">Scan failed or was interrupted.</string>
+
+    <!-- Advanced Dialogs -->
+    <string name="some_folders_not_found_title">Some Folders Not Found</string>
+    <string name="some_folders_not_found_body">The following folders from your backup file do not exist. Do you want to create them?</string>
+    <string name="reset_all_warnings_title">Reset All Dialog Warnings?</string>
+    <string name="reset_all_warnings_body">This will make all confirmation dialogs reappear, even if you selected \'Don\'t ask again\'.</string>
+    <string name="reset_history_title">Reset Sorted Media History?</string>
+    <string name="reset_history_body">This will clear the record of all media you have sorted. Previously sorted items will reappear in new sessions. This cannot be undone.</string>
+    <string name="reset_source_favs_title">Reset Source Favorites?</string>
+    <string name="reset_source_favs_body">Are you sure you want to clear all source folder favorites? This action cannot be undone.</string>
+    <string name="reset_target_favs_title">Reset Target Favorites?</string>
+    <string name="reset_target_favs_body">Are you sure you want to clear all target folder favorites? This action cannot be undone.</string>
+    <string name="no_folders_added_to_list">No folders have been added to this list. The scan will run as if this setting were disabled.</string>
+    <string name="add_folder">Add Folder</string>
+    <string name="unindexed_files_dialog_title">Unindexed Media Files</string>
+    <string name="unindexed_files_ideal_state">No unindexed user files found. This is the ideal state. Any remaining files are likely hidden system or temporary files, which can be viewed with the toggle below.</string>
+    <string name="no_unindexed_files_found">No unindexed files were found on your device.</string>
+    <string name="unindexed_files_system_desc">These files are on your device but are not known by the MediaStore. These will never be indexed by the MediaStore by design.</string>
+    <string name="unindexed_files_user_desc">These files are on your device but are not known by the MediaStore. Maybe scanning will index them.</string>
+    <string name="indexing_status_scanning">Scanning for unindexed media…</string>
+    <string name="indexing_status_loading">Loading status…</string>
+    <string name="indexing_status_initial">Press the refresh icon to check status.</string>
+    <string name="indexing_status_format">Indexed Media: %1$s of %2$s files (%3$s)</string>
+    <plurals name="indexing_status_unindexed_count">
+        <item quantity="one">1 file is not in the MediaStore index.</item>
+        <item quantity="other">%1$d files are not in the MediaStore index.</item>
+    </plurals>
+    <string name="indexing_status_breakdown" tools:ignore="PluralsCandidate">(%1$d user files, %2$d hidden/system files)</string>
+    <string name="indexing_status_all_indexed">All media files are known to the MediaStore.</string>
+    <string name="refresh_scan_icon_desc">Refresh Status / Scan Now</string>
+    <string name="funding_dialog_title">Support Development</string>
+    <string name="funding_dialog_body">CleanSweep is free and open source. If you find it useful, consider supporting its development.</string>
+    <string name="address_copied">Address copied</string>
+    <string name="copy_address_icon_desc">Copy Address</string>
+    <string name="funding_dialog_footer">Feel free to include your GitHub username in the transaction description!</string>
+
 </resources>

@@ -39,15 +39,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.cleansweep.R
 import com.cleansweep.ui.components.AppDialog
 import com.cleansweep.util.PermissionManager
 import kotlinx.coroutines.launch
 
 data class OnboardingPage(
-    val title: String,
-    val description: String,
+    val titleRes: Int,
+    val descriptionRes: Int,
     val icon: ImageVector,
     val primaryColor: Color = Color.Unspecified
 )
@@ -60,33 +62,33 @@ fun OnboardingScreen(
 ) {
     val pages = listOf(
         OnboardingPage(
-            title = "Welcome to CleanSweep",
-            description = "Take control of your gallery. A simple, powerful way to sort thousands of photos and videos.\nReclaim your time and your storage space.",
+            titleRes = R.string.onboarding_p1_title,
+            descriptionRes = R.string.onboarding_p1_desc,
             icon = Icons.Default.PhotoLibrary
         ),
         OnboardingPage(
-            title = "Simple Swiping",
-            description = "Swipe right to keep, swipe left to delete. Made a mistake? The Undo button has your back! Not sure yet? Use the Skip button to decide later.",
+            titleRes = R.string.onboarding_p2_title,
+            descriptionRes = R.string.onboarding_p2_desc,
             icon = Icons.Default.SwapHoriz
         ),
         OnboardingPage(
-            title = "Powerful Sorting",
-            description = "Tap folders to instantly move files. Long-press an item to quickly send it to a 'To Edit' folder or access other shortcuts.",
+            titleRes = R.string.onboarding_p3_title,
+            descriptionRes = R.string.onboarding_p3_desc,
             icon = Icons.Default.FolderOpen
         ),
         OnboardingPage(
-            title = "Find Similar Photos",
-            description = "Our duplicate finder goes beyond exact copies to also find visually similar photos and videos. You can even adjust the sensitivity in the settings!",
+            titleRes = R.string.onboarding_p4_title,
+            descriptionRes = R.string.onboarding_p4_desc,
             icon = Icons.Default.ControlPointDuplicate
         ),
         OnboardingPage(
-            title = "Video Superpowers",
-            description = "Fly through videos with playback speed controls. You can even capture a perfect moment by saving a single frame as a new photo.",
+            titleRes = R.string.onboarding_p5_title,
+            descriptionRes = R.string.onboarding_p5_desc,
             icon = Icons.Default.VideoLibrary
         ),
         OnboardingPage(
-            title = "You're in Control",
-            description = "You've learned the basics. Now you're ready to organize your media faster than ever before.",
+            titleRes = R.string.onboarding_p6_title,
+            descriptionRes = R.string.onboarding_p6_desc,
             icon = Icons.Default.Speed
         )
     )
@@ -158,7 +160,7 @@ fun OnboardingScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "CleanSweep",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -175,7 +177,7 @@ fun OnboardingScreen(
                     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp)
                 ) {
                     Text(
-                        "Skip",
+                        stringResource(R.string.onboarding_skip),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
@@ -274,7 +276,7 @@ fun OnboardingScreen(
                         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
-                            "Previous",
+                            stringResource(R.string.onboarding_previous),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium
                         )
@@ -300,7 +302,7 @@ fun OnboardingScreen(
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
                 ) {
                     Text(
-                        "Next",
+                        stringResource(R.string.onboarding_next),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Medium
                     )
@@ -322,7 +324,7 @@ fun OnboardingScreen(
                         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
-                            "Grant All Files Access",
+                            stringResource(R.string.onboarding_grant_permission),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium
                         )
@@ -339,7 +341,7 @@ fun OnboardingScreen(
                         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 16.dp)
                     ) {
                         Text(
-                            "Get Started",
+                            stringResource(R.string.onboarding_get_started),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Medium
                         )
@@ -352,10 +354,10 @@ fun OnboardingScreen(
     if (showCloseDialog) {
         AppDialog(
             onDismissRequest = { showCloseDialog = false },
-            title = { Text("Close CleanSweep", style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(stringResource(R.string.onboarding_close_dialog_title), style = MaterialTheme.typography.headlineSmall) },
             text = {
                 Text(
-                    "CleanSweep cannot function without All Files Access permission. We tried to but it ended up being required for CleanSweep to work properly for most users.",
+                    stringResource(R.string.onboarding_close_dialog_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
@@ -363,13 +365,13 @@ fun OnboardingScreen(
                 TextButton(onClick = {
                     showCloseDialog = false
                     showPermissionScreen = true
-                }) { Text("Cancel") }
+                }) { Text(stringResource(R.string.cancel)) }
                 Button(onClick = {
                     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main)
                         .launch {
                             (context as? ComponentActivity)?.finish()
                         }
-                }) { Text("Close") }
+                }) { Text(stringResource(R.string.close)) }
             }
         )
     }
@@ -409,7 +411,7 @@ private fun OnboardingPageContent(
 
         // Title
         Text(
-            text = page.title,
+            text = stringResource(page.titleRes),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -420,7 +422,7 @@ private fun OnboardingPageContent(
 
         // Description
         Text(
-            text = page.description,
+            text = stringResource(page.descriptionRes),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
@@ -457,7 +459,7 @@ private fun PermissionRequiredScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "All Files Access Required",
+                text = stringResource(R.string.permission_screen_title),
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center
             )
@@ -465,7 +467,7 @@ private fun PermissionRequiredScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "CleanSweep needs All Files Access permission to organize your photos and videos across all folders on your device.",
+                text = stringResource(R.string.permission_screen_desc),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
@@ -473,7 +475,7 @@ private fun PermissionRequiredScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Please grant the permission in your device settings to use CleanSweep.",
+                text = stringResource(R.string.permission_screen_instruction),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -485,7 +487,7 @@ private fun PermissionRequiredScreen(
                 onClick = onGrant,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Open Settings")
+                Text(stringResource(R.string.open_settings))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -494,7 +496,7 @@ private fun PermissionRequiredScreen(
                 onClick = onClose,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Close App")
+                Text(stringResource(R.string.close_app))
             }
         }
     }

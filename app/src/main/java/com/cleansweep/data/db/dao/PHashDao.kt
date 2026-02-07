@@ -32,7 +32,4 @@ interface PHashDao {
 
     @Query("DELETE FROM phash_cache WHERE file_path IN (:paths)")
     suspend fun deleteHashesByPath(paths: List<String>)
-
-    @Query("DELETE FROM phash_cache")
-    suspend fun clearAll()
 }

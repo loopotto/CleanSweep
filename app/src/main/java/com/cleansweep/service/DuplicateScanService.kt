@@ -42,7 +42,7 @@ import com.cleansweep.domain.repository.MediaRepository
 import com.cleansweep.domain.repository.ScanScopeType
 import com.cleansweep.domain.usecase.DuplicateFinderUseCase
 import com.cleansweep.domain.usecase.SimilarFinderUseCase
-import com.cleansweep.domain.util.HiddenFileFilter
+import com.cleansweep.util.HiddenFileFilter
 import com.cleansweep.ui.MainActivity
 import com.cleansweep.ui.navigation.DUPLICATES_GRAPH_ROUTE
 import dagger.hilt.android.AndroidEntryPoint
@@ -109,12 +109,6 @@ class DuplicateScanService : LifecycleService() {
 
         private val DEEP_LINK_URI = "app://com.cleansweep/$DUPLICATES_GRAPH_ROUTE".toUri()
 
-        private const val PHASE_GATHERING = "Phase 1: Gathering files..."
-        private const val PHASE_FILTERING = "Phase 2: Filtering files..."
-        private const val PHASE_PREPARING = "Phase 3: Preparing media..."
-        private const val PHASE_HASHING_EXACT = "Scanning for exact duplicates..."
-        private const val PHASE_HASHING_SIMILAR = "Scanning for similar media..."
-
         // Define progress allocation for each phase
         private const val GATHERING_PROGRESS = 8
         private const val FILTERING_PROGRESS = 2
@@ -139,7 +133,8 @@ class DuplicateScanService : LifecycleService() {
                     val scanForExact = intent.getBooleanExtra(EXTRA_SCAN_EXACT, true)
                     val scanForSimilar = intent.getBooleanExtra(EXTRA_SCAN_SIMILAR, true)
                     Log.d("DuplicateScanService", "Received START_SCAN with exact=$scanForExact, similar=$scanForSimilar")
-                    startForeground(PROGRESS_NOTIFICATION_ID, createProgressNotification(0, stateHolder.state.value.progressPhase ?: "Preparing..."))
+                    val initialPhase = getString(R.string.scanning_preparing_phase)
+                    startForeground(PROGRESS_NOTIFICATION_ID, createProgressNotification(0, stateHolder.state.value.progressPhase ?: initialPhase))
                     startScan(scanForExact, scanForSimilar)
                 }
             }
@@ -239,12 +234,17 @@ class DuplicateScanService : LifecycleService() {
             val allUnreadableOrUnscannableFiles = mutableSetOf<String>()
             lateinit var scanScopeType: ScanScopeType
 
+            // Resolve translated strings for phases
+            val phasePreparing = getString(R.string.scanning_preparing_phase)
+            val phaseExact = getString(R.string.scan_exact_duplicates_title)
+            val phaseSimilar = getString(R.string.scan_similar_media_title)
+
             try {
                 // Quick check for immediate cancellation
                 ensureActive()
 
                 // The ViewModel is the source of truth for the initial phase, which we read from the state holder
-                val tracker = ProgressTracker(100, 0, stateHolder.state.value.progressPhase ?: PHASE_PREPARING)
+                val tracker = ProgressTracker(100, 0, stateHolder.state.value.progressPhase ?: phasePreparing)
                 updateSharedProgress(tracker) // Immediately report the correct starting phase
 
                 // --- Phase 0: Load existing cache of unreadable files ---
@@ -253,7 +253,7 @@ class DuplicateScanService : LifecycleService() {
                 Log.d("DuplicateScanService", "Loaded ${cachedUnreadable.size} items from unreadable file cache.")
 
                 // --- Phase 1: Gathering & Filtering by Scope ---
-                tracker.setPhase(PHASE_GATHERING)
+                tracker.setPhase(phasePreparing)
                 updateSharedProgress(tracker)
                 Log.d("DuplicateScanService", "Phase 1: Finding all media files.")
                 val allFileSystemPaths = mediaRepository.getAllMediaFilePaths()
@@ -280,7 +280,7 @@ class DuplicateScanService : LifecycleService() {
                 updateSharedProgress(tracker)
 
                 // --- Phase 2: Pre-filtering ---
-                tracker.setPhase(PHASE_FILTERING)
+                tracker.setPhase(phasePreparing)
                 updateSharedProgress(tracker)
                 val filesToProcess = scopedPaths
                     .filterNot { HiddenFileFilter.isPathExcludedFromScan(it) }
@@ -303,7 +303,7 @@ class DuplicateScanService : LifecycleService() {
 
 
                 // --- Phase 3: Fetching All MediaItem objects ---
-                tracker.setPhase(PHASE_PREPARING)
+                tracker.setPhase(phasePreparing)
                 updateSharedProgress(tracker)
                 val allMediaItems = mediaRepository.getMediaItemsFromPaths(filesToProcess.map { it.absolutePath })
 
@@ -340,7 +340,7 @@ class DuplicateScanService : LifecycleService() {
                 // --- Phase 4: Run Duplicate Finders ---
                 var exactResults = listOf<DuplicateGroup>()
                 if (scanForExact) {
-                    hashingProgress.setPhase(PHASE_HASHING_EXACT)
+                    hashingProgress.setPhase(phaseExact)
                     updateSharedProgress(tracker) // Show the initial hashing phase name
                     Log.d("DuplicateScanService", "Executing exact duplicates scan.")
                     val exactScanResult = duplicateFinderUseCase.findDuplicates(
@@ -355,7 +355,7 @@ class DuplicateScanService : LifecycleService() {
 
                 var similarResults = listOf<SimilarGroup>()
                 if (scanForSimilar) {
-                    hashingProgress.setPhase(PHASE_HASHING_SIMILAR)
+                    hashingProgress.setPhase(phaseSimilar)
                     updateSharedProgress(tracker) // Show the initial hashing phase name
                     Log.d("DuplicateScanService", "Executing similar media scan.")
                     val similarScanResult = similarFinderUseCase.findSimilar(

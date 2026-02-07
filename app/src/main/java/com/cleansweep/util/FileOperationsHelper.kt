@@ -41,7 +41,7 @@ class FileOperationsHelper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
-    private val LOG_TAG = "FileOperationsHelper"
+    private val logTag ="FileOperationsHelper"
 
     /**
      * Checks a list of pending changes and returns a new list containing only the changes
@@ -54,7 +54,7 @@ class FileOperationsHelper @Inject constructor(
             try {
                 File(change.item.id).exists()
             } catch (e: SecurityException) {
-                Log.w(LOG_TAG, "Security exception checking for file existence: ${change.item.id}", e)
+                Log.w(logTag, "Security exception checking for file existence: ${change.item.id}", e)
                 false
             }
         }
@@ -90,13 +90,13 @@ class FileOperationsHelper @Inject constructor(
             }
 
             if (sourceFolder.renameTo(newFolder)) {
-                Log.d(LOG_TAG, "Successfully renamed folder from $oldPath to ${newFolder.absolutePath}")
+                Log.d(logTag, "Successfully renamed folder from $oldPath to ${newFolder.absolutePath}")
                 Result.success(newFolder.absolutePath)
             } else {
                 Result.failure(IOException("Failed to rename folder."))
             }
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Error renaming folder $oldPath to $newName", e)
+            Log.e(logTag, "Error renaming folder $oldPath to $newName", e)
             Result.failure(e)
         }
     }
@@ -149,7 +149,7 @@ class FileOperationsHelper @Inject constructor(
             Result.success(Pair(movedCount, failedCount))
 
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Error moving contents from $sourcePath to $destinationPath", e)
+            Log.e(logTag, "Error moving contents from $sourcePath to $destinationPath", e)
             Result.failure(e)
         }
     }
@@ -196,7 +196,7 @@ class FileOperationsHelper @Inject constructor(
             FileOutputStream(newImageFile).use { out ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, quality.coerceIn(0, 100), out)
             }
-            Log.d(LOG_TAG, "Successfully saved new image to: ${newImageFile.absolutePath} with quality $quality")
+            Log.d(logTag, "Successfully saved new image to: ${newImageFile.absolutePath} with quality $quality")
 
             // 3. Scan the new image so MediaStore finds it immediately
             scanPaths(listOf(newImageFile.absolutePath))
@@ -206,7 +206,7 @@ class FileOperationsHelper @Inject constructor(
             Result.success(newMediaItem)
 
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Failed to convert video to image for ${videoItem.id}", e)
+            Log.e(logTag, "Failed to convert video to image for ${videoItem.id}", e)
             Result.failure(e)
         }
     }
@@ -220,10 +220,10 @@ class FileOperationsHelper @Inject constructor(
      */
     suspend fun scanPaths(paths: List<String>) {
         if (paths.isEmpty()) return
-        Log.d(LOG_TAG, "Requesting MediaScanner for paths: $paths")
+        Log.d(logTag, "Requesting MediaScanner for paths: $paths")
         withContext(Dispatchers.Main) {
             MediaScannerConnection.scanFile(context, paths.toTypedArray(), null) { path, uri ->
-                Log.d(LOG_TAG, "MediaScanner finished for $path. New URI: $uri")
+                Log.d(logTag, "MediaScanner finished for $path. New URI: $uri")
             }
         }
     }

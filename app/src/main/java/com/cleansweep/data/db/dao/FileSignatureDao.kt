@@ -32,7 +32,4 @@ interface FileSignatureDao {
 
     @Query("DELETE FROM file_signature_cache WHERE filePath IN (:paths)")
     suspend fun deleteHashesByPath(paths: List<String>)
-
-    @Query("DELETE FROM file_signature_cache")
-    suspend fun clear()
 }

@@ -63,6 +63,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.cleansweep.R
 import com.cleansweep.data.model.MediaItem
 import com.cleansweep.data.repository.DuplicateScanScope
 import com.cleansweep.domain.model.DuplicateGroup
@@ -107,7 +110,7 @@ fun DuplicatesScreen(
         } else {
             Toast.makeText(
                 context,
-                "Notification permission is required to show scan progress in the background.",
+                context.getString(R.string.notification_permission_required),
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -134,8 +137,8 @@ fun DuplicatesScreen(
     if (showConfirmDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmDeleteDialog = false },
-            title = { Text("Confirm Deletion") },
-            text = { Text("Are you sure you want to permanently delete the selected files? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.confirm_deletion_title)) },
+            text = { Text(stringResource(R.string.confirm_deletion_body)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -144,12 +147,12 @@ fun DuplicatesScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -160,10 +163,10 @@ fun DuplicatesScreen(
 
         AlertDialog(
             onDismissRequest = { showConfirmDeleteAllExactDialog = false },
-            title = { Text("Delete All Exact Duplicates?") },
+            title = { Text(stringResource(R.string.delete_all_exact_title)) },
             text = {
                 Column {
-                    Text("This will automatically keep the oldest file in each group of exact duplicates and delete the rest.\n\nNote: even groups flagged as exact duplicates might have false positives. Reviewing manually is recommended.")
+                    Text(stringResource(R.string.delete_all_exact_body))
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
                         modifier = Modifier
@@ -176,7 +179,7 @@ fun DuplicatesScreen(
                             onCheckedChange = { doNotAskAgain = it }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Do not ask again")
+                        Text(stringResource(R.string.do_not_ask_again))
                     }
                 }
             },
@@ -191,12 +194,12 @@ fun DuplicatesScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Delete All")
+                    Text(stringResource(R.string.delete_all))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirmDeleteAllExactDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -212,9 +215,9 @@ fun DuplicatesScreen(
         )
     }
     val title = when (uiState.scanState) {
-        ScanState.Idle -> "Duplicate Finder"
-        ScanState.Scanning, ScanState.Cancelling -> "Scanning..."
-        ScanState.Complete -> "Scan Result (${uiState.resultGroups.size} groups)"
+        ScanState.Idle -> stringResource(R.string.duplicate_finder_title)
+        ScanState.Scanning, ScanState.Cancelling -> stringResource(R.string.scanning_phase)
+        ScanState.Complete -> pluralStringResource(R.plurals.scan_result_title, uiState.resultGroups.size, uiState.resultGroups.size)
     }
     Scaffold(
         topBar = {
@@ -223,11 +226,11 @@ fun DuplicatesScreen(
                 navigationIcon = {
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Navigate back") } },
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.navigate_back)) } },
                         state = rememberTooltipState()
                     ) {
                         IconButton(onClick = onNavigateUp) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.navigate_back))
                         }
                     }
                 },
@@ -237,7 +240,7 @@ fun DuplicatesScreen(
                         if (hasExactDuplicates) {
                             TooltipBox(
                                 positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                                tooltip = { PlainTooltip { Text("Delete All Exact Duplicates") } },
+                                tooltip = { PlainTooltip { Text(stringResource(R.string.delete_all_exact_duplicates)) } },
                                 state = rememberTooltipState()
                             ) {
                                 IconButton(onClick = {
@@ -247,42 +250,42 @@ fun DuplicatesScreen(
                                         viewModel.deleteAllExactDuplicates()
                                     }
                                 }) {
-                                    Icon(Icons.Outlined.DeleteSweep, contentDescription = "Delete All Exact Duplicates", tint = MaterialTheme.colorScheme.error)
+                                    Icon(Icons.Outlined.DeleteSweep, contentDescription = stringResource(R.string.delete_all_exact_duplicates), tint = MaterialTheme.colorScheme.error)
                                 }
                             }
                         }
 
                         TooltipBox(
                             positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                            tooltip = { PlainTooltip { Text("New Scan") } },
+                            tooltip = { PlainTooltip { Text(stringResource(R.string.new_scan)) } },
                             state = rememberTooltipState()
                         ) {
                             IconButton(onClick = viewModel::resetToIdle) {
-                                Icon(Icons.Outlined.Cached, contentDescription = "New Scan")
+                                Icon(Icons.Outlined.Cached, contentDescription = stringResource(R.string.new_scan))
                             }
                         }
                     }
                     if (uiState.resultViewMode == ResultViewMode.GRID && uiState.scanState == ScanState.Complete) {
                         TooltipBox(
                             positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                            tooltip = { PlainTooltip { Text("Change grid columns") } },
+                            tooltip = { PlainTooltip { Text(stringResource(R.string.change_grid_columns)) } },
                             state = rememberTooltipState()
                         ) {
                             IconButton(onClick = viewModel::cycleGridViewZoom) {
-                                Icon(Icons.Outlined.ZoomIn, contentDescription = "Change grid columns")
+                                Icon(Icons.Outlined.ZoomIn, contentDescription = stringResource(R.string.change_grid_columns))
                             }
                         }
                     }
                     if (uiState.scanState == ScanState.Complete && uiState.resultGroups.isNotEmpty()) {
                         TooltipBox(
                             positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                            tooltip = { PlainTooltip { Text("Toggle View Mode") } },
+                            tooltip = { PlainTooltip { Text(stringResource(R.string.toggle_view_mode)) } },
                             state = rememberTooltipState()
                         ) {
                             IconButton(onClick = viewModel::toggleResultViewMode) {
                                 Icon(
                                     imageVector = if (uiState.resultViewMode == ResultViewMode.LIST) Icons.Outlined.ViewModule else Icons.AutoMirrored.Outlined.ViewList,
-                                    contentDescription = "Toggle View Mode"
+                                    contentDescription = stringResource(R.string.toggle_view_mode)
                                 )
                             }
                         }
@@ -388,15 +391,15 @@ fun GroupDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (group != null) "View Group (${group.items.size} items)" else "View Group") },
+                title = { Text(if (group != null) pluralStringResource(R.plurals.view_group_items_title, group.items.size, group.items.size) else stringResource(R.string.view_group_title)) },
                 navigationIcon = {
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Back") } },
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.back)) } },
                         state = rememberTooltipState()
                     ) {
                         IconButton(onClick = onNavigateUp) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                         }
                     }
                 },
@@ -404,22 +407,22 @@ fun GroupDetailsScreen(
                     if (group != null) {
                         TooltipBox(
                             positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                            tooltip = { PlainTooltip { Text("Change layout columns") } },
+                            tooltip = { PlainTooltip { Text(stringResource(R.string.change_layout_columns)) } },
                             state = rememberTooltipState()
                         ) {
                             IconButton(onClick = viewModel::cycleDetailViewZoom) {
-                                Icon(Icons.Outlined.ZoomIn, contentDescription = "Change layout columns")
+                                Icon(Icons.Outlined.ZoomIn, contentDescription = stringResource(R.string.change_layout_columns))
                             }
                         }
                         var showMenu by remember { mutableStateOf(false) }
                         Box {
                             TooltipBox(
                                 positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                                tooltip = { PlainTooltip { Text("More options") } },
+                                tooltip = { PlainTooltip { Text(stringResource(R.string.more_options)) } },
                                 state = rememberTooltipState()
                             ) {
                                 IconButton(onClick = { showMenu = true }) {
-                                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                                    Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
                                 }
                             }
                             DropdownMenu(
@@ -431,21 +434,21 @@ fun GroupDetailsScreen(
                                 val isAllSelected = selectedInGroup.size == groupIds.size
 
                                 DropdownMenuItem(
-                                    text = { Text(if (isAllSelected) "Unselect All" else "Select All") },
+                                    text = { Text(if (isAllSelected) stringResource(R.string.unselect_all) else stringResource(R.string.select_all)) },
                                     onClick = {
                                         viewModel.toggleSelectAllInGroup(group)
                                         showMenu = false
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Keep Oldest") },
+                                    text = { Text(stringResource(R.string.keep_oldest)) },
                                     onClick = {
                                         viewModel.selectAllButOldest(group)
                                         showMenu = false
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Keep Newest") },
+                                    text = { Text(stringResource(R.string.keep_newest)) },
                                     onClick = {
                                         viewModel.selectAllButNewest(group)
                                         showMenu = false
@@ -464,7 +467,7 @@ fun GroupDetailsScreen(
                     selectedCount = uiState.selectedForDeletion.size,
                     isDeleting = uiState.isDeleting,
                     onDeleteClick = onNavigateUp,
-                    actionButtonText = "Done",
+                    actionButtonText = stringResource(R.string.done),
                     actionButtonIcon = Icons.Default.Check
                 )
             }
@@ -558,7 +561,7 @@ fun GroupDetailsScreen(
                                         Toast
                                             .makeText(
                                                 context,
-                                                "Could not open media. No application found.",
+                                                context.getString(R.string.no_app_to_open),
                                                 Toast.LENGTH_LONG
                                             )
                                             .show()
@@ -615,8 +618,8 @@ private fun IdleView(
         Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
             Column {
                 ScanTypeSelectorRow(
-                    "Exact Duplicates",
-                    "Finds files that are 100% identical.",
+                    stringResource(R.string.scan_exact_duplicates_title),
+                    stringResource(R.string.scan_exact_duplicates_desc),
                     Icons.Outlined.ContentCopy,
                     scanForExact,
                     onToggleExact
@@ -627,8 +630,8 @@ private fun IdleView(
                     color = DividerDefaults.color
                 )
                 ScanTypeSelectorRow(
-                    "Similar Media",
-                    "Finds media that look alike (e.g. burst shots, similar videos).",
+                    stringResource(R.string.scan_similar_media_title),
+                    stringResource(R.string.scan_similar_media_desc),
                     Icons.Outlined.PhotoLibrary,
                     scanForSimilar,
                     onToggleSimilar
@@ -643,10 +646,10 @@ private fun IdleView(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Info, contentDescription = "Information", tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                    Icon(Icons.Default.Info, contentDescription = stringResource(R.string.info_icon_desc), tint = MaterialTheme.colorScheme.onSecondaryContainer)
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        "Note: The first scan may take some time. The process will continue in the background if you leave the app.",
+                        stringResource(R.string.scan_first_time_note),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -661,7 +664,7 @@ private fun IdleView(
                 .fillMaxWidth(0.8f)
                 .height(50.dp)
         ) {
-            Text("Start Scan")
+            Text(stringResource(R.string.start_scan))
         }
 
         if (canLoadFromCache) {
@@ -670,7 +673,7 @@ private fun IdleView(
                 onClick = onLoadCachedResults,
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
-                Text("View Last Scan Results")
+                Text(stringResource(R.string.view_last_scan_results))
             }
         }
     }
@@ -687,9 +690,9 @@ fun ScanScopeInfoCard(
         var expanded by remember { mutableStateOf(false) }
 
         val (title, list) = if (scanScope == DuplicateScanScope.INCLUDE_LIST) {
-            "Scan is limited to ${includeList.size} folder(s)." to includeList
+            pluralStringResource(R.plurals.scan_limited_to_folders, includeList.size, includeList.size) to includeList
         } else {
-            "Scan will ignore ${excludeList.size} folder(s)." to excludeList
+            pluralStringResource(R.plurals.scan_ignores_folders, excludeList.size, excludeList.size) to excludeList
         }
 
         Card(
@@ -702,7 +705,7 @@ fun ScanScopeInfoCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.FilterAlt,
-                        contentDescription = "Scan Filter Active",
+                        contentDescription = stringResource(R.string.scan_filter_active),
                         tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Spacer(Modifier.width(12.dp))
@@ -715,7 +718,7 @@ fun ScanScopeInfoCard(
                     )
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        contentDescription = if (expanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
                         tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
@@ -727,7 +730,7 @@ fun ScanScopeInfoCard(
                         )
                         if (list.isEmpty()) {
                             Text(
-                                "No folders are in this list. Tap Manage to add some.",
+                                stringResource(R.string.no_folders_in_list),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onTertiaryContainer
                             )
@@ -743,7 +746,7 @@ fun ScanScopeInfoCard(
                             }
                             if (list.size > 5) {
                                 Text(
-                                    text = "• ...and ${list.size - 5} more",
+                                    text = pluralStringResource(R.plurals.list_more_items_suffix, list.size - 5, list.size - 5),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onTertiaryContainer
                                 )
@@ -753,7 +756,7 @@ fun ScanScopeInfoCard(
                             onClick = onNavigateToSettings,
                             modifier = Modifier.align(Alignment.End)
                         ) {
-                            Text("Manage")
+                            Text(stringResource(R.string.manage))
                         }
                     }
                 }
@@ -781,9 +784,9 @@ private fun ScanTypeSelectorRow(title: String, description: String, icon: ImageV
 
 @Composable
 private fun ScanningView(progress: Float, phase: String?, onCancelScan: () -> Unit) {
-    val isCancellable = phase != "Preparing..."
+    val isCancellable = phase != stringResource(R.string.scanning_preparing_phase)
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 32.dp)) {
-        Text(phase ?: "Scanning...", style = MaterialTheme.typography.titleLarge)
+        Text(phase ?: stringResource(R.string.scanning_phase), style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
         LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(8.dp))
@@ -793,7 +796,7 @@ private fun ScanningView(progress: Float, phase: String?, onCancelScan: () -> Un
             onClick = onCancelScan,
             enabled = isCancellable
         ) {
-            Text("Cancel Scan")
+            Text(stringResource(R.string.cancel_scan))
         }
     }
 }
@@ -811,7 +814,7 @@ private fun ResultsView(
     Column(Modifier.fillMaxSize()) {
         if (uiState.scanState == ScanState.Scanning) {
             Column(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Text(uiState.scanProgressPhase ?: "Scanning...", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(uiState.scanProgressPhase ?: stringResource(R.string.scanning_phase), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
                 LinearProgressIndicator(progress = { uiState.scanProgress }, modifier = Modifier.fillMaxWidth())
             }
@@ -819,10 +822,10 @@ private fun ResultsView(
 
         if (showEmptyMessage) {
             val message = when {
-                uiState.scanForExactDuplicates && uiState.scanForSimilarMedia -> "No exact duplicates or similar media were found. Well done!"
-                uiState.scanForExactDuplicates -> "No exact duplicates were found. Well done!"
-                uiState.scanForSimilarMedia -> "No similar media were found. Well done!"
-                else -> "No results found."
+                uiState.scanForExactDuplicates && uiState.scanForSimilarMedia -> stringResource(R.string.no_exact_or_similar_found)
+                uiState.scanForExactDuplicates -> stringResource(R.string.no_exact_found)
+                uiState.scanForSimilarMedia -> stringResource(R.string.no_similar_found)
+                else -> stringResource(R.string.no_results_found)
             }
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(message, modifier = Modifier.padding(16.dp))
@@ -842,7 +845,7 @@ private fun ResultsView(
                         try {
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Could not open media. No application found.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.no_app_to_open), Toast.LENGTH_SHORT).show()
                         }
                     },
                     onShowUnscannableFiles = viewModel::showUnscannableFiles,
@@ -901,18 +904,18 @@ private fun StaleResultsWarningCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.History,
-                        contentDescription = "Warning",
+                        contentDescription = stringResource(R.string.warning),
                         tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.padding(top = 8.dp)) {
                         Text(
-                            text = "Showing results from $formattedDate",
+                            text = stringResource(R.string.stale_results_warning, formattedDate),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                         Text(
-                            text = "Run a new scan for the latest results.",
+                            text = stringResource(R.string.run_new_scan_hint),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onTertiaryContainer
                         )
@@ -920,13 +923,13 @@ private fun StaleResultsWarningCard(
                 }
                 TooltipBox(
                     positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text("Dismiss warning") } },
+                    tooltip = { PlainTooltip { Text(stringResource(R.string.dismiss_warning)) } },
                     state = rememberTooltipState()
                 ) {
                     IconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Dismiss warning",
+                            contentDescription = stringResource(R.string.dismiss_warning),
                             tint = MaterialTheme.colorScheme.onTertiaryContainer
                         )
                     }
@@ -938,7 +941,7 @@ private fun StaleResultsWarningCard(
                     .align(Alignment.End)
                     .padding(end = 8.dp, bottom = 8.dp)
             ) {
-                Text("Rescan")
+                Text(stringResource(R.string.rescan))
             }
         }
     }
@@ -969,19 +972,19 @@ private fun UnscannableFilesSummaryCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Warning,
-                    contentDescription = "Warning",
+                    contentDescription = stringResource(R.string.warning),
                     tint = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    val fileText = if (count == 1) "file" else "files"
+                    val countText = pluralStringResource(R.plurals.unreadable_files_count_plurals, count, count)
                     Text(
-                        text = "$count $fileText could not be read",
+                        text = countText,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Text(
-                        text = "These might be corrupt or inaccessible. Tap for details.",
+                        text = stringResource(R.string.unreadable_files_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
@@ -989,13 +992,13 @@ private fun UnscannableFilesSummaryCard(
             }
             TooltipBox(
                 positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text("Dismiss warning") } },
+                tooltip = { PlainTooltip { Text(stringResource(R.string.dismiss_warning)) } },
                 state = rememberTooltipState()
             ) {
                 IconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Dismiss warning",
+                        contentDescription = stringResource(R.string.dismiss_warning),
                         tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
@@ -1015,20 +1018,21 @@ private fun UnscannableFilesDialog(
     val groupedFiles = remember(filePaths) {
         filePaths.groupBy { File(it).parent ?: "Unknown Location" }
     }
+    val unknownLocation = stringResource(R.string.unknown_location)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Unreadable Files") },
+        title = { Text(stringResource(R.string.unreadable_files_dialog_title)) },
         text = {
             Column {
                 if (filePaths.isEmpty() && totalUnscannableCount > 0) {
                     Text(
-                        text = "No unreadable user files found. This is the ideal state. Any remaining files are likely hidden system or temporary files, which can be viewed with the toggle below.",
+                        text = stringResource(R.string.no_unreadable_user_files),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 } else if (filePaths.isEmpty()) {
                     Text(
-                        text = "No unreadable files were found on your device.",
+                        text = stringResource(R.string.no_unreadable_files_device),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -1038,9 +1042,10 @@ private fun UnscannableFilesDialog(
                         .fillMaxWidth()
                 ) {
                     groupedFiles.forEach { (directory, files) ->
+                        val dirName = if (directory == "Unknown Location") unknownLocation else directory
                         item {
                             Text(
-                                text = directory,
+                                text = dirName,
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
@@ -1067,13 +1072,13 @@ private fun UnscannableFilesDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(checked = showHidden, onCheckedChange = { onToggleShowHidden() })
-                    Text("Show hidden/temporary files")
+                    Text(stringResource(R.string.show_hidden_temp_files))
                 }
             }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -1322,7 +1327,7 @@ private fun GridGroupCard(
             }
             AsyncImage(
                 model = imageRequest,
-                contentDescription = "Primary image for group",
+                contentDescription = stringResource(R.string.primary_image_desc),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
@@ -1330,7 +1335,7 @@ private fun GridGroupCard(
             if (group.items.first().isVideo) {
                 Icon(
                     imageVector = Icons.Default.Videocam,
-                    contentDescription = "Video",
+                    contentDescription = stringResource(R.string.video),
                     tint = Color.White,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
@@ -1342,8 +1347,8 @@ private fun GridGroupCard(
             }
 
             val groupInfoText = when (group) {
-                is DuplicateGroup -> "+ ${group.items.size - 1} copies"
-                is SimilarGroup -> "+ ${group.items.size - 1} similar"
+                is DuplicateGroup -> pluralStringResource(R.plurals.copies_count_suffix, group.items.size - 1, group.items.size - 1)
+                is SimilarGroup -> pluralStringResource(R.plurals.similar_count_suffix, group.items.size - 1, group.items.size - 1)
             }
 
             Surface(
@@ -1376,7 +1381,7 @@ private fun GridGroupCard(
                     icon?.let {
                         Icon(
                             imageVector = it,
-                            contentDescription = "Selection State",
+                            contentDescription = stringResource(R.string.selection_state),
                             tint = Color.White.copy(alpha = 0.9f),
                             modifier = Modifier.size(48.dp)
                         )
@@ -1389,27 +1394,27 @@ private fun GridGroupCard(
                 onDismissRequest = { showMenu = false }
             ) {
                 DropdownMenuItem(
-                    text = { Text(if (isAllSelected) "Unselect All" else "Select All") },
+                    text = { Text(if (isAllSelected) stringResource(R.string.unselect_all) else stringResource(R.string.select_all)) },
                     onClick = { onToggleSelectAll(group); showMenu = false }
                 )
                 DropdownMenuItem(
-                    text = { Text("Keep Oldest") },
+                    text = { Text(stringResource(R.string.keep_oldest)) },
                     onClick = { onSelectAllButOldest(group); showMenu = false }
                 )
                 DropdownMenuItem(
-                    text = { Text("Keep Newest") },
+                    text = { Text(stringResource(R.string.keep_newest)) },
                     onClick = { onSelectAllButNewest(group); showMenu = false }
                 )
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 if (group is SimilarGroup) {
                     DropdownMenuItem(
-                        text = { Text("Flag as incorrect") },
+                        text = { Text(stringResource(R.string.flag_as_incorrect)) },
                         onClick = { onFlagAsIncorrect(group); showMenu = false },
                         leadingIcon = { Icon(Icons.Default.NotInterested, contentDescription = null) }
                     )
                 }
                 DropdownMenuItem(
-                    text = { Text("Hide group") },
+                    text = { Text(stringResource(R.string.hide_group)) },
                     onClick = { onHideGroup(group); showMenu = false },
                     leadingIcon = { Icon(Icons.Default.VisibilityOff, contentDescription = null) }
                 )
@@ -1444,9 +1449,9 @@ private fun DuplicateGroupCard(
         Column(modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
-                    Text("${group.items.size} Duplicates Found", style = MaterialTheme.typography.titleLarge)
+                    Text(pluralStringResource(R.plurals.duplicates_found_count, group.items.size, group.items.size), style = MaterialTheme.typography.titleLarge)
                     Text(
-                        "Size per file: ${android.text.format.Formatter.formatShortFileSize(context, group.sizePerFile)}",
+                        stringResource(R.string.size_per_file, android.text.format.Formatter.formatShortFileSize(context, group.sizePerFile)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1454,11 +1459,11 @@ private fun DuplicateGroupCard(
                 Box(modifier = Modifier.align(Alignment.TopEnd)) {
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("More options") } },
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.more_options)) } },
                         state = rememberTooltipState()
                     ) {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
                         }
                     }
                     DropdownMenu(
@@ -1466,7 +1471,7 @@ private fun DuplicateGroupCard(
                         onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Hide group") },
+                            text = { Text(stringResource(R.string.hide_group)) },
                             onClick = { onHideGroup(group); showMenu = false },
                             leadingIcon = { Icon(Icons.Default.VisibilityOff, contentDescription = null) }
                         )
@@ -1487,7 +1492,7 @@ private fun DuplicateGroupCard(
                         .wrapContentHeight()
                         .heightIn(min = 58.dp)
                 ) {
-                    Text("Keep Oldest")
+                    Text(stringResource(R.string.keep_oldest))
                 }
 
                 OutlinedButton(
@@ -1497,7 +1502,7 @@ private fun DuplicateGroupCard(
                         .wrapContentHeight()
                         .heightIn(min = 58.dp)
                 ) {
-                    Text("Keep Newest")
+                    Text(stringResource(R.string.keep_newest))
                 }
 
                 OutlinedButton(
@@ -1507,7 +1512,7 @@ private fun DuplicateGroupCard(
                         .wrapContentHeight()
                         .heightIn(min = 58.dp)
                 ) {
-                    Text(if (isAllSelected) "Unselect All" else "Select All")
+                    Text(if (isAllSelected) stringResource(R.string.unselect_all) else stringResource(R.string.select_all))
                 }
             }
         }
@@ -1542,9 +1547,9 @@ private fun SimilarMediaGroupCard(
         Column(modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)) {
             Box(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.fillMaxWidth()) {
-                    Text("${group.items.size} Similar Media Found", style = MaterialTheme.typography.titleLarge)
+                    Text(pluralStringResource(R.plurals.similar_media_found_count, group.items.size, group.items.size), style = MaterialTheme.typography.titleLarge)
                     Text(
-                        "Total group size: ${android.text.format.Formatter.formatShortFileSize(context, totalSize)}",
+                        stringResource(R.string.total_group_size, android.text.format.Formatter.formatShortFileSize(context, totalSize)),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1552,11 +1557,11 @@ private fun SimilarMediaGroupCard(
                 Box(modifier = Modifier.align(Alignment.TopEnd)) {
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("More options") } },
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.more_options)) } },
                         state = rememberTooltipState()
                     ) {
                         IconButton(onClick = { showMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.more_options))
                         }
                     }
                     DropdownMenu(
@@ -1564,12 +1569,12 @@ private fun SimilarMediaGroupCard(
                         onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Flag as incorrect") },
+                            text = { Text(stringResource(R.string.flag_as_incorrect)) },
                             onClick = { onFlagAsIncorrect(group); showMenu = false },
                             leadingIcon = { Icon(Icons.Default.NotInterested, contentDescription = null) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Hide group") },
+                            text = { Text(stringResource(R.string.hide_group)) },
                             onClick = { onHideGroup(group); showMenu = false },
                             leadingIcon = { Icon(Icons.Default.VisibilityOff, contentDescription = null) }
                         )
@@ -1590,7 +1595,7 @@ private fun SimilarMediaGroupCard(
                         .wrapContentHeight()
                         .heightIn(min = 58.dp)
                 ) {
-                    Text("Keep Oldest")
+                    Text(stringResource(R.string.keep_oldest))
                 }
 
                 OutlinedButton(
@@ -1600,7 +1605,7 @@ private fun SimilarMediaGroupCard(
                         .wrapContentHeight()
                         .heightIn(min = 58.dp)
                 ) {
-                    Text("Keep Newest")
+                    Text(stringResource(R.string.keep_newest))
                 }
 
                 OutlinedButton(
@@ -1610,7 +1615,7 @@ private fun SimilarMediaGroupCard(
                         .wrapContentHeight()
                         .heightIn(min = 58.dp)
                 ) {
-                    Text(if (isAllSelected) "Unselect All" else "Select All")
+                    Text(if (isAllSelected) stringResource(R.string.unselect_all) else stringResource(R.string.select_all))
                 }
             }
         }
@@ -1657,7 +1662,7 @@ private fun MediaItemRow(
             if (item.isVideo) {
                 Icon(
                     imageVector = Icons.Default.Videocam,
-                    contentDescription = "Video",
+                    contentDescription = stringResource(R.string.video),
                     tint = Color.White,
                     modifier = Modifier
                         .size(24.dp)
@@ -1667,7 +1672,7 @@ private fun MediaItemRow(
             }
             DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                 DropdownMenuItem(
-                    text = { Text("Open") },
+                    text = { Text(stringResource(R.string.open)) },
                     onClick = { onOpenFile(); showMenu = false },
                     leadingIcon = { Icon(Icons.Default.OpenInFull, null) }
                 )
@@ -1689,7 +1694,7 @@ private fun BottomActionBar(
     selectedCount: Int,
     isDeleting: Boolean,
     onDeleteClick: () -> Unit,
-    actionButtonText: String = "Delete",
+    actionButtonText: String = stringResource(R.string.delete),
     actionButtonIcon: ImageVector = Icons.Default.Delete
 ) {
     val context = LocalContext.current
@@ -1708,10 +1713,10 @@ private fun BottomActionBar(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Reclaim Space: ${android.text.format.Formatter.formatShortFileSize(context, spaceToReclaim)}", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
-                val fileCountText = if (selectedCount == 1) "1 file" else "$selectedCount files"
-                Text("$fileCountText selected", style = MaterialTheme.typography.bodySmall)            }
-            Button(onClick = onDeleteClick, enabled = !isDeleting && (selectedCount > 0 || actionButtonText != "Delete")) {
+                Text(stringResource(R.string.reclaim_space_format, android.text.format.Formatter.formatShortFileSize(context, spaceToReclaim)), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+                val fileCountText = pluralStringResource(R.plurals.files_selected_count_plurals, selectedCount, selectedCount)
+                Text(stringResource(R.string.files_selected_format, fileCountText), style = MaterialTheme.typography.bodySmall)            }
+            Button(onClick = onDeleteClick, enabled = !isDeleting && (selectedCount > 0 || actionButtonText != stringResource(R.string.delete))) {
                 if (isDeleting) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
                 } else {
@@ -1780,7 +1785,7 @@ private fun DetailImageCard(
                 onDismissRequest = { showMenu = false },
             ) {
                 DropdownMenuItem(
-                    text = { Text("Open full-screen") },
+                    text = { Text(stringResource(R.string.open_full_screen)) },
                     onClick = {
                         onOpenFile()
                         showMenu = false
@@ -1795,7 +1800,7 @@ private fun DetailImageCard(
             if (item.isVideo) {
                 Icon(
                     imageVector = Icons.Default.Videocam,
-                    contentDescription = "Video",
+                    contentDescription = stringResource(R.string.video),
                     tint = Color.White,
                     modifier = Modifier
                         .align(Alignment.TopEnd)

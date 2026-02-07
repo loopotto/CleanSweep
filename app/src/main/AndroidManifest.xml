@@ -86,6 +86,7 @@
             android:name="com.cleansweep.ui.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.CleanSweep"
+            android:configChanges="locale|layoutDirection|uiMode|screenLayout|screenSize|smallestScreenSize"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

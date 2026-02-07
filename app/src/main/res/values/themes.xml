@@ -1,9 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ CleanSweep
+  ~ Copyright (c) 2025 LoopOtto
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program. If not, see <https://www.gnu.org/licenses/>.
+  -->
+
 <resources>
-    <style name="Theme.CleanSweep" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- 
+      Base application theme. 
+      Must inherit from a Theme.AppCompat variant to satisfy the requirements 
+      of AppCompatActivity, which we are now using for runtime language switching.
+    -->
+    <style name="Theme.CleanSweep" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowBackground">@android:color/black</item>
+
+        <!-- 
+          SplashScreen API attributes.
+          These control the appearance of the starting window (splash screen) 
+          before the app process is fully ready. Using @color/splash_background
+          allows it to follow the system dark/light mode automatically.
+        -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.CleanSweep</item>
     </style>
-</resources> 
+</resources>

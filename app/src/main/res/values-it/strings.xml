@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ CleanSweep
+  ~ Copyright (c) 2025 LoopOtto
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program. If not, see <https://www.gnu.org/licenses/>.
+  -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">CleanSweep</string>
+
+    <!-- General / Common -->
+    <string name="confirm">Conferma</string>
+    <string name="cancel">Annulla</string>
+    <string name="delete">Elimina</string>
+    <string name="retry">Riprova</string>
+    <string name="close">Chiudi</string>
+    <string name="back">Indietro</string>
+    <string name="settings">Impostazioni</string>
+    <string name="more_options">Altre opzioni</string>
+    <string name="navigate_back">Torna indietro</string>
+    <string name="unknown_error">Si è verificato un errore sconosciuto</string>
+    <string name="error_prefix">Errore: %1$s</string>
+    <string name="warning">Attenzione</string>
+    <string name="done">Fatto</string>
+    <string name="open">Apri</string>
+    <string name="open_with">Apri con</string>
+    <string name="open_full_screen">Apri a schermo intero</string>
+    <string name="share">Condividi</string>
+    <string name="rename">Rinomina</string>
+    <string name="select_all">Seleziona tutto</string>
+    <string name="unselect_all">Deseleziona tutto</string>
+    <string name="loading">Caricamento…</string>
+    <string name="ok">OK</string>
+    <string name="create">Crea</string>
+    <string name="skip">Salta</string>
+    <string name="reset">Reimposta</string>
+
+    <!-- File Operations -->
+    <string name="filename_copied">Nome file copiato!</string>
+    <string name="folder_renamed_success">Cartella rinominata con successo.</string>
+    <plurals name="files_deleted_success">
+        <item quantity="one">1 file eliminato con successo.</item>
+        <item quantity="many">%1$d file eliminati con successo.</item>
+        <item quantity="other">%1$d file eliminati con successo.</item>
+    </plurals>
+    <string name="could_not_delete_all">Errore: impossibile eliminare tutti i file selezionati.</string>
+    <string name="no_files_found_on_disk">Nessun file selezionato trovato sul disco. Potrebbero essere stati eliminati esternamente.</string>
+    <plurals name="files_not_found_deleting_remaining">
+        <item quantity="one">1 file non trovato e verrà saltato.</item>
+        <item quantity="many">%1$d file non trovati e verranno saltati.</item>
+        <item quantity="other">%1$d file non trovati e verranno saltati.</item>
+    </plurals>
+    <string name="no_files_selected_delete">Nessun file selezionato per l\'eliminazione.</string>
+    <string name="no_app_to_share">Nessuna app per condividere questo file.</string>
+    <string name="no_app_to_open">Nessuna app può aprire questo file.</string>
+    <string name="error_creating_uri">Errore nella preparazione del file per la condivisione.</string>
+    <string name="file_size_label">Dimensione: %1$s</string>
+    <string name="export_filename_default">preferiti_destinazione.json</string>
+
+    <!-- Session Setup Screen -->
+    <string name="select_folders_title">Seleziona Cartelle</string>
+    <string name="start_session">Avvia Sessione</string>
+    <string name="search_hint">Cerca</string>
+    <string name="clear_search">Cancella ricerca</string>
+    <string name="scanning_device_message">Scansione del dispositivo per cartelle multimediali…</string>
+    <string name="no_media_folders_found">Nessuna cartella multimediale trovata</string>
+    <string name="no_media_folders_desc">Può succedere su un nuovo dispositivo. Prova ad aggiungere foto o video, o trascina verso il basso per scansionare di nuovo.</string>
+    <string name="no_results_found">Nessun risultato trovato</string>
+    <string name="no_search_results_desc">La ricerca per \"%1$s\" non ha trovato nomi di cartelle corrispondenti.</string>
+    <string name="find_duplicates">Trova Duplicati</string>
+    <string name="sort">Ordina</string>
+    <string name="sort_name_az">Nome (A-Z)</string>
+    <string name="sort_name_za">Nome (Z-A)</string>
+    <string name="sort_size_largest">Dimensione (Più grandi prima)</string>
+    <string name="sort_size_smallest">Dimensione (Più piccoli prima)</string>
+    <string name="sort_count_most">Numero elementi (Più numerosi prima)</string>
+    <string name="sort_count_fewest">Numero elementi (Meno numerosi prima)</string>
+    <plurals name="context_selected_count">
+        <item quantity="one">1 Selezionato</item>
+        <item quantity="many">%1$d Selezionati</item>
+        <item quantity="other">%1$d Selezionati</item>
+    </plurals>
+    <string name="close_selection_mode">Chiudi modalità selezione</string>
+    <string name="add_to_favorites">Aggiungi ai Preferiti</string>
+    <string name="remove_from_favorites">Rimuovi dai Preferiti</string>
+    <string name="mark_as_sorted">Segna come Ordinato</string>
+    <string name="mark_permanently_as_sorted">Segna Definitivamente come Ordinato</string>
+    <string name="mark_sorted_title_single">Segnare come Ordinato?</string>
+    <string name="mark_sorted_body_single">Sei sicuro di voler nascondere definitivamente \'%1$s\' da questa lista? Questa cartella non verrà mostrata qui anche se aggiungi nuovi media. Puoi reimpostare questa opzione nelle impostazioni.</string>
+    <string name="mark_sorted_body_recursive">Sei sicuro di voler nascondere definitivamente \'%1$s\' e le sue sottocartelle da questa lista? Queste cartelle non verranno mostrate qui anche se aggiungi nuovi media. Puoi reimpostare questa opzione nelle impostazioni.</string>
+    <plurals name="mark_sorted_title_multiple">
+        <item quantity="one">Segnare 1 Cartella come Ordinata?</item>
+        <item quantity="many">Segnare %1$d Cartelle come Ordinate?</item>
+        <item quantity="other">Segnare %1$d Cartelle come Ordinate?</item>
+    </plurals>
+    <plurals name="mark_sorted_body_multiple">
+        <item quantity="one">Sei sicuro di voler nascondere definitivamente questa cartella (incluse eventuali sottocartelle selezionate) da questa lista? Puoi reimpostare questa opzione nelle impostazioni.</item>
+        <item quantity="many">Sei sicuro di voler nascondere definitivamente queste %1$d cartelle (incluse eventuali sottocartelle selezionate) da questa lista? Puoi reimpostare questa opzione nelle impostazioni.</item>
+        <item quantity="other">Sei sicuro di voler nascondere definitivamente queste %1$d cartelle (incluse eventuali sottocartelle selezionate) da questa lista? Puoi reimpostare questa opzione nelle impostazioni.</item>
+    </plurals>
+    <string name="move_to_ellipsis">Sposta in…</string>
+    <string name="search_destination_label">Cerca o seleziona destinazione</string>
+    <string name="move_action">Sposta</string>
+    <plurals name="folder_item_desc">
+        <item quantity="one">1 elemento · %2$s</item>
+        <item quantity="many">%1$d elementi · %2$s</item>
+        <item quantity="other">%1$d elementi · %2$s</item>
+    </plurals>
+    <string name="includes_subfolders">Include sottocartelle.</string>
+    <string name="select_folder_and_subfolders">Seleziona cartella e sottocartelle</string>
+    <string name="deselect_subfolders">Deseleziona sottocartelle</string>
+    <string name="favorite">Preferito</string>
+    <string name="unfavorite">Rimuovi preferito</string>
+
+    <!-- Swiper Screen -->
+    <string name="unsaved_changes_title">Modifiche non salvate</string>
+    <string name="unsaved_changes_message">Hai modifiche non salvate. Sei sicuro di voler uscire?</string>
+    <string name="exit_anyway">Esci comunque</string>
+    <string name="review_changes">Rivedi Modifiche</string>
+    <string name="no_more_items">Nessun altro elemento da ordinare!</string>
+    <string name="all_organized_title">Tutti i media sono stati organizzati. Ottimo lavoro!</string>
+    <string name="review_skipped_items">Rivedi Elementi Saltati</string>
+    <string name="select_different_folders">Seleziona Cartelle Diverse</string>
+    <string name="reset_single_folder">Reimposta Singola Cartella</string>
+    <string name="reset_all_sorted_media">Reimposta Tutti i Media Ordinati</string>
+    <string name="close_app">Chiudi App</string>
+    <string name="add_target_folder">Aggiungi Cartella di Destinazione</string>
+    <string name="skip_item">Salta Elemento</string>
+    <string name="undo_last_action">Annulla Ultima Azione</string>
+    <string name="expand">Espandi</string>
+    <string name="collapse">Riduci</string>
+    <string name="remove_from_bar">Rimuovi dalla barra</string>
+    <string name="move_to_to_edit">Sposta in \'To Edit\'</string>
+    <string name="screenshot">Screenshot</string>
+    <string name="mute_video">Disattiva audio</string>
+    <string name="unmute_video">Attiva audio</string>
+    <string name="pending_conversion_desc">Conversione in immagine in sospeso</string>
+    <string name="forget_sorted_media_title">Dimentica Media Ordinati</string>
+    <string name="search_folder_reset_label">Cerca una cartella da reimpostare…</string>
+    <string name="forget_action">Dimentica</string>
+    <string name="forget_confirm_title">Conferma Azione</string>
+    <string name="forget_confirm_body">Sei sicuro di voler dimenticare tutta la cronologia dei media ordinati per la cartella \'%1$s\'? Questa cartella riapparirà per l\'ordinamento se contiene ancora media.</string>
+    <string name="forget_success_toast">La cronologia di \'%1$s\' è stata reimpostata.</string>
+    <string name="no_sorted_history_toast">Nessuna cronologia di media ordinati trovata.</string>
+    <string name="changes_applied_success">Modifiche applicate con successo!</string>
+    <string name="failed_apply_changes">Impossibile applicare una o più modifiche.</string>
+    <string name="added_screenshot_toast">Screenshot aggiunto alle modifiche in sospeso</string>
+    <string name="could_not_find_parent">Impossibile trovare la cartella principale.</string>
+    <string name="refreshed_external_changes">Aggiornato per tenere conto delle modifiche ai file esterni.</string>
+    <plurals name="target_favorite_removed_toast">
+        <item quantity="one">1 preferito di destinazione rimosso perché non esiste più.</item>
+        <item quantity="many">%1$d preferiti di destinazione rimossi perché non esistono più.</item>
+        <item quantity="other">%1$d preferiti di destinazione rimossi perché non esistono più.</item>
+    </plurals>
+    <string name="target_favorite_removed_single_toast" tools:ignore="UnusedResources">1 preferito di destinazione rimosso perché non esiste più.</string>
+    <plurals name="files_skipped_missing_toast">
+        <item quantity="one">1 file non trovato e verrà saltato.</item>
+        <item quantity="many">%1$d file non trovati e verranno saltati.</item>
+        <item quantity="other">%1$d file non trovati e verranno saltati.</item>
+    </plurals>
+    <string name="select_parent_location_toast">Seleziona una posizione principale.</string>
+    <string name="select_folder_import_toast">Seleziona una cartella da importare.</string>
+    <string name="video_no_audio_toast">Il video non ha una traccia audio.</string>
+    <string name="failed_load_media_prefix">Impossibile caricare i media: %1$s</string>
+    <string name="apply_changes_button">Applica Modifiche</string>
+    <string name="folder_name_to_edit">Da Modificare</string>
+    <string name="cancel_all_changes">Annulla Tutto</string>
+    <string name="summary_title_format">Revisione Modifiche (%1$d)</string>
+    <string name="move_to_folder_header">Sposta in: %1$s (%2$d)</string>
+    <string name="convert_to_image_header">Da Convertire in Immagine (%1$d)</string>
+    <string name="delete_header">Da Eliminare (%1$d)</string>
+    <string name="keep_header">Da Mantenere (%1$d)</string>
+    <string name="confirm_changes_title">Conferma Modifiche</string>
+    <string name="confirm_changes_body">Sei sicuro di voler applicare queste modifiche ai tuoi file?</string>
+
+    <!-- Plurals -->
+    <plurals name="skipped_session_items_plurals">
+        <item quantity="one">Hai saltato 1 elemento durante questa sessione.</item>
+        <item quantity="many">Hai saltato %d elementi durante questa sessione.</item>
+        <item quantity="other">Hai saltato %d elementi durante questa sessione.</item>
+    </plurals>
+    <plurals name="files_selected_count_plurals">
+        <item quantity="one">1 file</item>
+        <item quantity="many">%d file</item>
+        <item quantity="other">%d file</item>
+    </plurals>
+    <plurals name="unreadable_files_count_plurals">
+        <item quantity="one">1 file non leggibile</item>
+        <item quantity="many">%d file non leggibili</item>
+        <item quantity="other">%d file non leggibili</item>
+    </plurals>
+
+    <!-- Duplicates Screen -->
+    <string name="duplicate_finder_title">Trova Duplicati</string>
+    <string name="scanning_phase">Scansione in corso…</string>
+    <string name="scanning_preparing_phase">Preparazione…</string>
+    <string name="scanning_cancelling_phase">Annullamento…</string>
+    <plurals name="scan_result_title">
+        <item quantity="one">Risultato Scansione (1 gruppo)</item>
+        <item quantity="many">Risultato Scansione (%1$d gruppi)</item>
+        <item quantity="other">Risultato Scansione (%1$d gruppi)</item>
+    </plurals>
+    <string name="delete_all_exact_duplicates">Elimina Tutti i Duplicati Esatti</string>
+    <string name="new_scan">Nuova Scansione</string>
+    <string name="change_grid_columns">Cambia colonne griglia</string>
+    <string name="toggle_view_mode">Cambia Modalità Visualizzazione</string>
+    <string name="confirm_deletion_title">Conferma Eliminazione</string>
+    <string name="confirm_deletion_body">Sei sicuro di voler eliminare definitivamente i file selezionati? Questa azione non può essere annullata.</string>
+    <string name="delete_all_exact_title">Eliminare Tutti i Duplicati Esatti?</string>
+    <string name="delete_all_exact_body">Questo manterrà automaticamente il file più vecchio in ogni gruppo di duplicati esatti ed eliminerà il resto.\n\nNota: anche i gruppi contrassegnati come duplicati esatti potrebbero avere falsi positivi. Si consiglia la revisione manuale.</string>
+    <string name="do_not_ask_again">Non chiedere più</string>
+    <string name="delete_all">Elimina Tutto</string>
+    <string name="view_group_title">Visualizza Gruppo</string>
+    <plurals name="view_group_items_title">
+        <item quantity="one">Visualizza Gruppo (1 elemento)</item>
+        <item quantity="many">Visualizza Gruppo (%1$d elementi)</item>
+        <item quantity="other">Visualizza Gruppo (%1$d elementi)</item>
+    </plurals>
+    <string name="change_layout_columns">Cambia colonne layout</string>
+    <string name="keep_oldest">Tieni Più Vecchio</string>
+    <string name="keep_newest">Tieni Più Nuovo</string>
+    <string name="flag_as_incorrect">Segnala come errato</string>
+    <string name="hide_group">Nascondi gruppo</string>
+    <string name="scan_exact_duplicates_title">Duplicati Esatti</string>
+    <string name="scan_exact_duplicates_desc">Trova file identici al 100%.</string>
+    <string name="scan_similar_media_title">Media Simili</string>
+    <string name="scan_similar_media_desc">Trova media visivamente simili (es. scatti a raffica, video simili).</string>
+    <string name="scan_first_time_note">Nota: La prima scansione potrebbe ricevere del tempo. Il processo continuerà in background se esci dall\'app.</string>
+    <string name="start_scan">Avvia Scansione</string>
+    <string name="view_last_scan_results">Vedi Ultimi Risultati</string>
+    <plurals name="scan_limited_to_folders">
+        <item quantity="one">La scansione è limitata a 1 cartella.</item>
+        <item quantity="many">La scansione è limitata a %1$d cartelle.</item>
+        <item quantity="other">La scansione è limitata a %1$d cartelle.</item>
+    </plurals>
+    <plurals name="scan_ignores_folders">
+        <item quantity="one">La scansione ignorerà 1 cartella.</item>
+        <item quantity="many">La scansione ignorerà %1$d cartelle.</item>
+        <item quantity="other">La scansione ignorerà %1$d cartelle.</item>
+    </plurals>
+    <string name="scan_filter_active">Filtro Scansione Attivo</string>
+    <string name="manage">Gestisci</string>
+    <string name="no_folders_in_list">Nessuna cartella in questa lista. Tocca Gestisci per aggiungerne.</string>
+    <plurals name="list_more_items_suffix">
+        <item quantity="one">• …e un altro</item>
+        <item quantity="many">• …e altri %1$d</item>
+        <item quantity="other">• …e altri %1$d</item>
+    </plurals>
+    <string name="cancel_scan">Annulla Scansione</string>
+    <string name="no_exact_or_similar_found">Nessun duplicato esatto o media simile trovato. Ben fatto!</string>
+    <string name="no_exact_found">Nessun duplicato esatto trovato. Ben fatto!</string>
+    <string name="no_similar_found">Nessun media simile trovato. Ben fatto!</string>
+    <string name="stale_results_warning">Mostrando risultati di %1$s</string>
+    <string name="run_new_scan_hint">Esegui una nuova scansione per i risultati più recenti.</string>
+    <string name="dismiss_warning">Ignora avviso</string>
+    <string name="rescan">Riscansiona</string>
+    <string name="unreadable_files_hint">Potrebbero essere corrotti o inaccessibili. Tocca per dettagli.</string>
+    <string name="unreadable_files_dialog_title">File Non Leggibili</string>
+    <string name="no_unreadable_user_files">Nessun file utente illeggibile trovato. Questo è lo stato ideale. Eventuali file rimanenti sono probabilmente file di sistema o temporanei nascosti, visualizzabili con l\'opzione qui sotto.</string>
+    <string name="no_unreadable_files_device">Nessun file illeggibile trovato sul dispositivo.</string>
+    <string name="show_hidden_temp_files">Mostra file nascosti/temporanei</string>
+    <string name="unknown_location">Posizione Sconosciuta</string>
+    <plurals name="duplicates_found_count">
+        <item quantity="one">1 Duplicato Trovato</item>
+        <item quantity="many">%1$d Duplicati Trovati</item>
+        <item quantity="other">%1$d Duplicati Trovati</item>
+    </plurals>
+    <plurals name="similar_media_found_count">
+        <item quantity="one">1 Media Simile Trovato</item>
+        <item quantity="many">%1$d Media Simili Trovati</item>
+        <item quantity="other">%1$d Media Simili Trovati</item>
+    </plurals>
+    <string name="size_per_file">Dimensione per file: %1$s</string>
+    <string name="total_group_size">Dimensione totale gruppo: %1$s</string>
+    <plurals name="copies_count_suffix">
+        <item quantity="one">+ 1 copia</item>
+        <item quantity="many">+ %1$d copie</item>
+        <item quantity="other">+ %1$d copie</item>
+    </plurals>
+    <plurals name="similar_count_suffix">
+        <item quantity="one">+ 1 simile</item>
+        <item quantity="many">+ %1$d simili</item>
+        <item quantity="other">+ %1$d simili</item>
+    </plurals>
+    <string name="selection_state">Stato Selezione</string>
+    <string name="primary_image_desc">Immagine principale del gruppo</string>
+    <string name="video">Video</string>
+    <string name="reclaim_space_format">Spazio da Recuperare: %1$s</string>
+    <string name="files_selected_format">%1$s selezionati</string>
+    <string name="algorithm_corrected_toast">Algoritmo corretto. Questi elementi non verranno più raggruppati.</string>
+    <string name="group_hidden_toast">Gruppo nascosto. Riapparirà solo se la sua composizione cambia.</string>
+    <string name="notification_permission_required">L\'autorizzazione alle notifiche è richiesta per mostrare l\'avanzamento della scansione in background.</string>
+    <string name="scan_already_in_progress">Una scansione è già in corso.</string>
+    <string name="select_one_scan_type">Seleziona almeno un tipo di scansione.</string>
+    <string name="scan_cancelled_toast">Scansione annullata</string>
+    <string name="scan_complete_selection_cleared">Scansione completata. Le selezioni sono state cancellate.</string>
+    <string name="no_valid_cache_toast">Impossibile trovare risultati validi nella cache.</string>
+    <string name="no_exact_duplicates_toast">Nessun duplicato esatto trovato.</string>
+    <string name="no_duplicates_to_delete_toast">Nessun duplicato trovato da eliminare.</string>
+    <string name="sorted_media_reset_toast">La cronologia dei media ordinati è stata reimpostata.</string>
+    <string name="info_icon_desc">Informazioni</string>
+
+    <!-- Session Setup ViewModel -->
+    <string name="failed_load_folders">Impossibile caricare le cartelle multimediali: %1$s</string>
+    <string name="failed_refresh_folders">Impossibile aggiornare le cartelle multimediali: %1$s</string>
+    <string name="folder_renamed">Cartella rinominata con successo</string>
+    <plurals name="moved_files_success_msg">
+        <item quantity="one">Spostato 1 file.</item>
+        <item quantity="many">Spostati %1$d file.</item>
+        <item quantity="other">Spostati %1$d file.</item>
+    </plurals>
+    <plurals name="moved_files_failed_suffix">
+        <item quantity="one"> 1 fallito.</item>
+        <item quantity="many"> %1$d falliti.</item>
+        <item quantity="other"> %1$d falliti.</item>
+    </plurals>
+    <string name="favorites_added_removed_msg" tools:ignore="PluralsCandidate">%1$d cartelle aggiunte ai preferiti, %2$d rimosse.</string>
+    <plurals name="favorites_added_msg">
+        <item quantity="one">1 cartella aggiunta ai preferiti.</item>
+        <item quantity="many">%1$d cartelle aggiunte ai preferiti.</item>
+        <item quantity="other">%1$d cartelle aggiunte ai preferiti.</item>
+    </plurals>
+    <plurals name="favorites_removed_msg">
+        <item quantity="one">1 cartella rimossa dai preferiti.</item>
+        <item quantity="many">%1$d cartelle rimosse dai preferiti.</item>
+        <item quantity="other">%1$d cartelle rimosse dai preferiti.</item>
+    </plurals>
+    <string name="no_changes_system_folders">Nessuna modifica applicata. Le cartelle di sistema non possono essere preferite.</string>
+    <string name="folder_hidden_toast">Cartella nascosta.</string>
+    <plurals name="folders_hidden_toast">
+        <item quantity="one">1 cartella nascosta.</item>
+        <item quantity="many">%1$d cartelle nascoste.</item>
+        <item quantity="other">%1$d cartelle nascoste.</item>
+    </plurals>
+    <string name="favorite_folders_category">Cartelle Preferite</string>
+    <string name="system_folders_category">Cartelle di Sistema</string>
+    <string name="user_folders_category">Cartelle Utente</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_skip">Salta</string>
+    <string name="onboarding_previous">Precedente</string>
+    <string name="onboarding_next">Avanti</string>
+    <string name="onboarding_grant_permission">Concedi Accesso a Tutti i File</string>
+    <string name="onboarding_get_started">Inizia</string>
+    <string name="onboarding_close_dialog_title">Chiudi CleanSweep</string>
+    <string name="onboarding_close_dialog_body">CleanSweep non può funzionare senza il permesso di Accesso a Tutti i File. Abbiamo provato, ma è risultato necessario affinché CleanSweep funzioni correttamente per la maggior parte degli utenti.</string>
+    <string name="permission_screen_title">Accesso a Tutti i File Richiesto</string>
+    <string name="permission_screen_desc">CleanSweep necessita del permesso di Accesso a Tutti i File per organizzare foto e video in tutte le cartelle del dispositivo.</string>
+    <string name="permission_screen_instruction">Per favore concedi il permesso nelle impostazioni del dispositivo per usare CleanSweep.</string>
+    <string name="open_settings">Apri Impostazioni</string>
+
+    <!-- Onboarding Pages -->
+    <string name="onboarding_p1_title">Benvenuto in CleanSweep</string>
+    <string name="onboarding_p1_desc">Prendi il controllo della tua galleria. Un modo semplice e potente per ordinare migliaia di foto e video.\nRecupera il tuo tempo e il tuo spazio di archiviazione.</string>
+    <string name="onboarding_p2_title">Scorrimento Semplice</string>
+    <string name="onboarding_p2_desc">Scorri a destra per tenere, a sinistra per eliminare. Hai sbagliato? Il pulsante Annulla è lì per te! Indeciso? Usa il pulsante Salta per decidere dopo.</string>
+    <string name="onboarding_p3_title">Ordinamento Potente</string>
+    <string name="onboarding_p3_desc">Tocca le cartelle per spostare istantaneamente i file. Tieni premuto un elemento per inviarlo rapidamente a una cartella \'To Edit\' o accedere ad altre scorciatoie.</string>
+    <string name="onboarding_p4_title">Trova Foto Simili</string>
+    <string name="onboarding_p4_desc">Il nostro trova duplicati va oltre le copie esatte per trovare anche foto e video visivamente simili. Puoi persino regolare la sensibilità nelle impostazioni!</string>
+    <string name="onboarding_p5_title">Superpoteri Video</string>
+    <string name="onboarding_p5_desc">Vola attraverso i video con i controlli della velocità di riproduzione. Puoi anche catturare il momento perfetto salvando un singolo fotogramma come nuova foto.</string>
+    <string name="onboarding_p6_title">Sei al Comando</string>
+    <string name="onboarding_p6_desc">Hai imparato le basi. Ora sei pronto per organizzare i tuoi media più velocemente che mai.</string>
+
+    <!-- Settings Screen -->
+    <string name="search_settings_placeholder">Cerca impostazioni…</string>
+    <string name="close_search">Chiudi ricerca</string>
+    <string name="search_settings_icon_desc">Cerca impostazioni</string>
+    <string name="appearance_section_title">Aspetto</string>
+    <string name="behavior_section_title">Comportamento</string>
+    <string name="duplicate_finder_section_title">Trova Duplicati</string>
+    <string name="advanced_section_title">Avanzate</string>
+    <string name="help_support_section_title">Aiuto e Supporto</string>
+    <string name="about_section_title">Informazioni</string>
+    <string name="no_settings_found">Nessuna impostazione trovata per \"%1$s\"</string>
+
+    <!-- Language Settings -->
+    <string name="language_title">Lingua</string>
+    <string name="language_desc">Scegli la lingua preferita.</string>
+    <string name="language_system">Predefinita di sistema</string>
+    <string name="language_english">English</string>
+    <string name="language_italian">Italiano</string>
+
+    <!-- Theme Settings -->
+    <string name="theme_title">Tema</string>
+    <string name="theme_system_display">Segui sistema</string>
+    <string name="theme_light_display">Chiaro</string>
+    <string name="theme_dark_display">Scuro</string>
+    <string name="theme_darker_display">Più scuro</string>
+    <string name="theme_amoled_display">AMOLED</string>
+    <string name="theme_system_desc">Cambia automaticamente il tema in base alle impostazioni di sistema</string>
+    <string name="theme_light_desc">Un tema chiaro e luminoso</string>
+    <string name="theme_dark_desc">Un tema scuro per ambienti con poca luce</string>
+    <string name="theme_darker_desc">Un tema più scuro che segue gli standard Material Design</string>
+    <string name="theme_amoled_desc">Un tema nero assoluto ottimizzato per schermi AMOLED</string>
+    <string name="dynamic_colors_title">Usa Colori Dinamici</string>
+    <string name="dynamic_colors_desc">Usa i colori del tema del tuo sistema</string>
+    <string name="dynamic_colors_req_android_12">Richiede Android 12 o versioni successive</string>
+    <string name="accent_color_title">Colore Accento</string>
+    <string name="customize_colors_title">Personalizza colori</string>
+
+    <!-- UI Layout Settings -->
+    <string name="folder_name_position_title">Posizione Nome Cartella</string>
+    <string name="folder_name_position_desc">Scegli dove visualizzare il nome della cartella corrente nella schermata di ordinamento.</string>
+    <string name="folder_name_layout_above">Sopra il media</string>
+    <string name="folder_name_layout_below">Sotto il media</string>
+    <string name="folder_name_layout_hidden">Nascosto</string>
+    <string name="compact_folder_view_title">Vista Cartelle Compatta</string>
+    <string name="compact_folder_view_desc">Mostra le cartelle in uno stile elenco più compatto</string>
+    <string name="legacy_folder_icons_title">Icone Cartella basate sull\'Iniziale</string>
+    <string name="legacy_folder_icons_desc">Usa la prima lettera del nome di una cartella come sua icona</string>
+    <string name="hide_media_filename_title">Nascondi Nome File Media</string>
+    <string name="hide_media_filename_desc">Nascondi il nome del file sovrapposto ai media</string>
+    <string name="folder_bar_layout_title">Layout Barra Cartelle</string>
+    <string name="folder_bar_layout_desc">Scegli la direzione di scorrimento per la barra \'Sposta in\'.</string>
+    <string name="layout_horizontal">Orizzontale</string>
+    <string name="layout_vertical">Verticale</string>
+    <string name="skip_partial_expansion_title">Salta Espansione Parziale</string>
+    <string name="skip_partial_expansion_desc">Il riepilogo si aprirà direttamente alla sua dimensione massima.</string>
+    <string name="use_full_screen_summary_title">Apri il Riepilogo sempre a Schermo Intero</string>
+    <string name="use_full_screen_summary_desc">Se abilitato, l\'altezza massima del foglio riempirà lo schermo quando necessario.</string>
+
+    <!-- Swipe & Gesture Settings -->
+    <string name="swipe_sensitivity_title">Sensibilità Scorrimento</string>
+    <string name="swipe_sensitivity_desc">Regola quanto devi scorrere per attivare un\'azione.</string>
+    <string name="sensitivity_low">Bassa</string>
+    <string name="sensitivity_medium">Media</string>
+    <string name="sensitivity_high">Alta</string>
+    <string name="swipe_down_action_title">Azione Scorrimento verso il Basso</string>
+    <string name="swipe_down_action_desc">Assegna una scorciatoia al gesto di scorrimento verso il basso su un media.</string>
+    <string name="action_none">Nessuna</string>
+    <string name="full_screen_swipe_title">Scorrimento a Schermo Intero</string>
+    <string name="full_screen_swipe_desc">Consente lo scorrimento sull\'area dello sfondo, non solo sull\'immagine stessa.</string>
+
+    <!-- Video & Media Settings -->
+    <string name="default_video_speed_title">Velocità Video Predefinita</string>
+    <string name="default_video_speed_desc">Imposta la velocità di riproduzione predefinita per i video.</string>
+    <string name="screenshot_deletes_video_title">Screenshot elimina il video originale</string>
+    <string name="screenshot_deletes_video_desc">Quando scatti uno screenshot da un video, metti automaticamente il video in coda per l\'eliminazione.</string>
+    <string name="screenshot_quality_title">Qualità Screenshot (JPEG)</string>
+    <string name="screenshot_quality_desc">Una qualità superiore comporta file di dimensioni maggiori. Il valore predefinito è 90.</string>
+    <string name="quality_high">Alta (95)</string>
+    <string name="quality_good">Buona (90)</string>
+    <string name="quality_balanced">Bilanciata (85)</string>
+    <string name="quality_low">Bassa (75)</string>
+
+    <!-- Folder Selection Settings -->
+    <string name="folder_selection_mode_title">Modalità Selezione Cartelle</string>
+    <string name="mode_all_folders">Tutte le cartelle</string>
+    <string name="mode_remember_previous">Ricorda precedenti</string>
+    <string name="mode_none">Nessuna</string>
+    <string name="desc_mode_all">Seleziona tutte le cartelle per impostazione predefinita</string>
+    <string name="desc_mode_remember">Ricorda e seleziona le cartelle scelte in precedenza nella schermata iniziale</string>
+    <string name="desc_mode_none">Non selezionare alcuna cartella per impostazione predefinita</string>
+    <string name="invert_swipe_title">Inverti Azioni Scorrimento</string>
+    <string name="invert_swipe_desc">Inverti le azioni di scorrimento: sinistra per tenere, destra per eliminare</string>
+    <string name="hide_skip_button_title">Nascondi Pulsante Salta</string>
+    <string name="hide_skip_button_desc">Se abilitato, il pulsante \'Salta\' verrà nascosto dalla barra inferiore.</string>
+    <string name="add_fav_by_default_title">Aggiungi ai Preferiti per impostazione predefinita</string>
+    <string name="add_fav_by_default_desc">Preseleziona l\'opzione \'Aggiungi ai preferiti\' quando aggiungi una nuova cartella di destinazione.</string>
+    <string name="unfav_removes_from_bar_title">Rimuovi dai Preferiti Nasconde</string>
+    <string name="unfav_removes_from_bar_desc">Se abilitato, rimuovere una cartella dai preferiti la nasconde anche per la sessione.</string>
+    <string name="hint_on_existing_folder_title">Suggerimento su Nome Cartella Esistente</string>
+    <string name="hint_on_existing_folder_desc">Mostra un suggerimento se esiste una cartella con lo stesso nome mentre digiti.</string>
+    <string name="initial_dialog_focus_title">Focus Iniziale Finestra Dialogo</string>
+    <string name="initial_dialog_focus_desc">Quando aggiungi una cartella, scegli quale campo riceve per primo il focus.</string>
+    <string name="focus_search_path">Percorso</string>
+    <string name="focus_folder_name">Nome nuova cartella</string>
+    <string name="show_favorites_setup_title">Mostra Preferiti in Configurazione</string>
+    <string name="show_favorites_setup_desc">Mostra le cartelle preferite nella schermata iniziale</string>
+    <string name="default_album_location_title">Posizione Album Predefinita</string>
+    <string name="default_album_location_desc">Scegli la cartella predefinita in cui vengono creati i nuovi album.</string>
+    <string name="search_custom_folder">Cerca cartella personalizzata</string>
+    <string name="no_default_folder_selected">Nessuna cartella predefinita selezionata</string>
+    <string name="current_path_prefix">Corrente: %1$s</string>
+    <string name="remember_organized_media_title">Ricorda Media Organizzati</string>
+    <string name="remember_organized_media_desc">Evita di mostrare i media che hai già spostato nelle sessioni future</string>
+    <string name="reset_organized_media_history">Reimposta Cronologia Media Ordinati</string>
+    <string name="forget_sorted_media_folder_title">Dimentica Media Ordinati in Cartella</string>
+    <string name="forget_sorted_media_folder_desc">Scegli una cartella per far apparire nuovamente i suoi media per l\'ordinamento.</string>
+    <string name="select_folder_to_forget">Seleziona cartella da dimenticare</string>
+    <string name="search_autofocus_title">Focus Automatico Ricerca Abilitato</string>
+    <string name="search_autofocus_desc">Metti a fuoco automaticamente la barra di ricerca nella schermata iniziale</string>
+    <string name="unselect_all_behavior_title">Comportamento \'Deseleziona tutto\' nella Ricerca</string>
+    <string name="unselect_everything">Deseleziona tutto (Globale)</string>
+    <string name="unselect_visible_only">Deseleziona solo visibili</string>
+    <string name="desc_unselect_global">Cancella l\'intera selezione, anche gli elementi nascosti dal filtro di ricerca corrente.</string>
+    <string name="desc_unselect_visible">Deseleziona solo gli elementi attualmente visibili nei risultati di ricerca. Le selezioni nascoste rimangono selezionate.</string>
+
+    <!-- Duplicate Finder Settings -->
+    <string name="similarity_level_title">Livello di Somiglianza</string>
+    <string name="similarity_level_strict">Rigoroso</string>
+    <string name="similarity_level_balanced">Bilanciato</string>
+    <string name="similarity_level_loose">Lieve</string>
+    <string name="similarity_level_strict_desc">Meno corrispondenze, probabilità molto bassa di falsi positivi.</string>
+    <string name="similarity_level_balanced_desc">Un buon equilibrio tra precisione e numero di corrispondenze.</string>
+    <string name="similarity_level_loose_desc">Più corrispondenze, ma può includere media non correlati.</string>
+    <string name="scan_scope_title">Ambito di Scansione</string>
+    <string name="scan_scope_all">Scansiona tutti i file</string>
+    <string name="scan_scope_include">Includi cartelle specifiche</string>
+    <string name="scan_scope_exclude">Escludi cartelle specifiche</string>
+    <string name="scan_scope_all_desc">Scansiona tutti i media sul tuo dispositivo.</string>
+    <plurals name="scan_scope_include_desc">
+        <item quantity="one">Scansiona solo i media all\'interno della cartella selezionata.</item>
+        <item quantity="many">Scansiona solo i media all\'interno delle %1$d cartelle selezionate.</item>
+        <item quantity="other">Scansiona solo i media all\'interno delle %1$d cartelle selezionate.</item>
+    </plurals>
+    <plurals name="scan_scope_exclude_desc">
+        <item quantity="one">Scansiona tutti i media tranne la cartella selezionata.</item>
+        <item quantity="many">Scansiona tutti i media tranne le %1$d cartelle selezionate.</item>
+        <item quantity="other">Scansiona tutti i media tranne le %1$d cartelle selezionate.</item>
+    </plurals>
+    <string name="manage_include_list">Gestisci Elenco Inclusione</string>
+    <string name="manage_exclude_list">Gestisci Elenco Esclusione</string>
+    <string name="manage_list_format">%1$s (%2$d)</string>
+
+    <!-- Advanced Settings -->
+    <string name="media_indexing_status_title">Stato Indicizzazione Media</string>
+    <string name="export_target_favorites_title">Esporta Preferiti di Destinazione</string>
+    <string name="export_target_favorites_desc">Salva le tue cartelle di destinazione preferite in un file.</string>
+    <string name="import_target_favorites_title">Importa Preferiti di Destinazione</string>
+    <string name="import_target_favorites_desc">Carica le cartelle di destinazione preferite da un file.</string>
+    <string name="reset_dialog_warnings_title">Reimposta Avvisi Finestre Dialogo</string>
+    <string name="reset_dialog_warnings_desc">Mostra di nuovo tutte le finestre di conferma.</string>
+
+    <!-- Help & Support Settings -->
+    <string name="onboarding_tutorial_title">Tutorial di Benvenuto</string>
+    <string name="onboarding_tutorial_desc">Ripercorri l\'esperienza iniziale per imparare le funzioni dell\'app.</string>
+    <string name="replay_tutorial_button">Riproduci Tutorial</string>
+
+    <!-- About Settings -->
+    <string name="support_development_title">Supporta lo Sviluppo</string>
+    <string name="support_development_desc">Sostieni il progetto</string>
+    <string name="version_title">Versione</string>
+    <string name="app_version_copied">Versione app copiata: %1$s</string>
+    <string name="about_cleansweep_title">Informazioni su CleanSweep</string>
+    <string name="about_cleansweep_desc">Scopri di più su CleanSweep</string>
+    <string name="github_title">GitHub</string>
+    <string name="github_summary">github.com/LoopOtto/CleanSweep</string>
+    <string name="gitlab_title">GitLab</string>
+    <string name="gitlab_summary">gitlab.com/LoopOtto/CleanSweep (mirror in sola lettura)</string>
+    <string name="open_source_licenses_title">Licenze Open Source</string>
+    <string name="open_source_licenses_desc">Visualizza le licenze open source</string>
+
+    <!-- Settings Dialogs & Toasts -->
+    <string name="onboarding_replay_toast">Il tutorial di benvenuto verrà mostrato al prossimo avvio dell\'app.</string>
+    <string name="no_target_favs_export">Nessun preferito di destinazione da esportare.</string>
+    <string name="no_existing_favs_export">Nessuna cartella preferita trovata da esportare.</string>
+    <plurals name="exported_favs_toast">
+        <item quantity="one">Esportato 1 preferito.</item>
+        <item quantity="many">Esportati %1$d preferiti.</item>
+        <item quantity="other">Esportati %1$d preferiti.</item>
+    </plurals>
+    <plurals name="exported_favs_skipped_suffix">
+        <item quantity="one"> 1 preferito non esistente è stato saltato.</item>
+        <item quantity="many"> %1$d preferiti non esistenti sono stati saltati.</item>
+        <item quantity="other"> %1$d preferiti non esistenti sono stati saltati.</item>
+    </plurals>
+    <string name="import_no_paths_found">Nessun percorso di cartella valido trovato nel file selezionato.</string>
+    <plurals name="imported_favs_success">
+        <item quantity="one">Importato 1 preferito con successo.</item>
+        <item quantity="many">Importati %1$d preferiti con successo.</item>
+        <item quantity="other">Importati %1$d preferiti con successo.</item>
+    </plurals>
+    <plurals name="imported_favs_missing">
+        <item quantity="one">Importata 1 cartella. La cartella non è stata trovata.</item>
+        <item quantity="many">Importate %1$d cartelle. Alcune cartelle non sono state trovate.</item>
+        <item quantity="other">Importate %1$d cartelle. Alcune cartelle non sono state trovate.</item>
+    </plurals>
+    <string name="import_invalid_format">Importazione fallita: formato file non valido.</string>
+    <plurals name="created_missing_folders_toast">
+        <item quantity="one">Creata e importata 1 cartella mancante.</item>
+        <item quantity="many">Create e importate %1$d cartelle mancanti.</item>
+        <item quantity="other">Create e importate %1$d cartelle mancanti.</item>
+    </plurals>
+    <string name="could_not_create_folders">Impossibile creare le cartelle mancanti.</string>
+    <string name="folder_list_refreshed_toast">Elenco cartelle aggiornato, per favore riapri la finestra di dialogo.</string>
+    <string name="no_history_to_reset">Nessuna cronologia dei media ordinati da reimpostare.</string>
+    <string name="all_dialog_warnings_reset">Tutti gli avvisi delle finestre di dialogo sono stati reimpostati.</string>
+    <string name="sorted_history_reset_success">La cronologia dei media ordinati è stata reimpostata.</string>
+    <string name="folder_history_forgotten">La cronologia di ordinamento per \'%1$s\' è stata dimenticata.</string>
+    <string name="no_source_favs_to_reset">Nessun preferito sorgente da reimpostare.</string>
+    <string name="source_favs_cleared">Preferiti cartelle sorgente cancellati.</string>
+    <string name="no_target_favs_to_reset">Nessun preferito di destinazione da reimpostare.</string>
+    <string name="target_favs_cleared">Preferiti delle cartelle di destinazione cancellati.</string>
+    <string name="full_device_scan_complete">Scansione completa del dispositivo terminata.</string>
+    <string name="scan_failed_interrupted">Scansione fallita o interrotta.</string>
+
+    <!-- Advanced Dialogs -->
+    <string name="some_folders_not_found_title">Alcune Cartelle Non Trovate</string>
+    <string name="some_folders_not_found_body">Le seguenti cartelle dal tuo file di backup non esistono. Vuoi crearle?</string>
+    <string name="reset_all_warnings_title">Reimpostare Tutti gli Avvisi?</string>
+    <string name="reset_all_warnings_body">Questo farà riapparire tutte le finestre di conferma, anche se hai selezionato \'Non chiedere più\'.</string>
+    <string name="reset_history_title">Reimpostare Cronologia Media Ordinati?</string>
+    <string name="reset_history_body">Questo cancellerà lo storico di tutti i media che hai ordinato. Gli elementi ordinati in precedenza riappariranno nelle nuove sessioni. L\'azione non può essere annullata.</string>
+    <string name="reset_source_favs_title">Reimpostare i Preferiti Sorgente?</string>
+    <string name="reset_source_favs_body">Sei sicuro di voler cancellare tutti i preferiti delle cartelle sorgente? L\'azione non può essere annullata.</string>
+    <string name="reset_target_favs_title">Reimpostare i Preferiti di Destinazione?</string>
+    <string name="reset_target_favs_body">Sei sicuro di voler cancellare tutti i preferiti delle cartelle di destinazione? L\'azione non può essere annullata.</string>
+    <string name="no_folders_added_to_list">Nessuna cartella è stata aggiunta a questo elenco. La scansione verrà eseguita come se questa impostazione fosse disabilitata.</string>
+    <string name="add_folder">Aggiungi cartella</string>
+    <string name="unindexed_files_dialog_title">File Media Non Indicizzati</string>
+    <string name="unindexed_files_ideal_state">Nessun file non indicizzato trovato. Questo è lo stato ideale. Eventuali file rimanenti sono probabilmente di sistema, temporanei e/o nascosti, visualizzabili con l\'opzione qui sotto.</string>
+    <string name="no_unindexed_files_found">Nessun file non indicizzato trovato sul dispositivo.</string>
+    <string name="unindexed_files_system_desc">Queti file sono sul tuo dispositivo ma non sono conosciuti dal MediaStore. Questi non saranno mai indicizzati dal MediaStore di design.</string>
+    <string name="unindexed_files_user_desc">Questi file sono sul tuo dispositivo ma non sono conosciuti dal MediaStore. Forse questa scansione riuscirà a indicizzarli.</string>
+    <string name="indexing_status_scanning">Ricerca di media non indicizzati…</string>
+    <string name="indexing_status_loading">Caricamento stato…</string>
+    <string name="indexing_status_initial">Premi l\'icona di aggiornamento per controllare lo stato.</string>
+    <string name="indexing_status_format">Media Indicizzati: %1$s di %2$s file (%3$s)</string>
+    <plurals name="indexing_status_unindexed_count">
+        <item quantity="one">1 file non è nell\'indice del MediaStore.</item>
+        <item quantity="many">%1$d file non sono nell\'indice del MediaStore.</item>
+        <item quantity="other">%1$d file non sono nell\'indice del MediaStore.</item>
+    </plurals>
+    <string name="indexing_status_breakdown" tools:ignore="PluralsCandidate">(%1$d file utente, %2$d file nascosti/di sistema)</string>
+    <string name="indexing_status_all_indexed">Tutti i file multimediali sono conosciuti dal MediaStore.</string>
+    <string name="refresh_scan_icon_desc">Aggiorna Stato / Scansiona Ora</string>
+    <string name="funding_dialog_title">Supporta lo Sviluppo</string>
+    <string name="funding_dialog_body">CleanSweep è gratuito e open source. Se lo trovi utile, considera di sostenerne lo sviluppo.</string>
+    <string name="address_copied">Indirizzo copiato</string>
+    <string name="copy_address_icon_desc">Copia indirizzo</string>
+    <string name="funding_dialog_footer">Sentiti libero di includere il tuo nome utente GitHub nella descrizione della transazione!</string>
+
+</resources>

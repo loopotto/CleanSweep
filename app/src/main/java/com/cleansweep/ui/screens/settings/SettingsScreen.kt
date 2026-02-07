@@ -17,6 +17,7 @@
 
 package com.cleansweep.ui.screens.settings
 
+import android.content.ClipData
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -60,10 +61,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -71,7 +76,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cleansweep.R
 import com.cleansweep.data.repository.AddFolderFocusTarget
+import com.cleansweep.data.repository.AppLocale
 import com.cleansweep.data.repository.DuplicateScanScope
 import com.cleansweep.data.repository.FolderBarLayout
 import com.cleansweep.data.repository.FolderNameLayout
@@ -89,6 +96,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.text.NumberFormat
 import kotlin.math.roundToInt
+import androidx.compose.ui.platform.LocalResources
 
 @Composable
 private fun SettingsItem(
@@ -133,12 +141,14 @@ private fun SettingsItem(
 }
 
 private data class SettingContent(
-    val keywords: List<String>,
+    val titleRes: Int,
+    val summaryAnnotated: AnnotatedString? = null,
+    val keywords: List<String> = emptyList(),
     val content: @Composable () -> Unit
 )
 
 private data class SettingSection(
-    val title: String,
+    val titleRes: Int,
     val items: List<SettingContent>
 )
 
@@ -155,6 +165,7 @@ fun SettingsScreen(
     val folderSearchState by viewModel.folderSearchManager.state.collectAsState()
     val displayedUnindexedFiles by viewModel.displayedUnindexedFiles.collectAsState()
     val currentTheme by viewModel.currentTheme.collectAsState()
+    val currentLocale by viewModel.currentLocale.collectAsState()
     val useDynamicColors by viewModel.useDynamicColors.collectAsState()
     val accentColorKey by viewModel.accentColorKey.collectAsState()
     val compactFolderView by viewModel.compactFolderView.collectAsState()
@@ -185,13 +196,14 @@ fun SettingsScreen(
     val similarityThresholdLevel by viewModel.similarityThresholdLevel.collectAsState()
     val unselectAllInSearchScope by viewModel.unselectAllInSearchScope.collectAsState()
 
-    // Duplicate Scan Scope states
     val duplicateScanScope by viewModel.duplicateScanScope.collectAsState()
     val duplicateScanIncludeList by viewModel.duplicateScanIncludeList.collectAsState()
     val duplicateScanExcludeList by viewModel.duplicateScanExcludeList.collectAsState()
 
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val configuration = LocalConfiguration.current
+
     LaunchedEffect(uiState.toastMessage) {
         uiState.toastMessage?.let { message ->
             android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_LONG).show()
@@ -199,6 +211,8 @@ fun SettingsScreen(
         }
     }
 
+    // Hoist the string resource to avoid calling it inside the callback
+    val defaultExportFilename = stringResource(R.string.export_filename_default)
     val exportFavoritesLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
@@ -220,7 +234,6 @@ fun SettingsScreen(
     var showAboutSortMediaDialog by remember { mutableStateOf(false) }
     var showFundingDialog by remember { mutableStateOf(false) }
 
-
     LaunchedEffect(uiState.isSearchActive) {
         if (uiState.isSearchActive) {
             focusRequester.requestFocus()
@@ -228,26 +241,6 @@ fun SettingsScreen(
         } else {
             keyboardController?.hide()
         }
-    }
-
-    if (uiState.showConfirmSimilarityChangeDialog) {
-        AlertDialog(
-            onDismissRequest = { viewModel.dismissSetSimilarityThresholdLevel() },
-            title = { Text("Reset Similarity Cache?") },
-            text = { Text("Changing this setting requires clearing the similar media cache. The next scan will take longer as it re-analyzes all photos and videos. This is a one-time process. Do you want to continue?") },
-            confirmButton = {
-                Button(
-                    onClick = { viewModel.confirmSetSimilarityThresholdLevel() }
-                ) {
-                    Text("Continue")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.dismissSetSimilarityThresholdLevel() }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 
     Scaffold(
@@ -261,7 +254,7 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .focusRequester(focusRequester),
-                            placeholder = { Text("Search settings...") },
+                            placeholder = { Text(stringResource(R.string.search_settings_placeholder)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
@@ -275,14 +268,14 @@ fun SettingsScreen(
                             )
                         )
                     } else {
-                        Text("Settings")
+                        Text(stringResource(R.string.settings))
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back"
+                            contentDescription = stringResource(R.string.navigate_back)
                         )
                     }
                 },
@@ -290,7 +283,7 @@ fun SettingsScreen(
                     IconButton(onClick = viewModel::toggleSearch) {
                         Icon(
                             imageVector = if (uiState.isSearchActive) Icons.Default.Clear else Icons.Default.Search,
-                            contentDescription = if (uiState.isSearchActive) "Close search" else "Search settings"
+                            contentDescription = if (uiState.isSearchActive) stringResource(R.string.close_search) else stringResource(R.string.search_settings_icon_desc)
                         )
                     }
                 }
@@ -301,27 +294,37 @@ fun SettingsScreen(
         val settingSections = remember {
             listOf(
                 SettingSection(
-                    title = "Appearance",
+                    titleRes = R.string.appearance_section_title,
                     items = listOf(
-                        SettingContent(keywords = listOf("theme", "dark", "light", "amoled", "system")) {
+                        SettingContent(titleRes = R.string.language_title, keywords = listOf("translation", "it", "en")) {
                             ExposedDropdownMenu(
-                                title = "Theme",
-                                description = getThemeDescription(currentTheme),
+                                titleRes = R.string.language_title,
+                                descriptionRes = R.string.language_desc,
+                                options = AppLocale.entries,
+                                selectedOption = currentLocale,
+                                onOptionSelected = { viewModel.setAppLocale(it) },
+                                getDisplayName = { getAppLocaleDisplayName(it) })
+                        },
+                        SettingContent(titleRes = R.string.theme_title, keywords = listOf("dark", "light", "amoled", "system")) {
+                            ExposedDropdownMenu(
+                                titleRes = R.string.theme_title,
+                                descriptionRes = getThemeDescriptionRes(currentTheme),
                                 options = AppTheme.entries,
                                 selectedOption = currentTheme,
                                 onOptionSelected = { viewModel.setTheme(it) },
                                 getDisplayName = { getThemeDisplayName(it) })
                         },
-                        SettingContent(keywords = listOf("dynamic colors", "system theme", "material you")) {
+                        SettingContent(titleRes = R.string.dynamic_colors_title, keywords = listOf("system theme", "material you")) {
+                            val desc = if (supportsDynamicColors) stringResource(R.string.dynamic_colors_desc) else stringResource(R.string.dynamic_colors_req_android_12)
                             SettingSwitch(
-                                title = "Use Dynamic Colors",
-                                description = if (supportsDynamicColors) "Use colors from your system theme" else "Requires Android 12 or newer",
+                                titleRes = R.string.dynamic_colors_title,
+                                description = desc,
                                 checked = useDynamicColors,
                                 onCheckedChange = { viewModel.setUseDynamicColors(it) },
                                 enabled = supportsDynamicColors
                             )
                         },
-                        SettingContent(keywords = listOf("accent color", "customize colors")) {
+                        SettingContent(titleRes = R.string.accent_color_title, keywords = listOf("customize colors")) {
                             AnimatedVisibility(visible = !useDynamicColors || !supportsDynamicColors) {
                                 AccentColorSetting(
                                     currentAccentKey = accentColorKey,
@@ -329,218 +332,218 @@ fun SettingsScreen(
                                 )
                             }
                         },
-                        SettingContent(keywords = listOf("folder name position", "above", "below", "hidden")) {
+                        SettingContent(titleRes = R.string.folder_name_position_title, keywords = listOf("above", "below", "hidden")) {
                             ExposedDropdownMenu(
-                                title = "Folder Name Position",
-                                description = "Choose where to display the current folder name on the sorting screen.",
+                                titleRes = R.string.folder_name_position_title,
+                                descriptionRes = R.string.folder_name_position_desc,
                                 options = FolderNameLayout.entries,
                                 selectedOption = folderNameLayout,
                                 onOptionSelected = { viewModel.setFolderNameLayout(it) },
                                 getDisplayName = { getFolderNameLayoutDisplayName(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("compact folder view", "list style")) {
+                        SettingContent(titleRes = R.string.compact_folder_view_title, keywords = listOf("list style")) {
                             SettingSwitch(
-                                title = "Compact Folder View",
-                                description = "Show folders in a more compact list style",
+                                titleRes = R.string.compact_folder_view_title,
+                                descriptionRes = R.string.compact_folder_view_desc,
                                 checked = compactFolderView,
                                 onCheckedChange = { viewModel.setCompactFolderView(it) })
                         },
-                        SettingContent(keywords = listOf("initial based folder icons", "legacy", "letter icon")) {
+                        SettingContent(titleRes = R.string.legacy_folder_icons_title, keywords = listOf("legacy", "letter icon")) {
                             SettingSwitch(
-                                title = "Use Initial-based Folder Icons",
-                                description = "Use the first letter of a folder's name as its icon",
+                                titleRes = R.string.legacy_folder_icons_title,
+                                descriptionRes = R.string.legacy_folder_icons_desc,
                                 checked = useLegacyFolderIcons,
                                 onCheckedChange = { viewModel.setUseLegacyFolderIcons(it) })
                         },
-                        SettingContent(keywords = listOf("hide media filename", "overlay")) {
+                        SettingContent(titleRes = R.string.hide_media_filename_title, keywords = listOf("overlay")) {
                             SettingSwitch(
-                                title = "Hide Media Filename",
-                                description = "Hide the filename overlay on media cards",
+                                titleRes = R.string.hide_media_filename_title,
+                                descriptionRes = R.string.hide_media_filename_desc,
                                 checked = hideFilename,
                                 onCheckedChange = { viewModel.setHideFilename(it) })
                         },
-                        SettingContent(keywords = listOf("folder bar layout", "horizontal", "vertical", "scrolling")) {
+                        SettingContent(titleRes = R.string.folder_bar_layout_title, keywords = listOf("horizontal", "vertical", "scrolling")) {
                             ExposedDropdownMenu(
-                                title = "Folder Bar Layout",
-                                description = "Choose the scrolling direction for the 'Move to' bar.",
+                                titleRes = R.string.folder_bar_layout_title,
+                                descriptionRes = R.string.folder_bar_layout_desc,
                                 options = FolderBarLayout.entries,
                                 selectedOption = folderBarLayout,
                                 onOptionSelected = { viewModel.setFolderBarLayout(it) },
                                 getDisplayName = { layout ->
                                     when (layout) {
-                                        FolderBarLayout.HORIZONTAL -> "Horizontal"
-                                        FolderBarLayout.VERTICAL -> "Vertical"
+                                        FolderBarLayout.HORIZONTAL -> stringResource(R.string.layout_horizontal)
+                                        FolderBarLayout.VERTICAL -> stringResource(R.string.layout_vertical)
                                     }
                                 })
                         },
-                        SettingContent(keywords = listOf("skip partial expansion", "review changes sheet", "animation")) {
+                        SettingContent(titleRes = R.string.skip_partial_expansion_title, keywords = listOf("review changes sheet", "animation")) {
                             SettingSwitch(
-                                title = "Skip Partial Expansion",
-                                description = "The summary sheet will open directly to its full size.",
+                                titleRes = R.string.skip_partial_expansion_title,
+                                descriptionRes = R.string.skip_partial_expansion_desc,
                                 checked = skipPartialExpansion,
                                 onCheckedChange = { viewModel.onSkipPartialExpansionChanged(it) })
                         },
-                        SettingContent(keywords = listOf("use full-screen summary", "maximize", "height")) {
+                        SettingContent(titleRes = R.string.use_full_screen_summary_title, keywords = listOf("maximize", "height")) {
                             SettingSwitch(
-                                title = "Use Full-Screen Summary",
-                                description = "When enabled, the sheet's maximum height will fill the screen when needed.",
+                                titleRes = R.string.use_full_screen_summary_title,
+                                descriptionRes = R.string.use_full_screen_summary_desc,
                                 checked = useFullScreenSummarySheet,
                                 onCheckedChange = { viewModel.onUseFullScreenSummarySheetChanged(it) })
                         }
                     )
                 ),
                 SettingSection(
-                    title = "Behavior",
+                    titleRes = R.string.behavior_section_title,
                     items = listOf(
-                        SettingContent(keywords = listOf("swipe sensitivity", "low", "medium", "high")) {
+                        SettingContent(titleRes = R.string.swipe_sensitivity_title, keywords = listOf("low", "medium", "high")) {
                             ExposedDropdownMenu(
-                                title = "Swipe Sensitivity",
-                                description = "Adjust how far you need to swipe to trigger an action.",
+                                titleRes = R.string.swipe_sensitivity_title,
+                                descriptionRes = R.string.swipe_sensitivity_desc,
                                 options = SwipeSensitivity.entries,
                                 selectedOption = swipeSensitivity,
                                 onOptionSelected = { viewModel.setSwipeSensitivity(it) },
                                 getDisplayName = { getSwipeSensitivityDisplayName(it) })
                         },
-                        SettingContent(keywords = listOf("swipe down action", "gesture", "shortcut", "edit", "skip", "add folder", "share", "open")) {
+                        SettingContent(titleRes = R.string.swipe_down_action_title, keywords = listOf("gesture", "shortcut", "edit", "skip", "add folder", "share", "open")) {
                             ExposedDropdownMenu(
-                                title = "Swipe Down Action",
-                                description = "Assign a shortcut to the swipe down gesture on a media card.",
+                                titleRes = R.string.swipe_down_action_title,
+                                descriptionRes = R.string.swipe_down_action_desc,
                                 options = SwipeDownAction.entries,
                                 selectedOption = swipeDownAction,
                                 onOptionSelected = { viewModel.setSwipeDownAction(it) },
                                 getDisplayName = { getSwipeDownActionDisplayName(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("full screen swipe", "gesture area", "background")) {
+                        SettingContent(titleRes = R.string.full_screen_swipe_title, keywords = listOf("gesture area", "background")) {
                             SettingSwitch(
-                                title = "Full Screen Swipe",
-                                description = "Allow swiping on the background area, not just the image itself.",
+                                titleRes = R.string.full_screen_swipe_title,
+                                descriptionRes = R.string.full_screen_swipe_desc,
                                 checked = fullScreenSwipe,
                                 onCheckedChange = { viewModel.setFullScreenSwipe(it) })
                         },
-                        SettingContent(keywords = listOf("default video speed", "playback")) {
+                        SettingContent(titleRes = R.string.default_video_speed_title, keywords = listOf("playback")) {
                             val videoSpeedOptions = listOf(1.0f, 1.5f, 2.0f)
                             ExposedDropdownMenu(
-                                title = "Default Video Speed",
-                                description = "Set the default playback speed for videos.",
+                                titleRes = R.string.default_video_speed_title,
+                                descriptionRes = R.string.default_video_speed_desc,
                                 options = videoSpeedOptions,
                                 selectedOption = defaultVideoSpeed,
                                 onOptionSelected = { viewModel.setDefaultVideoSpeed(it) },
                                 getDisplayName = { speed -> "${speed}x" }
                             )
                         },
-                        SettingContent(keywords = listOf("screenshot also deletes original video")) {
+                        SettingContent(titleRes = R.string.screenshot_deletes_video_title, keywords = listOf("screenshot also deletes original video")) {
                             SettingSwitch(
-                                title = "Screenshot also deletes original video",
-                                description = "When taking a screenshot from a video, automatically queue the video for deletion.",
+                                titleRes = R.string.screenshot_deletes_video_title,
+                                descriptionRes = R.string.screenshot_deletes_video_desc,
                                 checked = screenshotDeletesVideo,
                                 onCheckedChange = { viewModel.setScreenshotDeletesVideo(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("screenshot quality", "jpeg")) {
+                        SettingContent(titleRes = R.string.screenshot_quality_title, keywords = listOf("jpeg")) {
                             val qualityOptions = listOf("95", "90", "85", "75")
                             ExposedDropdownMenu(
-                                title = "Screenshot Quality (JPEG)",
-                                description = "Higher quality results in larger file sizes. Default is 90.",
+                                titleRes = R.string.screenshot_quality_title,
+                                descriptionRes = R.string.screenshot_quality_desc,
                                 options = qualityOptions,
                                 selectedOption = screenshotJpegQuality,
                                 onOptionSelected = { viewModel.setScreenshotJpegQuality(it) },
                                 getDisplayName = { quality ->
                                     when(quality) {
-                                        "95" -> "High (95)"
-                                        "90" -> "Good (90)"
-                                        "85" -> "Balanced (85)"
-                                        "75" -> "Low (75)"
-                                        else -> "$quality"
+                                        "95" -> stringResource(R.string.quality_high)
+                                        "90" -> stringResource(R.string.quality_good)
+                                        "85" -> stringResource(R.string.quality_balanced)
+                                        "75" -> stringResource(R.string.quality_low)
+                                        else -> quality
                                     }
                                 }
                             )
                         },
-                        SettingContent(keywords = listOf("folder selection mode", "all", "remember", "none")) {
+                        SettingContent(titleRes = R.string.folder_selection_mode_title, keywords = listOf("all", "remember", "none")) {
                             ExposedDropdownMenu(
-                                title = "Folder Selection Mode",
-                                description = getFolderSelectionModeDescription(folderSelectionMode),
+                                titleRes = R.string.folder_selection_mode_title,
+                                descriptionRes = getFolderSelectionModeDescriptionRes(folderSelectionMode),
                                 options = FolderSelectionMode.entries,
                                 selectedOption = folderSelectionMode,
                                 onOptionSelected = { viewModel.setFolderSelectionMode(it) },
                                 getDisplayName = { getFolderSelectionModeDisplayName(it) })
                         },
-                        SettingContent(keywords = listOf("invert swipe actions", "left", "right", "keep", "delete")) {
+                        SettingContent(titleRes = R.string.show_favorites_setup_title, keywords = listOf("show favorites in setup")) {
                             SettingSwitch(
-                                title = "Invert Swipe Actions",
-                                description = "Invert the swipe actions: left to keep, right to delete",
+                                titleRes = R.string.show_favorites_setup_title,
+                                descriptionRes = R.string.show_favorites_setup_desc,
+                                checked = showFavoritesInSetup,
+                                onCheckedChange = { viewModel.setShowFavoritesInSetup(it) })
+                        },
+                        SettingContent(titleRes = R.string.invert_swipe_title, keywords = listOf("left", "right", "keep", "delete")) {
+                            SettingSwitch(
+                                titleRes = R.string.invert_swipe_title,
+                                descriptionRes = R.string.invert_swipe_desc,
                                 checked = invertSwipe,
                                 onCheckedChange = { viewModel.setInvertSwipe(it) })
                         },
-                        SettingContent(keywords = listOf("hide skip button")) {
+                        SettingContent(titleRes = R.string.hide_skip_button_title, keywords = listOf("hide skip button")) {
                             SettingSwitch(
-                                title = "Hide Skip Button",
-                                description = "If enabled, the 'Skip' button will be hidden from the bottom bar.",
+                                titleRes = R.string.hide_skip_button_title,
+                                descriptionRes = R.string.hide_skip_button_desc,
                                 checked = hideSkipButton,
                                 onCheckedChange = { viewModel.setHideSkipButton(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("add to favorites by default", "target folder")) {
+                        SettingContent(titleRes = R.string.add_fav_by_default_title, keywords = listOf("target folder")) {
                             SettingSwitch(
-                                title = "Add to Favorites by Default",
-                                description = "Pre-select the 'Add to Favorites' toggle when adding a new target folder.",
+                                titleRes = R.string.add_fav_by_default_title,
+                                descriptionRes = R.string.add_fav_by_default_desc,
                                 checked = addFavoriteToTargetByDefault,
                                 onCheckedChange = { viewModel.setAddFavoriteToTargetByDefault(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("unfavorite also removes", "hide folder")) {
+                        SettingContent(titleRes = R.string.unfav_removes_from_bar_title, keywords = listOf("hide folder")) {
                             SettingSwitch(
-                                title = "Unfavorite Also Removes",
-                                description = "If enabled, unfavoriting a folder also hides it for the session.",
+                                titleRes = R.string.unfav_removes_from_bar_title,
+                                descriptionRes = R.string.unfav_removes_from_bar_desc,
                                 checked = unfavoriteRemovesFromBar,
                                 onCheckedChange = { viewModel.setUnfavoriteRemovesFromBar(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("hint on existing folder name")) {
+                        SettingContent(titleRes = R.string.hint_on_existing_folder_title, keywords = listOf("hint on existing folder name")) {
                             SettingSwitch(
-                                title = "Hint on Existing Folder Name",
-                                description = "Show a hint if a folder with the same name exists while you type.",
+                                titleRes = R.string.hint_on_existing_folder_title,
+                                descriptionRes = R.string.hint_on_existing_folder_desc,
                                 checked = hintOnExistingFolderName,
                                 onCheckedChange = { viewModel.setHintOnExistingFolderName(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("initial dialog focus", "search path", "folder name")) {
+                        SettingContent(titleRes = R.string.initial_dialog_focus_title, keywords = listOf("search path", "folder name")) {
                             ExposedDropdownMenu(
-                                title = "Initial Dialog Focus",
-                                description = "When adding a folder, choose which field gets focus first.",
+                                titleRes = R.string.initial_dialog_focus_title,
+                                descriptionRes = R.string.initial_dialog_focus_desc,
                                 options = AddFolderFocusTarget.entries,
                                 selectedOption = addFolderFocusTarget,
                                 onOptionSelected = { viewModel.setAddFolderFocusTarget(it) },
                                 getDisplayName = { getAddFolderFocusTargetDisplayName(it) })
                         },
-                        SettingContent(keywords = listOf("show favorites in setup")) {
-                            SettingSwitch(
-                                title = "Show Favorites in Setup",
-                                description = "Show favorite folders during the setup process",
-                                checked = showFavoritesInSetup,
-                                onCheckedChange = { viewModel.setShowFavoritesInSetup(it) })
-                        },
-                        SettingContent(keywords = listOf("default album location", "pictures", "dcim", "movies", "custom folder")) {
+                        SettingContent(titleRes = R.string.default_album_location_title, keywords = listOf("pictures", "dcim", "movies", "custom folder")) {
                             DefaultAlbumLocationSetting(viewModel, defaultPath, pathOptions)
                         },
-                        SettingContent(keywords = listOf("remember organized media", "skip media", "reset history")) {
+                        SettingContent(titleRes = R.string.remember_organized_media_title, keywords = listOf("remember organized media", "skip media", "reset history")) {
                             RememberMediaSetting(viewModel, rememberProcessedMedia)
                         },
-                        SettingContent(keywords = listOf("forget sorted media", "reappear")) {
+                        SettingContent(titleRes = R.string.forget_sorted_media_folder_title, keywords = listOf("forget sorted media", "reappear")) {
                             ForgetSortedMediaSetting(viewModel)
                         },
-                        SettingContent(keywords = listOf("search autofocus enabled", "search bar")) {
+                        SettingContent(titleRes = R.string.search_autofocus_title, keywords = listOf("search bar")) {
                             SettingSwitch(
-                                title = "Search Autofocus Enabled",
-                                description = "Autofocus on search bar when opening the app",
+                                titleRes = R.string.search_autofocus_title,
+                                descriptionRes = R.string.search_autofocus_desc,
                                 checked = searchAutofocusEnabled,
                                 onCheckedChange = { viewModel.setSearchAutofocusEnabled(it) })
                         },
-                        SettingContent(keywords = listOf("unselect all behavior", "search", "global", "visible")) {
+                        SettingContent(titleRes = R.string.unselect_all_behavior_title, keywords = listOf("global", "visible")) {
                             ExposedDropdownMenu(
-                                title = "'Unselect All' Behavior in Search",
-                                description = getUnselectAllScopeDescription(unselectAllInSearchScope),
+                                titleRes = R.string.unselect_all_behavior_title,
+                                descriptionRes = getUnselectAllScopeDescriptionRes(unselectAllInSearchScope),
                                 options = UnselectScanScope.entries,
                                 selectedOption = unselectAllInSearchScope,
                                 onOptionSelected = { viewModel.setUnselectAllInSearchScope(it) },
@@ -549,20 +552,20 @@ fun SettingsScreen(
                     )
                 ),
                 SettingSection(
-                    title = "Duplicate Finder",
+                    titleRes = R.string.duplicate_finder_section_title,
                     items = listOf(
-                        SettingContent(keywords = listOf("similarity level", "duplicates", "strict", "balanced", "loose")) {
+                        SettingContent(titleRes = R.string.similarity_level_title, keywords = listOf("duplicates", "strict", "balanced", "loose")) {
                             ExposedDropdownMenu(
-                                title = "Similarity Level",
-                                description = getSimilarityLevelDescription(similarityThresholdLevel),
+                                titleRes = R.string.similarity_level_title,
+                                descriptionRes = getSimilarityLevelDescriptionRes(similarityThresholdLevel),
                                 options = SimilarityThresholdLevel.entries,
                                 selectedOption = similarityThresholdLevel,
                                 onOptionSelected = { viewModel.setSimilarityThresholdLevel(it) },
                                 getDisplayName = { getSimilarityLevelDisplayName(it) })
                         },
-                        SettingContent(keywords = listOf("scan scope", "include", "exclude", "whitelist", "blacklist")) {
+                        SettingContent(titleRes = R.string.scan_scope_title, keywords = listOf("whitelist", "blacklist")) {
                             ExposedDropdownMenu(
-                                title = "Scan Scope",
+                                titleRes = R.string.scan_scope_title,
                                 description = getScanScopeDescription(duplicateScanScope, duplicateScanIncludeList, duplicateScanExcludeList),
                                 options = DuplicateScanScope.entries,
                                 selectedOption = duplicateScanScope,
@@ -570,17 +573,18 @@ fun SettingsScreen(
                                 getDisplayName = { getScanScopeDisplayName(it) }
                             )
                         },
-                        SettingContent(keywords = listOf("manage list", "folders", "include", "exclude")) {
+                        SettingContent(titleRes = R.string.manage_include_list, keywords = listOf("folders", "include", "exclude")) {
                             AnimatedVisibility(
                                 visible = duplicateScanScope != DuplicateScanScope.ALL_FILES,
                                 enter = fadeIn(),
                                 exit = fadeOut()
                             ) {
-                                val (title, list) = if (duplicateScanScope == DuplicateScanScope.INCLUDE_LIST) {
-                                    "Manage Include List" to duplicateScanIncludeList
+                                val title = if (duplicateScanScope == DuplicateScanScope.INCLUDE_LIST) {
+                                    stringResource(R.string.manage_include_list)
                                 } else {
-                                    "Manage Exclude List" to duplicateScanExcludeList
+                                    stringResource(R.string.manage_exclude_list)
                                 }
+                                val listSize = if (duplicateScanScope == DuplicateScanScope.INCLUDE_LIST) duplicateScanIncludeList.size else duplicateScanExcludeList.size
 
                                 Column {
                                     Spacer(Modifier.height(8.dp))
@@ -588,7 +592,7 @@ fun SettingsScreen(
                                         onClick = { viewModel.showDuplicateScanScopeDialog() },
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("$title (${list.size})")
+                                        Text(stringResource(R.string.manage_list_format, title, listSize))
                                     }
                                 }
                             }
@@ -596,9 +600,9 @@ fun SettingsScreen(
                     )
                 ),
                 SettingSection(
-                    title = "Advanced",
+                    titleRes = R.string.advanced_section_title,
                     items = listOf(
-                        SettingContent(keywords = listOf("media indexing status", "mediastore", "scan")) {
+                        SettingContent(titleRes = R.string.media_indexing_status_title, keywords = listOf("mediastore", "scan")) {
                             MediaIndexingStatusItem(
                                 status = uiState.indexingStatus,
                                 isStatusLoading = uiState.isIndexingStatusLoading,
@@ -608,21 +612,21 @@ fun SettingsScreen(
                                 onViewFiles = viewModel::showUnindexedFilesDialog
                             )
                         },
-                        SettingContent(keywords = listOf("export target favorites", "save", "backup")) {
+                        SettingContent(titleRes = R.string.export_target_favorites_title, keywords = listOf("save", "backup")) {
                             SettingsItem(
-                                title = "Export Target Favorites",
-                                summary = "Save your favorite target folders to a file.",
-                                onClick = { exportFavoritesLauncher.launch("cleansweep_target_favorites.json") }
+                                title = stringResource(R.string.export_target_favorites_title),
+                                summary = stringResource(R.string.export_target_favorites_desc),
+                                onClick = { exportFavoritesLauncher.launch(defaultExportFilename) }
                             )
                         },
-                        SettingContent(keywords = listOf("import target favorites", "load", "restore")) {
+                        SettingContent(titleRes = R.string.import_target_favorites_title, keywords = listOf("load", "restore")) {
                             SettingsItem(
-                                title = "Import Target Favorites",
-                                summary = "Load favorite target folders from a file.",
+                                title = stringResource(R.string.import_target_favorites_title),
+                                summary = stringResource(R.string.import_target_favorites_desc),
                                 onClick = { importFavoritesLauncher.launch(arrayOf("application/json", "text/plain")) }
                             )
                         },
-                        SettingContent(keywords = listOf("reset dialog warnings", "confirmation")) {
+                        SettingContent(titleRes = R.string.reset_dialog_warnings_title, keywords = listOf("confirmation")) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -631,12 +635,12 @@ fun SettingsScreen(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "Reset Dialog Warnings",
+                                        text = stringResource(R.string.reset_dialog_warnings_title),
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "Reshow all confirmation dialogs.",
+                                        text = stringResource(R.string.reset_dialog_warnings_desc),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -651,14 +655,14 @@ fun SettingsScreen(
                     )
                 ),
                 SettingSection(
-                    title = "Help & Support",
+                    titleRes = R.string.help_support_section_title,
                     items = listOf(
-                        SettingContent(keywords = listOf("onboarding tutorial", "replay", "help")) {
+                        SettingContent(titleRes = R.string.onboarding_tutorial_title, keywords = listOf("replay", "help")) {
                             Column {
-                                Text("Onboarding Tutorial", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.onboarding_tutorial_title), style = MaterialTheme.typography.titleMedium)
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    "Replay the onboarding experience to learn app features.",
+                                    stringResource(R.string.onboarding_tutorial_desc),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -667,62 +671,70 @@ fun SettingsScreen(
                                     onClick = { viewModel.resetOnboarding() },
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("Replay Tutorial")
+                                    Text(stringResource(R.string.replay_tutorial_button))
                                 }
                             }
                         }
                     )
                 ),
                 SettingSection(
-                    title = "About",
+                    titleRes = R.string.about_section_title,
                     items = listOf(
-                        SettingContent(keywords = listOf("donate", "funding", "crypto", "bitcoin", "support")) {
+                        SettingContent(titleRes = R.string.support_development_title, keywords = listOf("donate", "funding", "crypto", "bitcoin")) {
                             SettingsItem(
-                                title = "Support Development",
-                                summary = "Support the project",
+                                title = stringResource(R.string.support_development_title),
+                                summary = stringResource(R.string.support_development_desc),
                                 onClick = { showFundingDialog = true }
                             )
                         },
-                        SettingContent(keywords = listOf("version", "build")) {
+                        SettingContent(titleRes = R.string.version_title, keywords = listOf("build")) {
+                            val versionString = viewModel.appVersion
+                            val copyMessage = stringResource(R.string.app_version_copied, versionString)
                             SettingsItem(
-                                title = "Version",
-                                summary = viewModel.appVersion,
+                                title = stringResource(R.string.version_title),
+                                summary = versionString,
                                 onLongClick = {
-                                    clipboardManager.setText(AnnotatedString(viewModel.appVersion))
-                                    // Only show a toast for Android 12 and lower, as 13+ has a system UI for clipboard
-                                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                                        android.widget.Toast.makeText(context, "App version copied: ${viewModel.appVersion}", android.widget.Toast.LENGTH_SHORT).show()
+                                    scope.launch {
+                                        val clipData = ClipData.newPlainText("label", versionString)
+                                        val clipEntry = ClipEntry(clipData)
+                                        clipboard.setClipEntry(clipEntry)
+                                        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                                            android.widget.Toast.makeText(context, copyMessage, android.widget.Toast.LENGTH_SHORT).show()
+                                        }
                                     }
                                 }
                             )
                         },
-                        SettingContent(keywords = listOf("about cleansweep", "info")) {
+                        SettingContent(titleRes = R.string.about_cleansweep_title, keywords = listOf("info")) {
                             SettingsItem(
-                                title = "About CleanSweep",
-                                summary = "Learn more about CleanSweep",
+                                title = stringResource(R.string.about_cleansweep_title),
+                                summary = stringResource(R.string.about_cleansweep_desc),
                                 onClick = { showAboutSortMediaDialog = true }
                             )
                         },
-                        SettingContent(keywords = listOf("github", "source code")) {
+                        SettingContent(titleRes = R.string.github_summary, keywords = listOf("source code")) {
                             val uriHandler = LocalUriHandler.current
+                            val url = stringResource(R.string.github_summary)
                             SettingsItem(
-                                title = "GitHub",
-                                summary = "github.com/LoopOtto/CleanSweep",
-                                onClick = { uriHandler.openUri("https://github.com/LoopOtto/CleanSweep") }
+                                title = stringResource(R.string.github_title),
+                                summary = url,
+                                onClick = { uriHandler.openUri("https://$url") }
                             )
                         },
-                        SettingContent(keywords = listOf("gitlab", "source code", "mirror")) {
+                        SettingContent(titleRes = R.string.gitlab_summary, keywords = listOf("mirror")) {
                             val uriHandler = LocalUriHandler.current
+                            // Removing "(read-only mirror)" suffix for URL
+                            val url = stringResource(R.string.gitlab_summary).substringBefore(" ")
                             SettingsItem(
-                                title = "GitLab",
-                                summary = "gitlab.com/LoopOtto/CleanSweep (read-only mirror)",
-                                onClick = { uriHandler.openUri("https://gitlab.com/LoopOtto/cleansweep") }
+                                title = stringResource(R.string.gitlab_title),
+                                summary = stringResource(R.string.gitlab_summary),
+                                onClick = { uriHandler.openUri("https://$url") }
                             )
                         },
-                        SettingContent(keywords = listOf("open-source licenses", "libraries")) {
+                        SettingContent(titleRes = R.string.open_source_licenses_title, keywords = listOf("libraries")) {
                             SettingsItem(
-                                title = "Open-Source Licenses",
-                                summary = "View open-source licenses",
+                                title = stringResource(R.string.open_source_licenses_title),
+                                summary = stringResource(R.string.open_source_licenses_desc),
                                 onClick = onNavigateToLibraries
                             )
                         }
@@ -731,17 +743,20 @@ fun SettingsScreen(
             )
         }
 
-        val filteredSections = remember(debouncedSearchQuery, settingSections) {
+        val resources = LocalResources.current
+        val filteredSections = remember(debouncedSearchQuery, settingSections, configuration) {
             if (debouncedSearchQuery.isBlank()) {
                 settingSections
             } else {
                 settingSections.mapNotNull { section ->
-                    val sectionTitleMatches = section.title.contains(debouncedSearchQuery, ignoreCase = true)
+                    val sectionTitle = resources.getString(section.titleRes)
+                    val sectionTitleMatches = sectionTitle.contains(debouncedSearchQuery, ignoreCase = true)
                     val matchingItems = section.items.filter { item ->
-                        item.keywords.any { it.contains(debouncedSearchQuery, ignoreCase = true) }
+                        val itemTitle = resources.getString(item.titleRes)
+                        itemTitle.contains(debouncedSearchQuery, ignoreCase = true) ||
+                                item.keywords.any { it.contains(debouncedSearchQuery, ignoreCase = true) }
                     }
                     if (sectionTitleMatches || matchingItems.isNotEmpty()) {
-                        // If the section title matches, show all items, otherwise show only matching items
                         section.copy(items = if (sectionTitleMatches) section.items else matchingItems)
                     } else {
                         null
@@ -749,7 +764,6 @@ fun SettingsScreen(
                 }
             }
         }
-
 
         Column(
             modifier = Modifier
@@ -763,12 +777,11 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Spacer between sections
                     if (filteredSections.first() != section) {
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                     Text(
-                        text = section.title,
+                        text = stringResource(section.titleRes),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -778,10 +791,9 @@ fun SettingsScreen(
                 }
             }
 
-            // Show a message if no results are found
             if (filteredSections.isEmpty() && debouncedSearchQuery.isNotBlank()) {
                 Text(
-                    text = "No settings found for \"$debouncedSearchQuery\"",
+                    text = stringResource(R.string.no_settings_found, debouncedSearchQuery),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 24.dp),
@@ -817,25 +829,24 @@ fun SettingsScreen(
     if (showAboutSortMediaDialog) {
         AppDialog(
             onDismissRequest = { showAboutSortMediaDialog = false },
-            title = { Text("About CleanSweep", style = MaterialTheme.typography.headlineSmall) },
-            text = { Text("Version: ${viewModel.appVersion}", style = MaterialTheme.typography.bodyLarge) },
+            title = { Text(stringResource(R.string.about_cleansweep_title), style = MaterialTheme.typography.headlineSmall) },
+            text = { Text(stringResource(R.string.version_title) + ": ${viewModel.appVersion}", style = MaterialTheme.typography.bodyLarge) },
             buttons = {
                 TextButton(onClick = { showAboutSortMediaDialog = false }) {
-                    Text("Close")
+                    Text(stringResource(R.string.close))
                 }
             }
         )
     }
 
     if (uiState.showDuplicateScanScopeDialog) {
-        val (title, list, isForInclude) = if (duplicateScanScope == DuplicateScanScope.INCLUDE_LIST) {
-            Triple("Manage Include List", duplicateScanIncludeList, true)
-        } else {
-            Triple("Manage Exclude List", duplicateScanExcludeList, false)
-        }
+        val title = if (duplicateScanScope == DuplicateScanScope.INCLUDE_LIST) stringResource(R.string.manage_include_list) else stringResource(R.string.manage_exclude_list)
+        val folderList = if (duplicateScanScope == DuplicateScanScope.INCLUDE_LIST) duplicateScanIncludeList else duplicateScanExcludeList
+        val isForInclude = duplicateScanScope == DuplicateScanScope.INCLUDE_LIST
+
         DuplicateScanScopeManagementDialog(
             title = title,
-            folderList = list.toList(),
+            folderList = folderList.toList(),
             onDismiss = viewModel::dismissDuplicateScanScopeDialog,
             onAddFolder = { viewModel.showDuplicateScanScopeFolderSearch(isForInclude) },
             onRemoveFolder = viewModel::removeFolderFromScanScopeList
@@ -845,9 +856,9 @@ fun SettingsScreen(
     if (uiState.showDuplicateScanScopeFolderSearch) {
         FolderSearchDialog(
             state = folderSearchState,
-            title = "Select Folder",
-            searchLabel = "Search or enter path...",
-            confirmButtonText = "Select",
+            title = stringResource(R.string.add_folder),
+            searchLabel = stringResource(R.string.search_hint) + "…",
+            confirmButtonText = stringResource(R.string.confirm),
             autoConfirmOnSelection = false,
             onDismiss = viewModel::dismissFolderSearchDialog,
             onQueryChanged = viewModel.folderSearchManager::updateSearchQuery,
@@ -863,15 +874,14 @@ fun SettingsScreen(
         )
     }
 
-
     val missingFolders = uiState.missingImportedFolders
     if (missingFolders != null) {
         AppDialog(
             onDismissRequest = { viewModel.dismissMissingFoldersDialog() },
-            title = { Text("Some Folders Not Found") },
+            title = { Text(stringResource(R.string.some_folders_not_found_title)) },
             text = {
                 Column {
-                    Text("The following folders from your backup file do not exist. Do you want to create them?")
+                    Text(stringResource(R.string.some_folders_not_found_body))
                     Spacer(modifier = Modifier.height(8.dp))
                     Column(modifier = Modifier.heightIn(max = 150.dp).verticalScroll(rememberScrollState())) {
                         missingFolders.forEach { path ->
@@ -882,10 +892,10 @@ fun SettingsScreen(
             },
             buttons = {
                 TextButton(onClick = { viewModel.dismissMissingFoldersDialog() }) {
-                    Text("Skip")
+                    Text(stringResource(R.string.skip))
                 }
                 Button(onClick = { viewModel.createAndImportMissingFolders() }) {
-                    Text("Create")
+                    Text(stringResource(R.string.create))
                 }
             }
         )
@@ -894,9 +904,9 @@ fun SettingsScreen(
     if (uiState.showDefaultPathSearchDialog) {
         FolderSearchDialog(
             state = folderSearchState,
-            title = "Select Default Folder",
-            searchLabel = "Search or enter path...",
-            confirmButtonText = "Select",
+            title = stringResource(R.string.default_album_location_title),
+            searchLabel = stringResource(R.string.search_hint) + "…",
+            confirmButtonText = stringResource(R.string.confirm),
             autoConfirmOnSelection = false,
             onDismiss = viewModel::dismissFolderSearchDialog,
             onQueryChanged = viewModel.folderSearchManager::updateSearchQuery,
@@ -910,9 +920,9 @@ fun SettingsScreen(
     if (uiState.showForgetMediaSearchDialog) {
         FolderSearchDialog(
             state = folderSearchState,
-            title = "Forget Sorted Media",
-            searchLabel = "Search for a folder...",
-            confirmButtonText = "Forget",
+            title = stringResource(R.string.forget_sorted_media_title),
+            searchLabel = stringResource(R.string.search_hint) + "…",
+            confirmButtonText = stringResource(R.string.forget_action),
             autoConfirmOnSelection = true,
             onDismiss = viewModel::dismissFolderSearchDialog,
             onQueryChanged = viewModel.folderSearchManager::updateSearchQuery,
@@ -929,11 +939,11 @@ fun SettingsScreen(
             showDontAskAgain = true,
             dontAskAgainChecked = uiState.dontAskAgainForgetFolder,
             onDontAskAgainChanged = { isChecked -> viewModel.onDontAskAgainChanged("forgetFolder", isChecked) },
-            title = { Text("Confirm Action") },
-            text = { Text("Are you sure you want to forget all sorted media history for the folder '${File(uiState.folderToForget ?: "").name}'? This folder will reappear for sorting if it still contains media.") },
+            title = { Text(stringResource(R.string.forget_confirm_title)) },
+            text = { Text(stringResource(R.string.forget_confirm_body, File(uiState.folderToForget ?: "").name)) },
             buttons = {
-                TextButton(onClick = { viewModel.dismissDialog("forgetFolder") }) { Text("Cancel") }
-                Button(onClick = viewModel::confirmForgetSortedMediaInFolder) { Text("Confirm") }
+                TextButton(onClick = { viewModel.dismissDialog("forgetFolder") }) { Text(stringResource(R.string.cancel)) }
+                Button(onClick = viewModel::confirmForgetSortedMediaInFolder) { Text(stringResource(R.string.confirm)) }
             }
         )
     }
@@ -941,16 +951,16 @@ fun SettingsScreen(
     if (uiState.showResetDialogsConfirmation) {
         AppDialog(
             onDismissRequest = { viewModel.dismissDialog("resetWarnings") },
-            title = { Text("Reset All Dialog Warnings?", style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(stringResource(R.string.reset_all_warnings_title), style = MaterialTheme.typography.headlineSmall) },
             text = {
                 Text(
-                    "This will make all confirmation dialogs reappear, even if you selected 'Don't ask again'.",
+                    stringResource(R.string.reset_all_warnings_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             buttons = {
-                TextButton(onClick = { viewModel.dismissDialog("resetWarnings") }) { Text("Cancel") }
-                Button(onClick = viewModel::confirmResetDialogWarnings) { Text("Reset") }
+                TextButton(onClick = { viewModel.dismissDialog("resetWarnings") }) { Text(stringResource(R.string.cancel)) }
+                Button(onClick = viewModel::confirmResetDialogWarnings) { Text(stringResource(R.string.reset)) }
             }
         )
     }
@@ -961,16 +971,16 @@ fun SettingsScreen(
             showDontAskAgain = true,
             dontAskAgainChecked = uiState.dontAskAgainResetHistory,
             onDontAskAgainChanged = { viewModel.onDontAskAgainChanged("resetHistory", it) },
-            title = { Text("Reset Sorted Media History?", style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(stringResource(R.string.reset_history_title), style = MaterialTheme.typography.headlineSmall) },
             text = {
                 Text(
-                    "This will clear the record of all media you have sorted. Previously sorted items will reappear in new sessions. This cannot be undone.",
+                    stringResource(R.string.reset_history_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             buttons = {
-                TextButton(onClick = { viewModel.dismissDialog("resetHistory") }) { Text("Cancel") }
-                Button(onClick = viewModel::confirmResetHistory) { Text("Reset") }
+                TextButton(onClick = { viewModel.dismissDialog("resetHistory") }) { Text(stringResource(R.string.cancel)) }
+                Button(onClick = viewModel::confirmResetHistory) { Text(stringResource(R.string.reset)) }
             }
         )
     }
@@ -981,16 +991,16 @@ fun SettingsScreen(
             showDontAskAgain = true,
             dontAskAgainChecked = uiState.dontAskAgainResetSourceFavorites,
             onDontAskAgainChanged = { viewModel.onDontAskAgainChanged("resetSource", it) },
-            title = { Text("Reset Source Favorites?", style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(stringResource(R.string.reset_source_favs_title), style = MaterialTheme.typography.headlineSmall) },
             text = {
                 Text(
-                    "Are you sure you want to clear all source folder favorites? This action cannot be undone.",
+                    stringResource(R.string.reset_source_favs_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             buttons = {
-                TextButton(onClick = { viewModel.dismissDialog("resetSource") }) { Text("Cancel") }
-                Button(onClick = viewModel::confirmClearSourceFavorites) { Text("Reset") }
+                TextButton(onClick = { viewModel.dismissDialog("resetSource") }) { Text(stringResource(R.string.cancel)) }
+                Button(onClick = viewModel::confirmClearSourceFavorites) { Text(stringResource(R.string.reset)) }
             }
         )
     }
@@ -1001,15 +1011,16 @@ fun SettingsScreen(
             showDontAskAgain = true,
             dontAskAgainChecked = uiState.dontAskAgainResetTargetFavorites,
             onDontAskAgainChanged = { viewModel.onDontAskAgainChanged("resetTarget", it) },
-            title = { Text("Reset Target Favorites?", style = MaterialTheme.typography.headlineSmall) },
+            title = { Text(stringResource(R.string.reset_target_favs_title), style = MaterialTheme.typography.headlineSmall) },
             text = {
                 Text(
-                    "Are you sure you want to clear all target folder favorites? This action cannot be undone.",
+                    stringResource(R.string.reset_target_favs_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             buttons = {
-                TextButton(onClick = { viewModel.dismissDialog("resetTarget") }) { Text("Reset") }
+                TextButton(onClick = { viewModel.dismissDialog("resetTarget") }) { Text(stringResource(R.string.cancel)) }
+                Button(onClick = viewModel::confirmClearTargetFavorites) { Text(stringResource(R.string.reset)) }
             }
         )
     }
@@ -1036,7 +1047,7 @@ private fun DuplicateScanScopeManagementDialog(
         title = { Text(title) },
         text = {
             if (folderList.isEmpty()) {
-                Text("No folders have been added to this list. The scan will run as if this setting were disabled.")
+                Text(stringResource(R.string.no_folders_added_to_list))
             } else {
                 LazyColumn(modifier = Modifier
                     .fillMaxWidth()
@@ -1065,11 +1076,11 @@ private fun DuplicateScanScopeManagementDialog(
             OutlinedButton(onClick = onAddFolder) {
                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Add Folder")
+                Text(stringResource(R.string.add_folder))
             }
             Spacer(Modifier.weight(1f))
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -1086,20 +1097,21 @@ private fun UnindexedFilesDialog(
     val groupedFiles = remember(filePaths) {
         filePaths.groupBy { File(it).parent ?: "Unknown Location" }
     }
+    val unknownLocation = stringResource(R.string.unknown_location)
 
     AppDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Unindexed Media Files") },
+        title = { Text(stringResource(R.string.unindexed_files_dialog_title)) },
         text = {
             Column {
                 if (filePaths.isEmpty() && totalUnindexedCount > 0) {
                     Text(
-                        text = "No unindexed user files found. This is the ideal state. Any remaining files are likely hidden system or temporary files, which can be viewed with the toggle below.",
+                        text = stringResource(R.string.unindexed_files_ideal_state),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 } else if (filePaths.isEmpty()) {
                     Text(
-                        text = "No unindexed files were found on your device.",
+                        text = stringResource(R.string.no_unindexed_files_found),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -1111,9 +1123,9 @@ private fun UnindexedFilesDialog(
                         .heightIn(max = 350.dp)) {
                         item {
                             val descriptionText = if (showHidden) {
-                                "These files are on your device but are not known by the MediaStore. These will never be indexed by the MediaStore by design."
+                                stringResource(R.string.unindexed_files_system_desc)
                             } else {
-                                "These files are on your device but are not known by the MediaStore. Maybe scanning will index them."
+                                stringResource(R.string.unindexed_files_user_desc)
                             }
                             Text(
                                 text = descriptionText,
@@ -1122,9 +1134,10 @@ private fun UnindexedFilesDialog(
                             )
                         }
                         groupedFiles.forEach { (directory, files) ->
+                            val dirName = if (directory == "Unknown Location") unknownLocation else directory
                             item {
                                 Text(
-                                    text = directory,
+                                    text = dirName,
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
@@ -1153,13 +1166,13 @@ private fun UnindexedFilesDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Checkbox(checked = showHidden, onCheckedChange = { onToggleShowHidden() })
-                    Text("Show hidden/temporary files")
+                    Text(stringResource(R.string.show_hidden_temp_files))
                 }
             }
         },
         buttons = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.close))
             }
         }
     )
@@ -1175,30 +1188,30 @@ private fun MediaIndexingStatusItem(
     onViewFiles: () -> Unit
 ) {
     val statusText = when {
-        isScanning -> "Scanning for unindexed media..."
-        isStatusLoading -> "Loading status..."
-        status == null -> "Press the refresh icon to check status." // Initial state
+        isScanning -> stringResource(R.string.indexing_status_scanning)
+        isStatusLoading -> stringResource(R.string.indexing_status_loading)
+        status == null -> stringResource(R.string.indexing_status_initial)
         else -> {
             val percentage = if (status.total > 0) (status.indexed.toDouble() / status.total * 100) else 100.0
             val formattedPercentage = String.format(java.util.Locale.US, "%.1f%%", percentage)
             val totalFormatted = NumberFormat.getInstance().format(status.total)
             val indexedFormatted = NumberFormat.getInstance().format(status.indexed)
-            "Indexed Media: $indexedFormatted of $totalFormatted files ($formattedPercentage)"
+            stringResource(R.string.indexing_status_format, indexedFormatted, totalFormatted, formattedPercentage)
         }
     }
 
     val supportingText = if (status != null && !isScanning && !isStatusLoading) {
         if (status.total > status.indexed) {
             val unindexedTotal = status.unindexedUserFiles + status.unindexedHiddenFiles
-            val breakdown = "(${status.unindexedUserFiles} user files, ${status.unindexedHiddenFiles} hidden/system files)"
-            "$unindexedTotal files are not in the MediaStore index.\n$breakdown"
+            val breakdown = stringResource(R.string.indexing_status_breakdown, status.unindexedUserFiles, status.unindexedHiddenFiles)
+            pluralStringResource(R.plurals.indexing_status_unindexed_count, unindexedTotal, unindexedTotal) + "\n$breakdown"
         } else {
-            "All media files are known to the MediaStore."
+            stringResource(R.string.indexing_status_all_indexed)
         }
     } else null
 
     ListItem(
-        headlineContent = { Text("Media Indexing Status") },
+        headlineContent = { Text(stringResource(R.string.media_indexing_status_title)) },
         supportingContent = {
             Column {
                 Text(statusText)
@@ -1239,7 +1252,7 @@ private fun MediaIndexingStatusItem(
                 },
                 enabled = !isScanning && !isStatusLoading
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh Status / Scan Now")
+                Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh_scan_icon_desc))
             }
         },
         modifier = Modifier.padding(vertical = 8.dp)
@@ -1261,7 +1274,7 @@ private fun AccentColorSetting(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = "Accent Color", style = MaterialTheme.typography.titleMedium)
+            Text(text = stringResource(R.string.accent_color_title), style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = currentAccent.displayName,
@@ -1299,7 +1312,7 @@ private fun AccentColorDialog(
 
     AppDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Customize colors", style = MaterialTheme.typography.headlineSmall) },
+        title = { Text(stringResource(R.string.customize_colors_title), style = MaterialTheme.typography.headlineSmall) },
         text = {
             val gradientColors = remember(isDark) {
                 predefinedAccentColors.map { if (isDark) it.darkColor else it.lightColor }
@@ -1359,30 +1372,80 @@ private fun AccentColorDialog(
         },
         buttons = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(onClick = { onColorSelected(localSelectedKey) }) {
-                Text("OK")
+                Text(stringResource(R.string.ok))
             }
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> ExposedDropdownMenu(
+    titleRes: Int,
+    descriptionRes: Int,
+    options: List<T>,
+    selectedOption: T,
+    onOptionSelected: (T) -> Unit,
+    getDisplayName: @Composable (T) -> String
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Column {
+        Text(text = stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = stringResource(descriptionRes),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                    .fillMaxWidth(),
+                readOnly = true,
+                value = getDisplayName(selectedOption),
+                onValueChange = {},
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(getDisplayName(option)) },
+                        onClick = {
+                            onOptionSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun <T> ExposedDropdownMenu(
-    title: String,
+    titleRes: Int,
     description: String,
     options: List<T>,
     selectedOption: T,
     onOptionSelected: (T) -> Unit,
-    getDisplayName: (T) -> String
+    getDisplayName: @Composable (T) -> String
 ) {
     var expanded by remember { mutableStateOf(false) }
     Column {
-        Text(text = title, style = MaterialTheme.typography.titleMedium)
+        Text(text = stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(2.dp))
         Text(
             text = description,
@@ -1396,7 +1459,7 @@ private fun <T> ExposedDropdownMenu(
         ) {
             OutlinedTextField(
                 modifier = Modifier
-                    .menuAnchor()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                     .fillMaxWidth(),
                 readOnly = true,
                 value = getDisplayName(selectedOption),
@@ -1423,7 +1486,32 @@ private fun <T> ExposedDropdownMenu(
 
 @Composable
 private fun SettingSwitch(
-    title: String,
+    titleRes: Int,
+    descriptionRes: Int,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = stringResource(descriptionRes),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+    }
+}
+
+@Composable
+private fun SettingSwitch(
+    titleRes: Int,
     description: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -1434,7 +1522,7 @@ private fun SettingSwitch(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = stringResource(titleRes), style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = description,
@@ -1453,10 +1541,10 @@ private fun DefaultAlbumLocationSetting(
     pathOptions: List<Pair<String, String>>
 ) {
     Column {
-        Text(text = "Default Album Location", style = MaterialTheme.typography.titleMedium)
+        Text(text = stringResource(R.string.default_album_location_title), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(2.dp))
         Text(
-            text = "Choose the default folder where new albums are created.",
+            text = stringResource(R.string.default_album_location_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1487,13 +1575,13 @@ private fun DefaultAlbumLocationSetting(
         ) {
             Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Search for Custom Folder")
+            Text(stringResource(R.string.search_custom_folder))
         }
         Spacer(modifier = Modifier.height(8.dp))
         val currentPathDisplay = if (defaultPath.isNotBlank()) {
             val standardOption = pathOptions.find { it.second == defaultPath }
-            if (standardOption != null) "Current: ${standardOption.first}" else "Current: .../${defaultPath.takeLast(30)}"
-        } else "No default folder selected"
+            if (standardOption != null) stringResource(R.string.current_path_prefix, standardOption.first) else stringResource(R.string.current_path_prefix, ".../${defaultPath.takeLast(30)}")
+        } else stringResource(R.string.no_default_folder_selected)
         Text(
             text = currentPathDisplay,
             style = MaterialTheme.typography.bodySmall,
@@ -1508,8 +1596,8 @@ private fun DefaultAlbumLocationSetting(
 private fun RememberMediaSetting(viewModel: SettingsViewModel, rememberProcessedMedia: Boolean) {
     Column {
         SettingSwitch(
-            title = "Remember Organized Media",
-            description = "Skip showing media you've already moved in future sessions",
+            titleRes = R.string.remember_organized_media_title,
+            descriptionRes = R.string.remember_organized_media_desc,
             checked = rememberProcessedMedia,
             onCheckedChange = { viewModel.setRememberProcessedMedia(it) }
         )
@@ -1520,7 +1608,7 @@ private fun RememberMediaSetting(viewModel: SettingsViewModel, rememberProcessed
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
-                Text("Reset All Sorted Media History")
+                Text(stringResource(R.string.reset_organized_media_history))
             }
         }
     }
@@ -1529,9 +1617,9 @@ private fun RememberMediaSetting(viewModel: SettingsViewModel, rememberProcessed
 @Composable
 private fun ForgetSortedMediaSetting(viewModel: SettingsViewModel) {
     Column {
-        Text("Forget Sorted Media in Folder", style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.forget_sorted_media_folder_title), style = MaterialTheme.typography.titleMedium)
         Text(
-            "Choose a folder to make its media appear for sorting again.",
+            stringResource(R.string.forget_sorted_media_folder_desc),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1542,137 +1630,160 @@ private fun ForgetSortedMediaSetting(viewModel: SettingsViewModel) {
         ) {
             Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Select Folder to Forget")
+            Text(stringResource(R.string.select_folder_to_forget))
         }
     }
 }
 
+@Composable
+private fun getAppLocaleDisplayName(locale: AppLocale): String {
+    return when (locale) {
+        AppLocale.SYSTEM -> stringResource(R.string.language_system)
+        AppLocale.ENGLISH -> stringResource(R.string.language_english)
+        AppLocale.ITALIAN -> stringResource(R.string.language_italian)
+    }
+}
+
+@Composable
 private fun getSwipeSensitivityDisplayName(sensitivity: SwipeSensitivity): String {
     return when (sensitivity) {
-        SwipeSensitivity.LOW -> "Low"
-        SwipeSensitivity.MEDIUM -> "Medium"
-        SwipeSensitivity.HIGH -> "High"
+        SwipeSensitivity.LOW -> stringResource(R.string.sensitivity_low)
+        SwipeSensitivity.MEDIUM -> stringResource(R.string.sensitivity_medium)
+        SwipeSensitivity.HIGH -> stringResource(R.string.sensitivity_high)
     }
 }
 
+@Composable
 private fun getSwipeDownActionDisplayName(action: SwipeDownAction): String {
     return when (action) {
-        SwipeDownAction.NONE -> "None"
-        SwipeDownAction.MOVE_TO_EDIT -> "Move to 'To Edit'"
-        SwipeDownAction.SKIP_ITEM -> "Skip Item"
-        SwipeDownAction.ADD_TARGET_FOLDER -> "Add Target Folder"
-        SwipeDownAction.SHARE -> "Share"
-        SwipeDownAction.OPEN_WITH -> "Open With..."
+        SwipeDownAction.NONE -> stringResource(R.string.action_none)
+        SwipeDownAction.MOVE_TO_EDIT -> stringResource(R.string.move_to_to_edit)
+        SwipeDownAction.SKIP_ITEM -> stringResource(R.string.skip_item)
+        SwipeDownAction.ADD_TARGET_FOLDER -> stringResource(R.string.add_target_folder)
+        SwipeDownAction.SHARE -> stringResource(R.string.share)
+        SwipeDownAction.OPEN_WITH -> stringResource(R.string.open_with)
     }
 }
 
+@Composable
 private fun getSimilarityLevelDisplayName(level: SimilarityThresholdLevel): String {
     return when (level) {
-        SimilarityThresholdLevel.STRICT -> "Strict"
-        SimilarityThresholdLevel.BALANCED -> "Balanced"
-        SimilarityThresholdLevel.LOOSE -> "Loose"
+        SimilarityThresholdLevel.STRICT -> stringResource(R.string.similarity_level_strict)
+        SimilarityThresholdLevel.BALANCED -> stringResource(R.string.similarity_level_balanced)
+        SimilarityThresholdLevel.LOOSE -> stringResource(R.string.similarity_level_loose)
     }
 }
 
-private fun getSimilarityLevelDescription(level: SimilarityThresholdLevel): String {
+@Composable
+private fun getSimilarityLevelDescriptionRes(level: SimilarityThresholdLevel): Int {
     return when (level) {
-        SimilarityThresholdLevel.STRICT -> "Fewer matches, very low chance of false positives."
-        SimilarityThresholdLevel.BALANCED -> "A good balance between accuracy and number of matches."
-        SimilarityThresholdLevel.LOOSE -> "More matches, but may include unrelated media."
+        SimilarityThresholdLevel.STRICT -> R.string.similarity_level_strict_desc
+        SimilarityThresholdLevel.BALANCED -> R.string.similarity_level_balanced_desc
+        SimilarityThresholdLevel.LOOSE -> R.string.similarity_level_loose_desc
     }
 }
 
+@Composable
 private fun getScanScopeDisplayName(scope: DuplicateScanScope): String {
     return when (scope) {
-        DuplicateScanScope.ALL_FILES -> "Scan All Files"
-        DuplicateScanScope.INCLUDE_LIST -> "Include Specific Folders"
-        DuplicateScanScope.EXCLUDE_LIST -> "Exclude Specific Folders"
+        DuplicateScanScope.ALL_FILES -> stringResource(R.string.scan_scope_all)
+        DuplicateScanScope.INCLUDE_LIST -> stringResource(R.string.scan_scope_include)
+        DuplicateScanScope.EXCLUDE_LIST -> stringResource(R.string.scan_scope_exclude)
     }
 }
 
+@Composable
 private fun getScanScopeDescription(
     scope: DuplicateScanScope,
     includeList: Set<String>,
     excludeList: Set<String>
 ): String {
     return when (scope) {
-        DuplicateScanScope.ALL_FILES -> "Scan all media on your device."
-        DuplicateScanScope.INCLUDE_LIST -> "Only scan media within the ${includeList.size} selected folders."
-        DuplicateScanScope.EXCLUDE_LIST -> "Scan all media except for the ${excludeList.size} selected folders."
+        DuplicateScanScope.ALL_FILES -> stringResource(R.string.scan_scope_all_desc)
+        DuplicateScanScope.INCLUDE_LIST -> pluralStringResource(R.plurals.scan_scope_include_desc, includeList.size, includeList.size)
+        DuplicateScanScope.EXCLUDE_LIST -> pluralStringResource(R.plurals.scan_scope_exclude_desc, excludeList.size, excludeList.size)
     }
 }
 
-
+@Composable
 private fun getFolderNameLayoutDisplayName(layout: FolderNameLayout): String {
     return when (layout) {
-        FolderNameLayout.ABOVE -> "Above Media Card"
-        FolderNameLayout.BELOW -> "Below Media Card"
-        FolderNameLayout.HIDDEN -> "Hidden"
+        FolderNameLayout.ABOVE -> stringResource(R.string.folder_name_layout_above)
+        FolderNameLayout.BELOW -> stringResource(R.string.folder_name_layout_below)
+        FolderNameLayout.HIDDEN -> stringResource(R.string.folder_name_layout_hidden)
     }
 }
 
+@Composable
 private fun getThemeDisplayName(theme: AppTheme): String {
     return when (theme) {
-        AppTheme.SYSTEM -> "Follow System"
-        AppTheme.LIGHT -> "Light"
-        AppTheme.DARK -> "Dark"
-        AppTheme.DARKER -> "Darker"
-        AppTheme.AMOLED -> "AMOLED"
+        AppTheme.SYSTEM -> stringResource(R.string.theme_system_display)
+        AppTheme.LIGHT -> stringResource(R.string.theme_light_display)
+        AppTheme.DARK -> stringResource(R.string.theme_dark_display)
+        AppTheme.DARKER -> stringResource(R.string.theme_darker_display)
+        AppTheme.AMOLED -> stringResource(R.string.theme_amoled_display)
     }
 }
 
-private fun getThemeDescription(theme: AppTheme): String {
+@Composable
+private fun getThemeDescriptionRes(theme: AppTheme): Int {
     return when (theme) {
-        AppTheme.SYSTEM -> "Automatically switch themes based on system settings"
-        AppTheme.LIGHT -> "A bright, light-colored theme"
-        AppTheme.DARK -> "A dark theme for low-light environments"
-        AppTheme.DARKER -> "A darker theme following Material Design standards"
-        AppTheme.AMOLED -> "A pure black theme optimized for AMOLED displays"
+        AppTheme.SYSTEM -> R.string.theme_system_desc
+        AppTheme.LIGHT -> R.string.theme_light_desc
+        AppTheme.DARK -> R.string.theme_dark_desc
+        AppTheme.DARKER -> R.string.theme_darker_desc
+        AppTheme.AMOLED -> R.string.theme_amoled_desc
     }
 }
 
+@Composable
 private fun getFolderSelectionModeDisplayName(mode: FolderSelectionMode): String {
     return when (mode) {
-        FolderSelectionMode.ALL -> "All Folders"
-        FolderSelectionMode.REMEMBER -> "Remember Previous"
-        FolderSelectionMode.NONE -> "None"
+        FolderSelectionMode.ALL -> stringResource(R.string.mode_all_folders)
+        FolderSelectionMode.REMEMBER -> stringResource(R.string.mode_remember_previous)
+        FolderSelectionMode.NONE -> stringResource(R.string.mode_none)
     }
 }
 
-private fun getFolderSelectionModeDescription(mode: FolderSelectionMode): String {
+@Composable
+private fun getFolderSelectionModeDescriptionRes(mode: FolderSelectionMode): Int {
     return when (mode) {
-        FolderSelectionMode.ALL -> "Select all folders by default"
-        FolderSelectionMode.REMEMBER -> "Remember and select previously chosen folders"
-        FolderSelectionMode.NONE -> "Don't select any folders by default"
+        FolderSelectionMode.ALL -> R.string.desc_mode_all
+        FolderSelectionMode.REMEMBER -> R.string.desc_mode_remember
+        FolderSelectionMode.NONE -> R.string.desc_mode_none
     }
 }
 
+@Composable
 private fun getAddFolderFocusTargetDisplayName(target: AddFolderFocusTarget): String {
     return when (target) {
-        AddFolderFocusTarget.SEARCH_PATH -> "Search Path"
-        AddFolderFocusTarget.FOLDER_NAME -> "New Folder Name"
-        AddFolderFocusTarget.NONE -> "None"
+        AddFolderFocusTarget.SEARCH_PATH -> stringResource(R.string.focus_search_path)
+        AddFolderFocusTarget.FOLDER_NAME -> stringResource(R.string.focus_folder_name)
+        AddFolderFocusTarget.NONE -> stringResource(R.string.action_none)
     }
 }
 
+@Composable
 private fun getUnselectAllScopeDisplayName(scope: UnselectScanScope): String {
     return when (scope) {
-        UnselectScanScope.GLOBAL -> "Unselect Everything"
-        UnselectScanScope.VISIBLE_ONLY -> "Unselect Visible Only"
+        UnselectScanScope.GLOBAL -> stringResource(R.string.unselect_everything)
+        UnselectScanScope.VISIBLE_ONLY -> stringResource(R.string.unselect_visible_only)
     }
 }
 
-private fun getUnselectAllScopeDescription(scope: UnselectScanScope): String {
+@Composable
+private fun getUnselectAllScopeDescriptionRes(scope: UnselectScanScope): Int {
     return when (scope) {
-        UnselectScanScope.GLOBAL -> "Clears the entire selection, even items hidden by the current search filter."
-        UnselectScanScope.VISIBLE_ONLY -> "Only unselects items currently visible in the search results. Hidden selections remain selected."
+        UnselectScanScope.GLOBAL -> R.string.desc_unselect_global
+        UnselectScanScope.VISIBLE_ONLY -> R.string.desc_unselect_visible
     }
 }
 
 @Composable
 private fun FundingDialog(onDismiss: () -> Unit) {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     data class CryptoOption(val name: String, val network: String, val address: String)
 
@@ -1692,22 +1803,27 @@ private fun FundingDialog(onDismiss: () -> Unit) {
 
     AppDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Support Development") },
+        title = { Text(stringResource(R.string.funding_dialog_title)) },
         text = {
             Column {
                 Text(
-                    text = "CleanSweep is free and open source. If you find it useful, consider supporting its development.",
+                    text = stringResource(R.string.funding_dialog_body),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.heightIn(max = 300.dp)) {
                     items(options) { option ->
+                        val copyMsg = stringResource(R.string.address_copied)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    clipboardManager.setText(AnnotatedString(option.address))
-                                    android.widget.Toast.makeText(context, "Address copied", android.widget.Toast.LENGTH_SHORT).show()
+                                    scope.launch {
+                                        val clipData = ClipData.newPlainText("label", option.address)
+                                        val clipEntry = ClipEntry(clipData)
+                                        clipboard.setClipEntry(clipEntry)
+                                        android.widget.Toast.makeText(context, copyMsg, android.widget.Toast.LENGTH_SHORT).show()
+                                    }
                                 }
                                 .padding(vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -1717,21 +1833,21 @@ private fun FundingDialog(onDismiss: () -> Unit) {
                                 Text(text = option.network, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(text = option.address, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
-                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy Address", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy_address_icon_desc), tint = MaterialTheme.colorScheme.primary)
                         }
                         HorizontalDivider()
                     }
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = "Feel free to include your GitHub username in the transaction description!",
+                    text = stringResource(R.string.funding_dialog_footer),
                     style = MaterialTheme.typography.bodySmall,
                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                 )
             }
         },
         buttons = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) }
         }
     )
 }

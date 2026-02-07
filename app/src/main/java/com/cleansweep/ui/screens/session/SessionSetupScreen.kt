@@ -25,7 +25,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -55,14 +54,16 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.cleansweep.R
 import com.cleansweep.domain.model.FolderDetails
 import com.cleansweep.ui.components.AppDialog
 import com.cleansweep.ui.components.AppDropdownMenu
@@ -97,7 +98,7 @@ fun SessionSetupScreen(
     val context = LocalContext.current
     val isExpandedScreen = windowSizeClass.widthSizeClass > WindowWidthSizeClass.Compact
     val pullToRefreshState = rememberPullToRefreshState()
-    val TAG = "SessionSetupScreen"
+    val logTag ="SessionSetupScreen"
 
     BackHandler(enabled = uiState.isContextualSelectionMode) {
         viewModel.exitContextualSelectionMode()
@@ -133,9 +134,9 @@ fun SessionSetupScreen(
     if (uiState.showMoveFolderDialogForPath != null) {
         FolderSearchDialog(
             state = folderSearchState,
-            title = "Move to...",
-            searchLabel = "Search or select destination",
-            confirmButtonText = "Move",
+            title = stringResource(R.string.move_to_ellipsis),
+            searchLabel = stringResource(R.string.search_destination_label),
+            confirmButtonText = stringResource(R.string.move_action),
             autoConfirmOnSelection = false, // Require explicit confirmation
             onDismiss = viewModel::dismissMoveFolderDialog,
             onQueryChanged = viewModel.folderSearchManager::updateSearchQuery,
@@ -156,15 +157,15 @@ fun SessionSetupScreen(
             if (foldersToMark.size == 1) {
                 val singleFolder = foldersToMark.first()
                 val isRecursive = singleFolder.path in uiState.recursivelySelectedRoots
-                titleText = "Mark as Sorted?"
+                titleText = stringResource(R.string.mark_sorted_title_single)
                 bodyText = if (isRecursive) {
-                    "Are you sure you want to permanently hide '${singleFolder.name}' and its subfolders from this list? These folders won't show up here even if you add new media to them. You can reset this in the settings."
+                    stringResource(R.string.mark_sorted_body_recursive, singleFolder.name)
                 } else {
-                    "Are you sure you want to permanently hide '${singleFolder.name}' from this list? This folder won't show up here even if you add new media to it. You can reset this in the settings."
+                    stringResource(R.string.mark_sorted_body_single, singleFolder.name)
                 }
             } else {
-                titleText = "Mark ${foldersToMark.size} Folders as Sorted?"
-                bodyText = "Are you sure you want to permanently hide these ${foldersToMark.size} folders (including any selected subfolders) from this list? You can reset this in the settings."
+                titleText = pluralStringResource(R.plurals.mark_sorted_title_multiple, foldersToMark.size, foldersToMark.size)
+                bodyText = pluralStringResource(R.plurals.mark_sorted_body_multiple, foldersToMark.size, foldersToMark.size)
             }
 
             AppDialog(
@@ -176,10 +177,10 @@ fun SessionSetupScreen(
                 text = { Text(text = bodyText, style = MaterialTheme.typography.bodyMedium) },
                 buttons = {
                     TextButton(onClick = viewModel::dismissMarkAsSortedDialog) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                     Button(onClick = viewModel::confirmMarkFolderAsSorted) {
-                        Text("Confirm")
+                        Text(stringResource(R.string.confirm))
                     }
                 }
             )
@@ -246,13 +247,13 @@ fun SessionSetupScreen(
                                 contentDescription = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (isSelectAllMode) "Select All" else "Unselect All")
+                            Text(if (isSelectAllMode) stringResource(R.string.select_all) else stringResource(R.string.unselect_all))
                         }
                         ExtendedFloatingActionButton(
                             onClick = {
                                 if (uiState.selectedBuckets.isNotEmpty()) {
                                     Log.d(
-                                        TAG,
+                                        logTag,
                                         "Starting session with ${uiState.selectedBuckets.size} folders: ${uiState.selectedBuckets}"
                                     )
                                     viewModel.saveSelectedBucketsPreference()
@@ -264,7 +265,7 @@ fun SessionSetupScreen(
                         ) {
                             Icon(Icons.Default.Check, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Start Session")
+                            Text(stringResource(R.string.start_session))
                         }
                     }
                 } else {
@@ -285,13 +286,13 @@ fun SessionSetupScreen(
                                 contentDescription = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (isSelectAllMode) "Select All" else "Unselect All")
+                            Text(if (isSelectAllMode) stringResource(R.string.select_all) else stringResource(R.string.unselect_all))
                         }
                         ExtendedFloatingActionButton(
                             onClick = {
                                 if (uiState.selectedBuckets.isNotEmpty()) {
                                     Log.d(
-                                        TAG,
+                                        logTag,
                                         "Starting session with ${uiState.selectedBuckets.size} folders: ${uiState.selectedBuckets}"
                                     )
                                     viewModel.saveSelectedBucketsPreference()
@@ -304,7 +305,7 @@ fun SessionSetupScreen(
                         ) {
                             Icon(Icons.Default.Check, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Start Session")
+                            Text(stringResource(R.string.start_session))
                         }
                     }
                 }
@@ -329,11 +330,11 @@ fun SessionSetupScreen(
                         focusManager.clearFocus()
                     }
                 ),
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search_hint)) },
                 trailingIcon = if (uiState.searchQuery.isNotEmpty()) {
                     {
                         IconButton(onClick = { viewModel.updateSearchQuery("") }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear_search))
                         }
                     }
                 } else null
@@ -370,7 +371,7 @@ fun SessionSetupScreen(
                                 CircularProgressIndicator()
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "Scanning device for media folders...",
+                                    text = stringResource(R.string.scanning_device_message),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -495,11 +496,11 @@ private fun EmptyStateMessage(modifier: Modifier = Modifier) {
                 tint = MaterialTheme.colorScheme.surfaceVariant
             )
             Text(
-                text = "No media folders found",
+                text = stringResource(R.string.no_media_folders_found),
                 style = MaterialTheme.typography.titleLarge
             )
             Text(
-                text = "This can happen on a new device. Try adding some photos or videos, or pull down to re-scan.",
+                text = stringResource(R.string.no_media_folders_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -528,11 +529,11 @@ private fun NoSearchResultsMessage(searchQuery: String, modifier: Modifier = Mod
                 tint = MaterialTheme.colorScheme.surfaceVariant
             )
             Text(
-                text = "No results found",
+                text = stringResource(R.string.no_results_found),
                 style = MaterialTheme.typography.titleLarge
             )
             Text(
-                text = "Your search for \"$searchQuery\" did not match any folder names.",
+                text = stringResource(R.string.no_search_results_desc, searchQuery),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -552,33 +553,33 @@ private fun DefaultTopAppBar(
     onNavigateToSettings: () -> Unit
 ) {
     TopAppBar(
-        title = { Text("Select Folders") },
+        title = { Text(stringResource(R.string.select_folders_title)) },
         actions = {
             var showSortMenu by remember { mutableStateOf(false) }
 
             TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text("Find Duplicates") } },
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                tooltip = { PlainTooltip { Text(stringResource(R.string.find_duplicates)) } },
                 state = rememberTooltipState()
             ) {
                 IconButton(onClick = onNavigateToDuplicates) {
-                    Icon(Icons.Default.ControlPointDuplicate, contentDescription = "Find Duplicates")
+                    Icon(Icons.Default.ControlPointDuplicate, contentDescription = stringResource(R.string.find_duplicates))
                 }
             }
 
             Box {
                 TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text("Sort") } },
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                    tooltip = { PlainTooltip { Text(stringResource(R.string.sort)) } },
                     state = rememberTooltipState()
                 ) {
                     IconButton(onClick = { showSortMenu = true }) {
-                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = "Sort")
+                        Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = stringResource(R.string.sort))
                     }
                 }
                 DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
                     DropdownMenuItem(
-                        text = { Text("Name (A-Z)") },
+                        text = { Text(stringResource(R.string.sort_name_az)) },
                         onClick = {
                             onSortOptionChange(FolderSortOption.ALPHABETICAL_ASC)
                             showSortMenu = false
@@ -587,7 +588,7 @@ private fun DefaultTopAppBar(
                             if (uiState.currentSortOption == FolderSortOption.ALPHABETICAL_ASC) Icon(Icons.Default.Check, null)
                         })
                     DropdownMenuItem(
-                        text = { Text("Name (Z-A)") },
+                        text = { Text(stringResource(R.string.sort_name_za)) },
                         onClick = {
                             onSortOptionChange(FolderSortOption.ALPHABETICAL_DESC)
                             showSortMenu = false
@@ -596,7 +597,7 @@ private fun DefaultTopAppBar(
                             if (uiState.currentSortOption == FolderSortOption.ALPHABETICAL_DESC) Icon(Icons.Default.Check, null)
                         })
                     DropdownMenuItem(
-                        text = { Text("Size (Largest first)") },
+                        text = { Text(stringResource(R.string.sort_size_largest)) },
                         onClick = {
                             onSortOptionChange(FolderSortOption.SIZE_DESC)
                             showSortMenu = false
@@ -605,7 +606,7 @@ private fun DefaultTopAppBar(
                             if (uiState.currentSortOption == FolderSortOption.SIZE_DESC) Icon(Icons.Default.Check, null)
                         })
                     DropdownMenuItem(
-                        text = { Text("Size (Smallest first)") },
+                        text = { Text(stringResource(R.string.sort_size_smallest)) },
                         onClick = {
                             onSortOptionChange(FolderSortOption.SIZE_ASC)
                             showSortMenu = false
@@ -614,7 +615,7 @@ private fun DefaultTopAppBar(
                             if (uiState.currentSortOption == FolderSortOption.SIZE_ASC) Icon(Icons.Default.Check, null)
                         })
                     DropdownMenuItem(
-                        text = { Text("Item Count (Most first)") },
+                        text = { Text(stringResource(R.string.sort_count_most)) },
                         onClick = {
                             onSortOptionChange(FolderSortOption.ITEM_COUNT_DESC)
                             showSortMenu = false
@@ -623,7 +624,7 @@ private fun DefaultTopAppBar(
                             if (uiState.currentSortOption == FolderSortOption.ITEM_COUNT_DESC) Icon(Icons.Default.Check, null)
                         })
                     DropdownMenuItem(
-                        text = { Text("Item Count (Fewest first)") },
+                        text = { Text(stringResource(R.string.sort_count_fewest)) },
                         onClick = {
                             onSortOptionChange(FolderSortOption.ITEM_COUNT_ASC)
                             showSortMenu = false
@@ -634,12 +635,12 @@ private fun DefaultTopAppBar(
                 }
             }
             TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text("Settings") } },
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                tooltip = { PlainTooltip { Text(stringResource(R.string.settings)) } },
                 state = rememberTooltipState()
             ) {
                 IconButton(onClick = onNavigateToSettings) {
-                    Icon(Icons.Filled.Settings, contentDescription = "Settings")
+                    Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.settings))
                 }
             }
         }
@@ -657,46 +658,46 @@ private fun ContextualTopAppBar(
     onToggleFavorite: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text("$selectionCount Selected") },
+        title = { Text(pluralStringResource(R.plurals.context_selected_count, selectionCount, selectionCount)) },
         navigationIcon = {
             TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text("Close selection mode") } },
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                tooltip = { PlainTooltip { Text(stringResource(R.string.close_selection_mode)) } },
                 state = rememberTooltipState()
             ) {
                 IconButton(onClick = onClose) {
-                    Icon(Icons.Default.Close, contentDescription = "Close selection mode")
+                    Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close_selection_mode))
                 }
             }
         },
         actions = {
             if (canFavorite) {
                 TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text("Add to Favorites") } },
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                    tooltip = { PlainTooltip { Text(stringResource(R.string.add_to_favorites)) } },
                     state = rememberTooltipState()
                 ) {
                     IconButton(onClick = onToggleFavorite) {
-                        Icon(Icons.Default.Star, contentDescription = "Add to Favorites")
+                        Icon(Icons.Default.Star, contentDescription = stringResource(R.string.add_to_favorites))
                     }
                 }
             }
             TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text("Mark as Sorted") } },
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                tooltip = { PlainTooltip { Text(stringResource(R.string.mark_as_sorted)) } },
                 state = rememberTooltipState()
             ) {
                 IconButton(onClick = onMarkAsSorted) {
-                    Icon(Icons.Default.CheckCircleOutline, contentDescription = "Mark as Sorted")
+                    Icon(Icons.Default.CheckCircleOutline, contentDescription = stringResource(R.string.mark_as_sorted))
                 }
             }
             TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text("Select All") } },
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                tooltip = { PlainTooltip { Text(stringResource(R.string.select_all)) } },
                 state = rememberTooltipState()
             ) {
                 IconButton(onClick = onSelectAll) {
-                    Icon(Icons.Default.SelectAll, contentDescription = "Select All")
+                    Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.select_all))
                 }
             }
         },
@@ -789,27 +790,27 @@ private fun EnhancedFolderItem(
             ) {
                 Text(text = folder.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    text = "${folder.itemCount} items · ${formatFileSize(folder.totalSize)}",
+                    text = pluralStringResource(R.plurals.folder_item_desc, folder.itemCount, folder.itemCount, formatFileSize(folder.totalSize)),
                     style = MaterialTheme.typography.bodySmall,
                     color = secondaryTextColor
                 )
             }
             if (isFavorite) {
-                Icon(imageVector = Icons.Default.Star, contentDescription = "Favorite", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 4.dp))
+                Icon(imageVector = Icons.Default.Star, contentDescription = stringResource(R.string.favorite), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(horizontal = 4.dp))
             }
             if (isRecursiveRoot) {
-                Icon(imageVector = Icons.Default.AccountTree, contentDescription = "Includes sub-folders.", tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f), modifier = Modifier.padding(horizontal = 4.dp))
+                Icon(imageVector = Icons.Default.AccountTree, contentDescription = stringResource(R.string.includes_subfolders), tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.9f), modifier = Modifier.padding(horizontal = 4.dp))
             }
 
             if (!isContextualMode) {
                 Box {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("More Options") } },
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(positioning = TooltipAnchorPosition.Above),
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.more_options)) } },
                         state = rememberTooltipState()
                     ) {
                         IconButton(onClick = { showContextMenu = true }) {
-                            Icon(Icons.Default.MoreVert, "More Options")
+                            Icon(Icons.Default.MoreVert, stringResource(R.string.more_options))
                         }
                     }
                     AppDropdownMenu(
@@ -817,7 +818,7 @@ private fun EnhancedFolderItem(
                         onDismissRequest = { showContextMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Rename") },
+                            text = { Text(stringResource(R.string.rename)) },
                             onClick = {
                                 onRename()
                                 showContextMenu = false
@@ -825,7 +826,7 @@ private fun EnhancedFolderItem(
                             leadingIcon = { Icon(Icons.Default.Edit, null) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Move to...") },
+                            text = { Text(stringResource(R.string.move_to_ellipsis)) },
                             onClick = {
                                 onMove()
                                 showContextMenu = false
@@ -834,7 +835,7 @@ private fun EnhancedFolderItem(
                         )
                         DropdownMenuItem(
                             text = {
-                                Text(if (isRecursiveRoot) "Deselect sub-folders" else "Select folder and sub-folders")
+                                Text(if (isRecursiveRoot) stringResource(R.string.deselect_subfolders) else stringResource(R.string.select_folder_and_subfolders))
                             },
                             onClick = {
                                 if (isRecursiveRoot) {
@@ -848,7 +849,7 @@ private fun EnhancedFolderItem(
                         )
                         if (!folder.isSystemFolder) {
                             DropdownMenuItem(
-                                text = { Text(if (isFavorite) "Remove from Favorites" else "Add to Favorites") },
+                                text = { Text(if (isFavorite) stringResource(R.string.remove_from_favorites) else stringResource(R.string.add_to_favorites)) },
                                 onClick = {
                                     onToggleFavorite(folder.path)
                                     showContextMenu = false
@@ -861,7 +862,7 @@ private fun EnhancedFolderItem(
                         }
                         AppMenuDivider()
                         DropdownMenuItem(
-                            text = { Text("Mark Permanently as Sorted", color = MaterialTheme.colorScheme.error) },
+                            text = { Text(stringResource(R.string.mark_permanently_as_sorted), color = MaterialTheme.colorScheme.error) },
                             onClick = {
                                 onMarkAsSorted()
                                 showContextMenu = false

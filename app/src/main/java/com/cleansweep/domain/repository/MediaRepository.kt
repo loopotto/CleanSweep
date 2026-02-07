@@ -25,13 +25,11 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface MediaRepository {
     fun getMediaFromBuckets(bucketIds: List<String>): Flow<List<MediaItem>>
-    fun getAllMediaItems(): Flow<MediaItem>
     suspend fun createNewFolder(folderName: String, parentDirectory: String?): Result<String>
     suspend fun moveMediaToFolder(mediaId: String, targetFolderId: String): MediaItem?
     suspend fun deleteMedia(items: List<MediaItem>): Boolean
     suspend fun moveMedia(mediaIds: List<String>, targetFolders: List<String>): Map<String, MediaItem>
     suspend fun getFolderExistence(folderIds: Set<String>): Map<String, Boolean>
-    fun searchFolders(query: String): Flow<List<String>>
     suspend fun getFolderNames(folderIds: Set<String>): Map<String, String>
     suspend fun getFoldersFromPaths(folderPaths: Set<String>): List<Pair<String, String>>
     fun getRecentFolders(limit: Int): Flow<List<Pair<String, String>>>
@@ -53,7 +51,6 @@ interface MediaRepository {
     fun observeAllFolders(): Flow<List<Pair<String, String>>>
     suspend fun scanFolders(folderPaths: List<String>)
     suspend fun scanPathsAndWait(paths: List<String>): Boolean
-    suspend fun getMediaCount(): Int
     suspend fun getUnindexedMediaPaths(): List<String>
     suspend fun getMediaStoreKnownPaths(): Set<String>
     suspend fun getAllMediaFilePaths(): Set<String>

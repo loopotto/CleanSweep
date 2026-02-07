@@ -24,6 +24,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cleansweep.BuildConfig
+import com.cleansweep.R
 import com.cleansweep.data.model.MediaItem
 import com.cleansweep.data.repository.DuplicateScanScope
 import com.cleansweep.data.repository.PreferencesRepository
@@ -39,7 +40,7 @@ import com.cleansweep.domain.repository.DuplicatesRepository
 import com.cleansweep.domain.repository.MediaRepository
 import com.cleansweep.domain.repository.PersistedScanResult
 import com.cleansweep.domain.repository.ScanScopeType
-import com.cleansweep.domain.util.HiddenFileFilter
+import com.cleansweep.util.HiddenFileFilter
 import com.cleansweep.service.BackgroundScanState
 import com.cleansweep.service.DuplicateScanService
 import com.cleansweep.service.DuplicateScanStateHolder
@@ -121,7 +122,7 @@ class DuplicatesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DuplicatesUiState())
     val uiState: StateFlow<DuplicatesUiState> = _uiState.asStateFlow()
 
-    private val videoExtensions = setOf(".mp4", ".mkv", ".webm", ".3gp", ".mov")
+    private val logTag ="DuplicatesViewModel"
     private var validatedCache: PersistedScanResult? = null
 
     val displayedUnscannableFiles: StateFlow<List<String>> = uiState.map { state ->
@@ -136,7 +137,7 @@ class DuplicatesViewModel @Inject constructor(
     init {
         // Synchronously initialize from the state holder to prevent flicker and restore state on re-entry
         val initialBackgroundState = stateHolder.state.value
-        Log.d("DuplicatesViewModel", "ViewModel init with background state: ${initialBackgroundState.scanState}")
+        Log.d(logTag, "ViewModel init with background state: ${initialBackgroundState.scanState}")
         _uiState.update {
             when (initialBackgroundState.scanState) {
                 // DO NOT handle Complete here, let the collector do it to prevent flicker on notification click
@@ -201,7 +202,7 @@ class DuplicatesViewModel @Inject constructor(
         // This collector is the source of truth for any SUBSEQUENT scan state changes.
         viewModelScope.launch {
             stateHolder.state.collectLatest { backgroundState ->
-                Log.d("DuplicatesViewModel", "Observed background state: ${backgroundState.scanState}")
+                Log.d(logTag, "Observed background state: ${backgroundState.scanState}")
                 when (backgroundState.scanState) {
                     BackgroundScanState.Idle -> {
                         if (_uiState.value.scanState != ScanState.Complete) {
@@ -238,7 +239,7 @@ class DuplicatesViewModel @Inject constructor(
                                     ),
                                     selectedForDeletion = emptySet(),
                                     spaceToReclaim = 0L,
-                                    toastMessage = if (hadSelections) "Scan complete. Selections have been cleared." else null
+                                    toastMessage = if (hadSelections) context.getString(R.string.scan_complete_selection_cleared) else null
                                 )
                             }
                             // After a fresh *full* scan, clear any lingering scoped cache to avoid confusion.
@@ -247,11 +248,11 @@ class DuplicatesViewModel @Inject constructor(
                             }
                             coilPreloader.preload(backgroundState.results.flatMap { it.items })
                         } else {
-                            Log.e("DuplicatesViewModel", "Scan complete but metadata is missing. Cannot update UI.")
+                            Log.e(logTag, "Scan complete but metadata is missing. Cannot update UI.")
                         }
                     }
                     BackgroundScanState.Cancelled -> {
-                        _uiState.update { it.copy(toastMessage = "Scan cancelled") }
+                        _uiState.update { it.copy(toastMessage = context.getString(R.string.scan_cancelled_toast)) }
                         loadPersistedResults(isFallback = true)
                     }
                     BackgroundScanState.Error -> {
@@ -260,7 +261,7 @@ class DuplicatesViewModel @Inject constructor(
                                 scanState = ScanState.Idle,
                                 scanProgress = 0f,
                                 scanProgressPhase = null,
-                                toastMessage = backgroundState.errorMessage ?: "An unknown error occurred"
+                                toastMessage = backgroundState.errorMessage ?: context.getString(R.string.unknown_error)
                             )
                         }
                         loadPersistedResults(isFallback = true)
@@ -298,7 +299,7 @@ class DuplicatesViewModel @Inject constructor(
                         scanState = ScanState.Idle,
                         scanProgress = 0f,
                         scanProgressPhase = null,
-                        toastMessage = "Could not find any valid cached results."
+                        toastMessage = context.getString(R.string.no_valid_cache_toast)
                     )
                 }
             }
@@ -341,10 +342,6 @@ class DuplicatesViewModel @Inject constructor(
         }
     }
 
-    override fun onCleared() {
-        super.onCleared()
-    }
-
     fun toggleScanForExactDuplicates() {
         _uiState.update { it.copy(scanForExactDuplicates = !it.scanForExactDuplicates) }
     }
@@ -362,13 +359,13 @@ class DuplicatesViewModel @Inject constructor(
 
     fun startScan() {
         if (_uiState.value.scanState == ScanState.Scanning || _uiState.value.scanState == ScanState.Cancelling) {
-            _uiState.update { it.copy(toastMessage = "A scan is already in progress.") }
+            _uiState.update { it.copy(toastMessage = context.getString(R.string.scan_already_in_progress)) }
             return
         }
 
         val currentState = _uiState.value
         if (!currentState.scanForExactDuplicates && !currentState.scanForSimilarMedia) {
-            _uiState.update { it.copy(toastMessage = "Please select at least one scan type.") }
+            _uiState.update { it.copy(toastMessage = context.getString(R.string.select_one_scan_type)) }
             return
         }
 
@@ -378,14 +375,15 @@ class DuplicatesViewModel @Inject constructor(
             }
         }
 
+        val preparingStr = context.getString(R.string.scanning_preparing_phase)
         val shouldShowResultsDuringScan = currentState.resultGroups.isNotEmpty()
-        stateHolder.setScanning("Preparing...", shouldShowResultsDuringScan)
+        stateHolder.setScanning(preparingStr, shouldShowResultsDuringScan)
 
         _uiState.update {
             it.copy(
                 scanState = ScanState.Scanning,
                 scanProgress = 0f,
-                scanProgressPhase = "Preparing...",
+                scanProgressPhase = preparingStr,
                 // Only clear results if it's a fresh scan from idle
                 resultGroups = if (shouldShowResultsDuringScan) it.resultGroups else emptyList(),
                 unscannableFiles = if (shouldShowResultsDuringScan) it.unscannableFiles else emptyList(),
@@ -405,25 +403,27 @@ class DuplicatesViewModel @Inject constructor(
         }
         context.startService(intent)
         Log.d(
-            "DuplicatesViewModel",
+            logTag,
             "Start scan service command issued with exact=${currentState.scanForExactDuplicates}, similar=${currentState.scanForSimilarMedia}"
         )
     }
+
     fun cancelScan() {
         if (_uiState.value.scanState == ScanState.Scanning) {
+            val cancellingStr = context.getString(R.string.scanning_cancelling_phase)
             _uiState.update {
                 it.copy(
                     scanState = ScanState.Cancelling,
-                    scanProgressPhase = "Cancelling..."
+                    scanProgressPhase = cancellingStr
                 )
             }
             val intent = Intent(context, DuplicateScanService::class.java).apply {
                 action = DuplicateScanService.ACTION_CANCEL_SCAN
             }
             context.startService(intent)
-            Log.d("DuplicatesViewModel", "Cancel scan service command issued.")
+            Log.d(logTag, "Cancel scan service command issued.")
         } else {
-            Log.w("DuplicatesViewModel", "Cancel requested but not in a cancellable state. UI State: ${_uiState.value.scanState}")
+            Log.w(logTag, "Cancel requested but not in a cancellable state. UI State: ${_uiState.value.scanState}")
         }
     }
 
@@ -492,7 +492,7 @@ class DuplicatesViewModel @Inject constructor(
         val exactGroups = currentState.resultGroups.filterIsInstance<DuplicateGroup>()
 
         if (exactGroups.isEmpty()) {
-            _uiState.update { it.copy(toastMessage = "No exact duplicates found.") }
+            _uiState.update { it.copy(toastMessage = context.getString(R.string.no_exact_duplicates_toast)) }
             return
         }
 
@@ -507,7 +507,7 @@ class DuplicatesViewModel @Inject constructor(
         }
 
         if (allIds.isEmpty()) {
-            _uiState.update { it.copy(toastMessage = "No duplicates found to delete.") }
+            _uiState.update { it.copy(toastMessage = context.getString(R.string.no_duplicates_to_delete_toast)) }
             return
         }
 
@@ -521,7 +521,7 @@ class DuplicatesViewModel @Inject constructor(
         val itemsToProcess = currentState.selectedForDeletion
 
         if (itemsToProcess.isEmpty()) {
-            _uiState.update { it.copy(toastMessage = "No files selected for deletion.") }
+            _uiState.update { it.copy(toastMessage = context.getString(R.string.no_files_selected_delete)) }
             return
         }
 
@@ -535,18 +535,23 @@ class DuplicatesViewModel @Inject constructor(
                 if (item != null && File(item.id).exists()) {
                     item
                 } else {
-                    Log.w("DuplicatesViewModel", "File not found during deletion check: ${item?.id ?: id}")
+                    Log.w(logTag, "File not found during deletion check: ${item?.id ?: id}")
                     null
                 }
             }
 
             val nonExistentCount = itemsToProcess.size - existingItemsToDelete.size
             if (nonExistentCount > 0) {
-                _uiState.update { it.copy(toastMessage = "$nonExistentCount selected files were not found on disk. Deleting remaining.") }
+                val message = context.resources.getQuantityString(
+                    R.plurals.files_not_found_deleting_remaining,
+                    nonExistentCount,
+                    nonExistentCount
+                )
+                _uiState.update { it.copy(toastMessage = message) }
             }
 
             if (existingItemsToDelete.isEmpty()) {
-                _uiState.update { it.copy(isDeleting = false, toastMessage = "No selected files were found on disk. They may have been deleted externally.") }
+                _uiState.update { it.copy(isDeleting = false, toastMessage = context.getString(R.string.no_files_found_on_disk)) }
                 // Clear selection if nothing was found
                 updateSelection(emptySet())
                 return@launch
@@ -580,9 +585,9 @@ class DuplicatesViewModel @Inject constructor(
 
                 val currentStaleInfo = _uiState.value.staleResultsInfo
                 if (currentStaleInfo == null) {
-                    Log.e("DuplicatesViewModel", "Cannot update cache: stale info is missing.")
+                    Log.e(logTag, "Cannot update cache: stale info is missing.")
                     // Fallback or error handling
-                    _uiState.update { it.copy(isDeleting = false, toastMessage = "Error updating results cache.") }
+                    _uiState.update { it.copy(isDeleting = false, toastMessage = context.getString(R.string.unknown_error)) }
                     return@launch
                 }
 
@@ -609,7 +614,11 @@ class DuplicatesViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isDeleting = false,
-                        toastMessage = "${idsDeletedSuccessfully.size} files deleted successfully.",
+                        toastMessage = context.resources.getQuantityString(
+                            R.plurals.files_deleted_success,
+                            idsDeletedSuccessfully.size,
+                            idsDeletedSuccessfully.size
+                        ),
                         selectedForDeletion = emptySet(), // Clear selection after deletion
                         spaceToReclaim = 0L,
                         resultGroups = remainingGroups,
@@ -618,7 +627,7 @@ class DuplicatesViewModel @Inject constructor(
                     )
                 }
             } else {
-                _uiState.update { it.copy(isDeleting = false, toastMessage = "Error: Could not delete all selected files.") }
+                _uiState.update { it.copy(isDeleting = false, toastMessage = context.getString(R.string.could_not_delete_all)) }
             }
         }
     }
@@ -631,7 +640,7 @@ class DuplicatesViewModel @Inject constructor(
                 val file = File(item.id)
                 FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", file)
             } catch (e: Exception) {
-                Log.e("DuplicatesViewModel", "Error creating content URI", e)
+                Log.e(logTag, "Error creating content URI", e)
                 item.uri // Fallback to original URI
             }
         }
@@ -701,7 +710,7 @@ class DuplicatesViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     resultGroups = it.resultGroups.filterNot { g -> g.uniqueId == group.uniqueId },
-                    toastMessage = "Algorithm corrected. These items won't be grouped again."
+                    toastMessage = context.getString(R.string.algorithm_corrected_toast)
                 )
             }
         }
@@ -717,7 +726,7 @@ class DuplicatesViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     resultGroups = it.resultGroups.filterNot { g -> g.compositionId == group.compositionId },
-                    toastMessage = "Group hidden. It will only reappear if its membership changes."
+                    toastMessage = context.getString(R.string.group_hidden_toast)
                 )
             }
         }

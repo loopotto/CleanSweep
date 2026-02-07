@@ -30,7 +30,4 @@ interface SimilarityDenialDao {
 
     @Query("SELECT pairKey FROM similarity_denials")
     suspend fun getAllDenialKeys(): List<String>
-
-    @Query("DELETE FROM similarity_denials")
-    suspend fun clearAll()
 }

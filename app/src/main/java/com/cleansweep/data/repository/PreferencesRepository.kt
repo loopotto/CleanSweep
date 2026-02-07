@@ -99,6 +99,12 @@ enum class UnselectScanScope {
     VISIBLE_ONLY
 }
 
+enum class AppLocale(val tag: String?) {
+    SYSTEM(null),
+    ENGLISH("en"),
+    ITALIAN("it")
+}
+
 
 @Singleton
 class PreferencesRepository @Inject constructor(
@@ -112,6 +118,7 @@ class PreferencesRepository @Inject constructor(
 
     private object PreferencesKeys {
         val THEME = stringPreferencesKey("theme")
+        val APP_LOCALE = stringPreferencesKey("app_locale")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val COMPACT_FOLDER_VIEW = booleanPreferencesKey("compact_folder_view")
         val HIDE_FILENAME = booleanPreferencesKey("hide_filename")
@@ -169,6 +176,16 @@ class PreferencesRepository @Inject constructor(
                 AppTheme.valueOf(themeName)
             } catch (e: IllegalArgumentException) {
                 AppTheme.SYSTEM
+            }
+        }
+
+    val appLocaleFlow: Flow<AppLocale> = context.dataStore.data
+        .map { preferences ->
+            val localeName = preferences[PreferencesKeys.APP_LOCALE] ?: AppLocale.SYSTEM.name
+            try {
+                AppLocale.valueOf(localeName)
+            } catch (e: IllegalArgumentException) {
+                AppLocale.SYSTEM
             }
         }
 
@@ -470,6 +487,12 @@ class PreferencesRepository @Inject constructor(
     suspend fun setTheme(theme: AppTheme) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.THEME] = theme.name
+        }
+    }
+
+    suspend fun setAppLocale(locale: AppLocale) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_LOCALE] = locale.name
         }
     }
 

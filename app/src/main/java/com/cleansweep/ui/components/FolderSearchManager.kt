@@ -155,7 +155,7 @@ class FolderSearchManager @Inject constructor(
         }
     }
 
-    suspend fun selectSingleResultOrSelf() {
+    fun selectSingleResultOrSelf() {
         val currentState = _state.value
         if (currentState.searchQuery.isNotBlank() && currentState.displayedResults.size == 1) {
             selectPath(currentState.displayedResults.first())

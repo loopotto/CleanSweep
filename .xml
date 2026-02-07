@@ -1,0 +1,1005 @@
+<problems>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/CleanSweepApp.kt</file>
+  <line>28</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.CleanSweepApp" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>15</length>
+  <highlighted_element>@HiltAndroidApp</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class is not instantiated.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/db/CleanSweepDatabase.kt</file>
+  <line>40</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.db</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.data.db.CleanSweepDatabase" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>10</length>
+  <highlighted_element>@Database(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Abstract&amp;nbsp;class is not implemented.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/db/converter/Converters.kt</file>
+  <line>24</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.db.converter</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.data.db.converter.Converters" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>18</length>
+  <highlighted_element>class Converters {</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class is not instantiated.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/db/converter/Converters.kt</file>
+  <line>27</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.db.converter</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.data.db.converter.Converters java.lang.String fromStringList(java.util.List&lt;java.lang.String&gt; list)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>14</length>
+  <highlighted_element>@TypeConverter</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/db/converter/Converters.kt</file>
+  <line>32</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.db.converter</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.data.db.converter.Converters java.util.List&lt;java.lang.String&gt; toStringList(java.lang.String data)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>14</length>
+  <highlighted_element>@TypeConverter</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/db/converter/Converters.kt</file>
+  <line>37</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.db.converter</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.data.db.converter.Converters java.lang.String fromUri(android.net.Uri uri)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>14</length>
+  <highlighted_element>@TypeConverter</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/db/converter/Converters.kt</file>
+  <line>42</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.db.converter</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.data.db.converter.Converters android.net.Uri toUri(java.lang.String uriString)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>14</length>
+  <highlighted_element>@TypeConverter</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/model/MediaItem.kt</file>
+  <line>25</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.model</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.data.model.MediaItem" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class has 28 instantiations, but the instantiations are not reachable from the entry points.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/repository/DirectMediaRepositoryImpl.kt</file>
+  <line>63</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.repository</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.data.repository.DirectMediaRepositoryImpl DirectMediaRepositoryImpl(android.content.Context context, coil.ImageLoader imageLoader, com.cleansweep.data.db.dao.FolderDetailsDao folderDetailsDao, com.cleansweep.data.repository.PreferencesRepository preferencesRepository, kotlinx.coroutines.CoroutineScope externalScope, com.cleansweep.util.FileOperationsHelper fileOperationsHelper, com.cleansweep.domain.bus.FolderUpdateEventBus folderUpdateEventBus, com.cleansweep.domain.bus.AppLifecycleEventBus appLifecycleEventBus)" />
+  <language>kotlin</language>
+  <offset>32</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/data/repository/PreferencesRepository.kt</file>
+  <line>110</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.data.repository</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.data.repository.PreferencesRepository PreferencesRepository(android.content.Context context)" />
+  <language>kotlin</language>
+  <offset>28</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/AppModule.kt</file>
+  <line>39</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.di.AppModule" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>7</length>
+  <highlighted_element>@Module</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/AppModule.kt</file>
+  <line>53</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.AppModule kotlinx.coroutines.CoroutineScope provideApplicationScope()" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/AppModule.kt</file>
+  <line>61</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.AppModule coil.ImageLoader provideImageLoader(android.content.Context context)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/AppModule.kt</file>
+  <line>69</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.AppModule coil.ImageLoader provideGifImageLoader(android.content.Context context)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>52</length>
+  <highlighted_element>// --- Provider for the GIF-specific ImageLoader ---</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/AppModule.kt</file>
+  <line>82</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.AppModule com.cleansweep.domain.bus.FileModificationEventBus provideFileModificationEventBus()" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/AppModule.kt</file>
+  <line>88</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.AppModule androidx.work.WorkManager provideWorkManager(android.content.Context context)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/AppModule.kt</file>
+  <line>94</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.AppModule com.cleansweep.util.ProactiveIndexer provideProactiveIndexer(android.content.Context context)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>36</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.di.DatabaseModule" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>7</length>
+  <highlighted_element>@Module</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>40</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.DatabaseModule com.cleansweep.data.db.CleanSweepDatabase provideDatabase(android.content.Context context)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>53</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.DatabaseModule com.cleansweep.data.db.dao.FileSignatureDao provideFileSignatureDao(com.cleansweep.data.db.CleanSweepDatabase database)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>59</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.DatabaseModule com.cleansweep.data.db.dao.PHashDao providePHashDao(com.cleansweep.data.db.CleanSweepDatabase database)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>65</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.DatabaseModule com.cleansweep.data.db.dao.FolderDetailsDao provideFolderDetailsDao(com.cleansweep.data.db.CleanSweepDatabase database)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>71</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.DatabaseModule com.cleansweep.data.db.dao.UnreadableFileCacheDao provideUnreadableFileCacheDao(com.cleansweep.data.db.CleanSweepDatabase database)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>77</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.DatabaseModule com.cleansweep.data.db.dao.ScanResultCacheDao provideScanResultCacheDao(com.cleansweep.data.db.CleanSweepDatabase database)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/di/DatabaseModule.kt</file>
+  <line>83</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.di</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.di.DatabaseModule com.cleansweep.data.db.dao.SimilarityDenialDao provideSimilarityDenialDao(com.cleansweep.data.db.CleanSweepDatabase database)" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>9</length>
+  <highlighted_element>@Provides</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Method is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/domain/bus/AppLifeCycleEventBus.kt</file>
+  <line>31</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.domain.bus</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.domain.bus.AppLifecycleEventBus AppLifecycleEventBus()" />
+  <language>kotlin</language>
+  <offset>27</offset>
+  <length>21</length>
+  <highlighted_element>@Inject constructor()</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/domain/bus/FolderUpdateEventBus.kt</file>
+  <line>66</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.domain.bus</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.domain.bus.FolderUpdateEventBus FolderUpdateEventBus()" />
+  <language>kotlin</language>
+  <offset>27</offset>
+  <length>21</length>
+  <highlighted_element>@Inject constructor()</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/domain/repository/DuplicatesRepository.kt</file>
+  <line>55</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.domain.repository</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.domain.repository.DuplicatesRepository DuplicatesRepository(android.content.Context context, com.cleansweep.data.db.dao.UnreadableFileCacheDao unreadableFileCacheDao, com.cleansweep.data.db.dao.ScanResultCacheDao scanResultCacheDao, com.cleansweep.data.db.dao.SimilarityDenialDao similarityDenialDao)" />
+  <language>kotlin</language>
+  <offset>27</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/domain/usecase/DuplicateFinderUseCase.kt</file>
+  <line>37</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.domain.usecase</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.domain.usecase.DuplicateFinderUseCase DuplicateFinderUseCase(android.content.Context context, com.cleansweep.data.db.dao.FileSignatureDao fileSignatureDao)" />
+  <language>kotlin</language>
+  <offset>29</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/domain/usecase/SimilarFinderUseCase.kt</file>
+  <line>48</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.domain.usecase</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.domain.usecase.SimilarFinderUseCase SimilarFinderUseCase(android.content.Context context, com.cleansweep.data.db.dao.PHashDao pHashDao, com.cleansweep.data.repository.PreferencesRepository preferencesRepository, com.cleansweep.domain.repository.DuplicatesRepository duplicatesRepository)" />
+  <language>kotlin</language>
+  <offset>27</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanService.kt</file>
+  <line>61</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.service.DuplicateScanService" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>18</length>
+  <highlighted_element>@AndroidEntryPoint</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class is not instantiated.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanService.kt</file>
+  <line>64</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="field" FQNAME="com.cleansweep.service.DuplicateScanService stateHolder" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>7</length>
+  <highlighted_element>@Inject</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Field is never assigned.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanService.kt</file>
+  <line>66</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="field" FQNAME="com.cleansweep.service.DuplicateScanService duplicateFinderUseCase" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>7</length>
+  <highlighted_element>@Inject</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Field is never assigned.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanService.kt</file>
+  <line>68</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="field" FQNAME="com.cleansweep.service.DuplicateScanService similarFinderUseCase" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>7</length>
+  <highlighted_element>@Inject</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Field is never assigned.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanService.kt</file>
+  <line>70</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="field" FQNAME="com.cleansweep.service.DuplicateScanService duplicatesRepository" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>7</length>
+  <highlighted_element>@Inject</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Field is never assigned.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanService.kt</file>
+  <line>72</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="field" FQNAME="com.cleansweep.service.DuplicateScanService mediaRepository" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>7</length>
+  <highlighted_element>@Inject</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Field is never assigned.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanService.kt</file>
+  <line>74</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="field" FQNAME="com.cleansweep.service.DuplicateScanService preferencesRepository" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>7</length>
+  <highlighted_element>@Inject</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Field is never assigned.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/service/DuplicateScanStateHolder.kt</file>
+  <line>50</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.service</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.service.DuplicateScanStateHolder DuplicateScanStateHolder()" />
+  <language>kotlin</language>
+  <offset>31</offset>
+  <length>21</length>
+  <highlighted_element>@Inject constructor()</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/BaseActivity.kt</file>
+  <line>24</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.BaseActivity" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>18</length>
+  <highlighted_element>@AndroidEntryPoint</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Abstract&amp;nbsp;class is not implemented.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/MainActivity.kt</file>
+  <line>41</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.MainActivity" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>18</length>
+  <highlighted_element>@AndroidEntryPoint</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class is not instantiated.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/MainActivity.kt</file>
+  <line>44</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui</package>
+  <entry_point TYPE="field" FQNAME="com.cleansweep.ui.MainActivity proactiveIndexer" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>7</length>
+  <highlighted_element>@Inject</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Field is never assigned.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/MainViewModel.kt</file>
+  <line>38</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.ui.MainViewModel MainViewModel(com.cleansweep.data.repository.PreferencesRepository preferencesRepository, com.cleansweep.domain.repository.MediaRepository mediaRepository, com.cleansweep.domain.bus.AppLifecycleEventBus appLifecycleEventBus)" />
+  <language>kotlin</language>
+  <offset>20</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/components/FolderSearchManager.kt</file>
+  <line>46</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.components</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.ui.components.FolderSearchManager FolderSearchManager(com.cleansweep.domain.repository.MediaRepository mediaRepository)" />
+  <language>kotlin</language>
+  <offset>26</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/duplicates/DuplicatesViewModel.kt</file>
+  <line>111</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.duplicates</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.ui.screens.duplicates.DuplicatesViewModel DuplicatesViewModel(android.content.Context context, com.cleansweep.domain.repository.MediaRepository mediaRepository, com.cleansweep.domain.repository.DuplicatesRepository duplicatesRepository, com.cleansweep.data.repository.PreferencesRepository preferencesRepository, com.cleansweep.service.DuplicateScanStateHolder stateHolder, com.cleansweep.domain.bus.FileModificationEventBus eventBus, com.cleansweep.domain.bus.FolderUpdateEventBus folderUpdateEventBus, com.cleansweep.util.CoilPreloader coilPreloader)" />
+  <language>kotlin</language>
+  <offset>26</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/onboarding/OnboardingViewModel.kt</file>
+  <line>28</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.onboarding</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.ui.screens.onboarding.OnboardingViewModel OnboardingViewModel(com.cleansweep.data.repository.PreferencesRepository preferencesRepository)" />
+  <language>kotlin</language>
+  <offset>26</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/session/SessionSetupViewModel.kt</file>
+  <line>92</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.session</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.ui.screens.session.SessionSetupViewModel SessionSetupViewModel(android.content.Context context, com.cleansweep.domain.repository.MediaRepository mediaRepository, com.cleansweep.data.repository.PreferencesRepository preferencesRepository, com.cleansweep.util.FileOperationsHelper fileOperationsHelper, com.cleansweep.domain.bus.FolderUpdateEventBus folderUpdateEventBus, com.cleansweep.ui.components.FolderSearchManager folderSearchManager, androidx.lifecycle.SavedStateHandle savedStateHandle)" />
+  <language>kotlin</language>
+  <offset>28</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/settings/SettingsViewModel.kt</file>
+  <line>97</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.settings</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.ui.screens.settings.SettingsViewModel SettingsViewModel(android.content.Context context, com.cleansweep.data.repository.PreferencesRepository preferencesRepository, com.cleansweep.domain.repository.MediaRepository mediaRepository, com.cleansweep.domain.repository.DuplicatesRepository duplicatesRepository, com.cleansweep.domain.usecase.SimilarFinderUseCase similarFinderUseCase, com.cleansweep.domain.bus.AppLifecycleEventBus appLifecycleEventBus, com.cleansweep.domain.bus.FolderUpdateEventBus folderUpdateEventBus, com.cleansweep.ui.components.FolderSearchManager folderSearchManager)" />
+  <language>kotlin</language>
+  <offset>24</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>94</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.screens.swiper.PendingChange" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class has 24 instantiations, but the instantiations are not reachable from the entry points.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>157</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.ui.screens.swiper.SwiperViewModel SwiperViewModel(android.content.Context context, com.cleansweep.domain.repository.MediaRepository mediaRepository, com.cleansweep.data.repository.PreferencesRepository preferencesRepository, com.cleansweep.util.FileOperationsHelper fileOperationsHelper, com.cleansweep.util.ThumbnailPrewarmer thumbnailPrewarmer, com.cleansweep.util.CoilPreloader coilPreloader, androidx.lifecycle.SavedStateHandle savedStateHandle, coil.ImageLoader imageLoader, coil.ImageLoader gifImageLoader, com.cleansweep.domain.bus.FileModificationEventBus eventBus, com.cleansweep.domain.bus.AppLifecycleEventBus appLifecycleEventBus, com.cleansweep.domain.bus.FolderUpdateEventBus folderUpdateEventBus, com.cleansweep.ui.components.FolderSearchManager folderSearchManager)" />
+  <language>kotlin</language>
+  <offset>22</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>1538</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.screens.swiper.SwiperAction" />
+  <language>kotlin</language>
+  <offset>0</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Abstract&amp;nbsp;class is not implemented.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>1540</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.screens.swiper.SwiperAction.Keep" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class has 4 instantiations, but the instantiations are not reachable from the entry points.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>1542</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.screens.swiper.SwiperAction.Delete" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class has 4 instantiations, but the instantiations are not reachable from the entry points.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>1544</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.screens.swiper.SwiperAction.Move" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class has 4 instantiations, but the instantiations are not reachable from the entry points.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>1546</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.screens.swiper.SwiperAction.Screenshot" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class has 2 instantiations, but the instantiations are not reachable from the entry points.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/ui/screens/swiper/SwiperViewModel.kt</file>
+  <line>1548</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.ui.screens.swiper</package>
+  <entry_point TYPE="class" FQNAME="com.cleansweep.ui.screens.swiper.SwiperAction.ScreenshotAndDelete" />
+  <language>kotlin</language>
+  <offset>4</offset>
+  <length>10</length>
+  <highlighted_element>@Parcelize</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Class has 2 instantiations, but the instantiations are not reachable from the entry points.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/util/CoilPreloader.kt</file>
+  <line>37</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.util</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.util.CoilPreloader CoilPreloader(android.content.Context context, coil.ImageLoader imageLoader)" />
+  <language>kotlin</language>
+  <offset>20</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/util/FileOperationsHelper.kt</file>
+  <line>40</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.util</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.util.FileOperationsHelper FileOperationsHelper(android.content.Context context)" />
+  <language>kotlin</language>
+  <offset>27</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/util/ThumbnailPrewarmer.kt</file>
+  <line>32</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.util</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.util.ThumbnailPrewarmer ThumbnailPrewarmer(android.content.Context context, com.cleansweep.domain.repository.MediaRepository mediaRepository)" />
+  <language>kotlin</language>
+  <offset>25</offset>
+  <length>20</length>
+  <highlighted_element>@Inject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+<problem>
+  <file>file://$PROJECT_DIR$/app/src/main/java/com/cleansweep/work/ProactiveIndexingWorker.kt</file>
+  <line>33</line>
+  <module>cleansweep.app.main</module>
+  <package>com.cleansweep.work</package>
+  <entry_point TYPE="method" FQNAME="com.cleansweep.work.ProactiveIndexingWorker ProactiveIndexingWorker(android.content.Context appContext, androidx.work.WorkerParameters workerParams, com.cleansweep.domain.repository.MediaRepository mediaRepository, com.cleansweep.util.ThumbnailPrewarmer thumbnailPrewarmer)" />
+  <language>kotlin</language>
+  <offset>30</offset>
+  <length>28</length>
+  <highlighted_element>@AssistedInject constructor(</highlighted_element>
+  <problem_class id="" severity="WARNING" attribute_key="NOT_USED_ELEMENT_ATTRIBUTES">unused declaration</problem_class>
+  <hints>
+    <hint value="comment" />
+    <hint value="delete" />
+  </hints>
+  <description>Constructor is never used.</description>
+</problem>
+</problems>

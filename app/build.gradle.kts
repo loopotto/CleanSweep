@@ -115,19 +115,21 @@ aboutLibraries {
 }
 
 dependencies {
-    val composeBomVersion = "2026.01.00"
+    val composeBomVersion = "2026.01.01"
     implementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
     androidTestImplementation(platform("androidx.compose:compose-bom:$composeBomVersion"))
 
     // Core Android dependencies
     implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
-    implementation("androidx.activity:activity-compose:1.12.2")
+    implementation("androidx.activity:activity-compose:1.12.3")
     implementation("androidx.lifecycle:lifecycle-service:2.10.0")
+    implementation("androidx.core:core-splashscreen:1.2.0")
 
     // WorkManager
-    val work_version = "2.11.0"
+    val work_version = "2.11.1"
     implementation("androidx.work:work-runtime-ktx:$work_version")
 
     // Hilt integration for WorkManager
@@ -140,11 +142,11 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.4.0")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
-    implementation("androidx.navigation:navigation-compose:2.9.6")
+    implementation("androidx.navigation:navigation-compose:2.9.7")
     implementation("androidx.compose.material3:material3-window-size-class:1.4.0")
 
-    implementation("com.google.dagger:hilt-android:2.58")
-    ksp("com.google.dagger:hilt-compiler:2.58")
+    implementation("com.google.dagger:hilt-android:2.59")
+    ksp("com.google.dagger:hilt-compiler:2.59")
     implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
 
     // Room
@@ -158,9 +160,9 @@ dependencies {
     implementation("io.coil-kt:coil-gif:2.7.0")
 
     // ExoPlayer (Media3)
-    implementation("androidx.media3:media3-exoplayer:1.9.0")
-    implementation("androidx.media3:media3-ui:1.9.0")
-    implementation("androidx.media3:media3-common:1.9.0")
+    implementation("androidx.media3:media3-exoplayer:1.9.2")
+    implementation("androidx.media3:media3-ui:1.9.2")
+    implementation("androidx.media3:media3-common:1.9.2")
 
     // Permissions handling
     implementation("com.google.accompanist:accompanist-permissions:0.37.3")
@@ -180,5 +182,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.10.1")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.10.2")
 }

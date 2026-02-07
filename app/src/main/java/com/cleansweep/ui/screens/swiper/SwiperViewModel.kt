@@ -29,6 +29,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
+import com.cleansweep.R
 import com.cleansweep.data.model.MediaItem
 import com.cleansweep.data.repository.AddFolderFocusTarget
 import com.cleansweep.data.repository.FolderBarLayout
@@ -54,7 +55,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -113,7 +113,6 @@ data class SwiperUiState(
     val compactFoldersView: Boolean = false,
     val hideFilename: Boolean = false,
     val summaryViewMode: SummaryViewMode = SummaryViewMode.LIST,
-    val applyChangesButtonLabel: String = "Apply Changes",
     val isApplyingChanges: Boolean = false,
     val toastMessage: String? = null,
     val defaultCreationPath: String = "",
@@ -235,8 +234,8 @@ class SwiperViewModel @Inject constructor(
     private val _dialogSearchQuery = MutableStateFlow("")
 
     companion object {
-        private const val TAG = "SwiperViewModel_DEBUG"
-        private const val JIT_TAG = "SwiperViewModel_JIT"
+        private const val logTag ="SwiperViewModel_DEBUG"
+        private const val jitlogTag ="SwiperViewModel_JIT"
     }
 
     init {
@@ -268,7 +267,7 @@ class SwiperViewModel @Inject constructor(
     private fun logJitSummary() {
         val count = unindexedFileCounter.get()
         if (count > 0) {
-            Log.d(JIT_TAG, "Session Summary: Queued $count un-indexed files for MediaStore pre-warming.")
+            Log.d(jitlogTag, "Session Summary: Queued $count un-indexed files for MediaStore pre-warming.")
         }
     }
 
@@ -301,11 +300,11 @@ class SwiperViewModel @Inject constructor(
             val missingFavorites = currentFavorites.filter { existenceMap[it] == false }
             if (missingFavorites.isNotEmpty()) {
                 missingFavorites.forEach { preferencesRepository.removeTargetFavoriteFolder(it) }
-                toastToShow = if (missingFavorites.size == 1) {
-                    "1 target favorite was removed as it no longer exists."
-                } else {
-                    "${missingFavorites.size} target favorites were removed as they no longer exist."
-                }
+                toastToShow = context.resources.getQuantityString(
+                    R.plurals.target_favorite_removed_toast,
+                    missingFavorites.size,
+                    missingFavorites.size
+                )
             }
         }
 
@@ -336,7 +335,7 @@ class SwiperViewModel @Inject constructor(
                 }
                 savedStateHandle["pendingChanges"] = ArrayList(validChanges)
                 if (toastToShow == null) {
-                    toastToShow = "Refreshed to account for external file changes."
+                    toastToShow = context.getString(R.string.refreshed_external_changes)
                 }
             }
         }
@@ -547,7 +546,7 @@ class SwiperViewModel @Inject constructor(
                         if (unindexedInBatch.isNotEmpty()) {
                             unindexedFileCounter.addAndGet(unindexedInBatch.size)
                             viewModelScope.launch(Dispatchers.IO) {
-                                Log.d(JIT_TAG, "Queueing ${unindexedInBatch.size} un-indexed files for background pre-warming.")
+                                Log.d(jitlogTag, "Queueing ${unindexedInBatch.size} un-indexed files for background pre-warming.")
                                 thumbnailPrewarmer.prewarm(unindexedInBatch)
                             }
                         }
@@ -578,7 +577,8 @@ class SwiperViewModel @Inject constructor(
                     }
 
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = "Failed to load media: ${e.message}") }
+                val errorMessage = context.getString(R.string.failed_load_media_prefix, e.message)
+                _uiState.update { it.copy(isLoading = false, error = errorMessage) }
             }
         }
     }
@@ -729,7 +729,7 @@ class SwiperViewModel @Inject constructor(
                     currentState.copy(
                         pendingChanges = newChanges,
                         isCurrentItemPendingConversion = true,
-                        toastMessage = "Added screenshot to pending changes",
+                        toastMessage = context.getString(R.string.added_screenshot_toast),
                         toDelete = summary.toDelete,
                         toKeep = summary.toKeep,
                         toConvert = summary.toConvert,
@@ -751,14 +751,15 @@ class SwiperViewModel @Inject constructor(
                 try {
                     File(currentItem.id).parent
                 } catch (e: Exception) {
-                    Log.e(TAG, "Could not determine parent path for ${currentItem.id}", e)
+                    Log.e(logTag, "Could not determine parent path for ${currentItem.id}", e)
                     null
                 }
             }
 
             if (parentPath != null) {
-                val toEditPath = File(parentPath, "To Edit").absolutePath
-                val toEditName = "To Edit"
+                val localizedFolderName = context.getString(R.string.folder_name_to_edit)
+                val toEditPath = File(parentPath, localizedFolderName).absolutePath
+                val toEditName = localizedFolderName
 
                 // Ensure the folder is known to the UI, even if it doesn't exist yet.
                 // This prevents a flicker or missing folder name in the summary sheet.
@@ -770,7 +771,7 @@ class SwiperViewModel @Inject constructor(
 
                 moveToFolder(toEditPath)
             } else {
-                _uiState.update { it.copy(toastMessage = "Could not find parent folder.") }
+                _uiState.update { it.copy(toastMessage = context.getString(R.string.could_not_find_parent)) }
             }
             dismissMediaItemMenu()
         }
@@ -782,17 +783,17 @@ class SwiperViewModel @Inject constructor(
 
             val initialChanges = _uiState.value.pendingChanges
             if (initialChanges.isEmpty()) {
-                Log.d(TAG, "applyChanges: No pending changes. Completing.")
+                Log.d(logTag, "applyChanges: No pending changes. Completing.")
                 _uiState.update { it.copy(isApplyingChanges = false) }
                 return@launch
             }
-            Log.d(TAG, "applyChanges: Found ${initialChanges.size} initial pending changes.")
+            Log.d(logTag, "applyChanges: Found ${initialChanges.size} initial pending changes.")
 
             val validatedChanges = fileOperationsHelper.filterExistingFiles(initialChanges)
             val missingCount = initialChanges.size - validatedChanges.size
 
             if (missingCount > 0) {
-                showToast("$missingCount files were not found and will be skipped.")
+                showToast(context.resources.getQuantityString(R.plurals.files_skipped_missing_toast, missingCount, missingCount))
                 _uiState.update { currentState ->
                     val summary = processSummaryLists(validatedChanges, currentState.folderIdToNameMap)
                     currentState.copy(
@@ -807,7 +808,7 @@ class SwiperViewModel @Inject constructor(
             }
 
             if (validatedChanges.isEmpty()) {
-                Log.d(TAG, "applyChanges: All pending changes were for non-existent files. Aborting.")
+                Log.d(logTag, "applyChanges: All pending changes were for non-existent files. Aborting.")
                 _uiState.update { it.copy(isApplyingChanges = false, showSummarySheet = false) }
                 return@launch
             }
@@ -881,13 +882,13 @@ class SwiperViewModel @Inject constructor(
             var moveResults: Map<String, MediaItem> = emptyMap()
 
             if (finalMoveMap.isNotEmpty()) {
-                Log.d(TAG, "Executing move for ${finalMoveMap.size} files.")
+                Log.d(logTag, "Executing move for ${finalMoveMap.size} files.")
                 moveResults = mediaRepository.moveMedia(finalMoveMap.keys.toList(), finalMoveMap.values.toList())
                 if (moveResults.size != finalMoveMap.size) success = false
             }
 
             if (itemsToDelete.isNotEmpty()) {
-                Log.d(TAG, "Executing delete for ${itemsToDelete.size} files.")
+                Log.d(logTag, "Executing delete for ${itemsToDelete.size} files.")
                 val deleteSuccess = mediaRepository.deleteMedia(itemsToDelete)
                 if (!deleteSuccess) success = false
             }
@@ -904,15 +905,15 @@ class SwiperViewModel @Inject constructor(
         }
 
         val pathsToScan = unindexedChanges.map { it.item.id }
-        Log.d(TAG, "synchronizeUnindexedChanges: Found ${pathsToScan.size} items with file:// URIs. Scanning.")
+        Log.d(logTag, "synchronizeUnindexedChanges: Found ${pathsToScan.size} items with file:// URIs. Scanning.")
 
         val scanSuccess = mediaRepository.scanPathsAndWait(pathsToScan)
         if (!scanSuccess) {
-            Log.e(TAG, "synchronizeUnindexedChanges: scanPathsAndWait FAILED.")
+            Log.e(logTag, "synchronizeUnindexedChanges: scanPathsAndWait FAILED.")
             return null
         }
 
-        Log.d(TAG, "synchronizeUnindexedChanges: Scan successful. Fetching refreshed items.")
+        Log.d(logTag, "synchronizeUnindexedChanges: Scan successful. Fetching refreshed items.")
         val refreshedItemsMap = mediaRepository.getMediaItemsFromPaths(pathsToScan).associateBy { it.id }
 
         // Create a new list, updating with refreshed items where available
@@ -992,7 +993,7 @@ class SwiperViewModel @Inject constructor(
                     pendingChanges = emptyChanges,
                     showSummarySheet = false,
                     isApplyingChanges = false,
-                    toastMessage = "Changes applied successfully!",
+                    toastMessage = context.getString(R.string.changes_applied_success),
                     toDelete = summary.toDelete,
                     toKeep = summary.toKeep,
                     toConvert = summary.toConvert,
@@ -1002,7 +1003,7 @@ class SwiperViewModel @Inject constructor(
             }
         } else {
             _uiState.update { it.copy(
-                error = "Failed to apply one or more changes.",
+                error = context.getString(R.string.failed_apply_changes),
                 showSummarySheet = true,
                 isApplyingChanges = false
             )}
@@ -1025,7 +1026,7 @@ class SwiperViewModel @Inject constructor(
         viewModelScope.launch {
             val foldersWithHistory = mediaRepository.getFoldersWithProcessedMedia()
             if (foldersWithHistory.isEmpty()) {
-                _uiState.update { it.copy(toastMessage = "No sorted media history found.") }
+                _uiState.update { it.copy(toastMessage = context.getString(R.string.no_sorted_history_toast)) }
                 return@launch
             }
             folderSearchManager.prepareWithPreFilteredList(foldersWithHistory)
@@ -1072,10 +1073,10 @@ class SwiperViewModel @Inject constructor(
                 }
             }
             if (removedFromSession) {
-                Log.d(TAG, "Removed session-sorted media from '$folderPath'.")
+                Log.d(logTag, "Removed session-sorted media from '$folderPath'.")
             }
 
-            _uiState.update { it.copy(toastMessage = "'${File(folderPath).name}' history has been reset.") }
+            _uiState.update { it.copy(toastMessage = context.getString(R.string.forget_success_toast, File(folderPath).name)) }
             // Re-initialize media to reflect the changes immediately
             initializeMedia(bucketIds)
         }
@@ -1090,7 +1091,7 @@ class SwiperViewModel @Inject constructor(
             if (parentPath.isNotBlank()) {
                 createAndAddTargetFolder(newFolderName, parentPath, addToFavorites, alsoMove)
             } else {
-                _uiState.update { it.copy(toastMessage = "Please select a parent folder location.") }
+                _uiState.update { it.copy(toastMessage = context.getString(R.string.select_parent_location_toast)) }
             }
         }
         else {
@@ -1098,7 +1099,7 @@ class SwiperViewModel @Inject constructor(
             if (importPath != null) {
                 importTargetFolder(importPath, addToFavorites, alsoMove)
             } else {
-                _uiState.update { it.copy(toastMessage = "Please select a folder to import.") }
+                _uiState.update { it.copy(toastMessage = context.getString(R.string.select_folder_import_toast)) }
             }
         }
     }
@@ -1124,7 +1125,8 @@ class SwiperViewModel @Inject constructor(
                 }
                 dismissAddTargetFolderDialog()
             }.onFailure { exception ->
-                _uiState.update { it.copy(toastMessage = "Error: ${exception.message}") }
+                val errorMessage = context.getString(R.string.error_prefix, exception.message)
+                _uiState.update { it.copy(toastMessage = errorMessage) }
             }
         }
     }
@@ -1183,7 +1185,7 @@ class SwiperViewModel @Inject constructor(
                     val summary = processSummaryLists(updatedChanges, currentState.folderIdToNameMap)
                     currentState.copy(
                         pendingChanges = updatedChanges,
-                        toastMessage = "Folder renamed successfully.",
+                        toastMessage = context.getString(R.string.folder_renamed_success),
                         showRenameDialogForPath = null,
                         toDelete = summary.toDelete,
                         toKeep = summary.toKeep,
@@ -1192,8 +1194,9 @@ class SwiperViewModel @Inject constructor(
                     )
                 }
             }.onFailure { error ->
+                val errorMessage = context.getString(R.string.error_prefix, error.message)
                 _uiState.update { it.copy(
-                    toastMessage = "Error: ${error.message}",
+                    toastMessage = errorMessage,
                     showRenameDialogForPath = null
                 )}
             }
@@ -1218,8 +1221,8 @@ class SwiperViewModel @Inject constructor(
                 val file = File(currentItem.id)
                 FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
             } catch (e: Exception) {
-                Log.e(TAG, "Error creating content URI for sharing", e)
-                Toast.makeText(context, "Error preparing file for sharing.", Toast.LENGTH_LONG).show()
+                Log.e(logTag, "Error creating content URI for sharing", e)
+                Toast.makeText(context, context.getString(R.string.error_creating_uri), Toast.LENGTH_LONG).show()
                 return
             }
         } else {
@@ -1232,12 +1235,12 @@ class SwiperViewModel @Inject constructor(
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         try {
-            val chooser = Intent.createChooser(shareIntent, "Share Media").apply {
+            val chooser = Intent.createChooser(shareIntent, context.getString(R.string.share)).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(chooser)
         } catch (e: Exception) {
-            Toast.makeText(context, "No app to share this file to.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.no_app_to_share), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -1263,7 +1266,7 @@ class SwiperViewModel @Inject constructor(
         try {
             context.startActivity(openIntent)
         } catch (e: Exception) {
-            Toast.makeText(context, "No app can open this file.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.no_app_to_open), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -1461,7 +1464,7 @@ class SwiperViewModel @Inject constructor(
             preferencesRepository.clearPermanentlySortedFolders()
             sessionProcessedMediaIds.clear()
             _uiState.update { it.copy(
-                toastMessage = "Sorted media history has been reset.",
+                toastMessage = context.getString(R.string.sorted_media_reset_toast),
                 sessionSkippedMediaIds = emptySet()
             ) }
             initializeMedia(bucketIds)
@@ -1501,7 +1504,7 @@ class SwiperViewModel @Inject constructor(
             if (hasAudio) {
                 _uiState.update { it.copy(isVideoMuted = false) }
             } else {
-                _uiState.update { it.copy(toastMessage = "Video has no audio track.") }
+                _uiState.update { it.copy(toastMessage = context.getString(R.string.video_no_audio_toast)) }
             }
         } else {
             _uiState.update { it.copy(isVideoMuted = true) }

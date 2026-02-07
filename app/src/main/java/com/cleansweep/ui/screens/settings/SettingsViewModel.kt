@@ -22,7 +22,9 @@ import android.net.Uri
 import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cleansweep.R
 import com.cleansweep.data.repository.AddFolderFocusTarget
+import com.cleansweep.data.repository.AppLocale
 import com.cleansweep.data.repository.DuplicateScanScope
 import com.cleansweep.data.repository.FolderBarLayout
 import com.cleansweep.data.repository.FolderNameLayout
@@ -38,7 +40,7 @@ import com.cleansweep.domain.bus.FolderUpdateEventBus
 import com.cleansweep.domain.repository.DuplicatesRepository
 import com.cleansweep.domain.repository.MediaRepository
 import com.cleansweep.domain.usecase.SimilarFinderUseCase
-import com.cleansweep.domain.util.HiddenFileFilter
+import com.cleansweep.util.HiddenFileFilter
 import com.cleansweep.ui.components.FolderSearchManager
 import com.cleansweep.ui.theme.AppTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -80,8 +82,6 @@ data class SettingsUiState(
     val indexingStatus: DetailedIndexingStatus? = null,
     val isIndexingStatusLoading: Boolean = false, // To show spinner for quick refresh
     val isIndexing: Boolean = false, // For the long-running full scan
-    val showConfirmSimilarityChangeDialog: Boolean = false,
-    val pendingSimilarityLevel: SimilarityThresholdLevel? = null,
     val isSearchActive: Boolean = false,
     val searchQuery: String = "",
     val showDuplicateScanScopeDialog: Boolean = false,
@@ -127,6 +127,13 @@ class SettingsViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = AppTheme.SYSTEM
+        )
+
+    val currentLocale: StateFlow<AppLocale> = preferencesRepository.appLocaleFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppLocale.SYSTEM
         )
 
     val useDynamicColors: StateFlow<Boolean> = preferencesRepository.useDynamicColorsFlow
@@ -392,7 +399,7 @@ class SettingsViewModel @Inject constructor(
             appLifecycleEventBus.appResumeEvent.collect {
                 if (_uiState.value.showDefaultPathSearchDialog || _uiState.value.showForgetMediaSearchDialog) {
                     dismissFolderSearchDialog()
-                    showToast("Folder list refreshed, please reopen the dialog.")
+                    showToast(context.getString(R.string.folder_list_refreshed_toast))
                 }
             }
         }
@@ -417,7 +424,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 val favorites = preferencesRepository.targetFavoriteFoldersFlow.first()
                 if (favorites.isEmpty()) {
-                    showToast("No target favorites to export.")
+                    showToast(context.getString(R.string.no_target_favs_export))
                     return@launch
                 }
 
@@ -426,7 +433,7 @@ class SettingsViewModel @Inject constructor(
                 val skippedCount = favorites.size - existingFavorites.size
 
                 if (existingFavorites.isEmpty()) {
-                    showToast("No existing favorite folders found to export.")
+                    showToast(context.getString(R.string.no_existing_favs_export))
                     return@launch
                 }
 
@@ -439,12 +446,24 @@ class SettingsViewModel @Inject constructor(
                     }
                 }
 
-                val toastMessage = "Exported ${existingFavorites.size} favorites." +
-                        if (skippedCount > 0) " $skippedCount non-existent favorites were skipped." else ""
+                val baseMessage = context.resources.getQuantityString(
+                    R.plurals.exported_favs_toast,
+                    existingFavorites.size,
+                    existingFavorites.size
+                )
+                val toastMessage = if (skippedCount > 0) {
+                    baseMessage + context.resources.getQuantityString(
+                        R.plurals.exported_favs_skipped_suffix,
+                        skippedCount,
+                        skippedCount
+                    )
+                } else {
+                    baseMessage
+                }
                 showToast(toastMessage)
 
             } catch (e: Exception) {
-                showToast("Error exporting favorites: ${e.message}")
+                showToast(context.getString(R.string.error_prefix, e.message))
             }
         }
     }
@@ -463,7 +482,7 @@ class SettingsViewModel @Inject constructor(
                     .toSet()
 
                 if (importedPaths.isEmpty()) {
-                    showToast("No valid folder paths found in the selected file.")
+                    showToast(context.getString(R.string.import_no_paths_found))
                     return@launch
                 }
 
@@ -477,15 +496,23 @@ class SettingsViewModel @Inject constructor(
 
                 if (missingPaths.isNotEmpty()) {
                     _uiState.update { it.copy(missingImportedFolders = missingPaths) }
-                    showToast("Imported ${existingPaths.size} folders. Some folders were not found.")
+                    showToast(context.resources.getQuantityString(
+                        R.plurals.imported_favs_missing,
+                        existingPaths.size,
+                        existingPaths.size
+                    ))
                 } else {
-                    showToast("Imported ${existingPaths.size} favorites successfully.")
+                    showToast(context.resources.getQuantityString(
+                        R.plurals.imported_favs_success,
+                        existingPaths.size,
+                        existingPaths.size
+                    ))
                 }
 
             } catch (e: JSONException) {
-                showToast("Import failed: Invalid file format.")
+                showToast(context.getString(R.string.import_invalid_format))
             } catch (e: Exception) {
-                showToast("Error importing favorites: ${e.message}")
+                showToast(context.getString(R.string.error_prefix, e.message))
             }
         }
     }
@@ -507,9 +534,13 @@ class SettingsViewModel @Inject constructor(
 
             if (createdFolders.isNotEmpty()) {
                 preferencesRepository.addTargetFavoriteFolders(createdFolders)
-                showToast("Created and imported ${createdFolders.size} missing folders.")
+                showToast(context.resources.getQuantityString(
+                    R.plurals.created_missing_folders_toast,
+                    createdFolders.size,
+                    createdFolders.size
+                ))
             } else {
-                showToast("Could not create the missing folders.")
+                showToast(context.getString(R.string.could_not_create_folders))
             }
             dismissMissingFoldersDialog()
         }
@@ -523,6 +554,12 @@ class SettingsViewModel @Inject constructor(
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch {
             preferencesRepository.setTheme(theme)
+        }
+    }
+
+    fun setAppLocale(locale: AppLocale) {
+        viewModelScope.launch {
+            preferencesRepository.setAppLocale(locale)
         }
     }
 
@@ -550,7 +587,7 @@ class SettingsViewModel @Inject constructor(
     fun resetOnboarding() {
         viewModelScope.launch {
             preferencesRepository.resetOnboarding()
-            showToast("Onboarding tutorial will be shown on next app launch.")
+            showToast(context.getString(R.string.onboarding_replay_toast))
         }
     }
 
@@ -664,37 +701,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setSimilarityThresholdLevel(level: SimilarityThresholdLevel) {
         if (level == similarityThresholdLevel.value) return
-
-        viewModelScope.launch {
-            val hasScannedBefore = preferencesRepository.hasRunDuplicateScanOnceFlow.first()
-
-            if (hasScannedBefore) {
-                // A scan has run before, so a cache might exist. Show the confirmation dialog.
-                _uiState.update {
-                    it.copy(
-                        showConfirmSimilarityChangeDialog = true,
-                        pendingSimilarityLevel = level
-                    )
-                }
-            } else {
-                // No scan has ever run, so no cache to clear. Apply the setting directly.
-                performSimilarityThresholdChange(level)
-            }
-        }
-    }
-
-    fun confirmSetSimilarityThresholdLevel() {
-        viewModelScope.launch {
-            val levelToSet = _uiState.value.pendingSimilarityLevel ?: return@launch
-            performSimilarityThresholdChange(levelToSet)
-            showToast("Similarity level set. The next scan will re-analyze all media.")
-            _uiState.update {
-                it.copy(
-                    showConfirmSimilarityChangeDialog = false,
-                    pendingSimilarityLevel = null
-                )
-            }
-        }
+        performSimilarityThresholdChange(level)
     }
 
     private fun performSimilarityThresholdChange(level: SimilarityThresholdLevel) {
@@ -702,16 +709,6 @@ class SettingsViewModel @Inject constructor(
             // Clearing results is sufficient when the threshold changes.
             duplicatesRepository.clearAllScanResults()
             preferencesRepository.setSimilarityThresholdLevel(level)
-        }
-    }
-
-
-    fun dismissSetSimilarityThresholdLevel() {
-        _uiState.update {
-            it.copy(
-                showConfirmSimilarityChangeDialog = false,
-                pendingSimilarityLevel = null
-            )
         }
     }
 
@@ -748,7 +745,7 @@ class SettingsViewModel @Inject constructor(
     fun resetProcessedMediaIds() {
         viewModelScope.launch {
             if (preferencesRepository.processedMediaPathsFlow.first().isEmpty()) {
-                showToast("No sorted media history to reset.")
+                showToast(context.getString(R.string.no_history_to_reset))
                 return@launch
             }
             val shouldShowDialog = preferencesRepository.showConfirmResetAllHistoryFlow.first()
@@ -763,7 +760,7 @@ class SettingsViewModel @Inject constructor(
     fun confirmResetDialogWarnings() {
         viewModelScope.launch {
             preferencesRepository.resetDialogConfirmations()
-            showToast("All dialog warnings have been reset.")
+            showToast(context.getString(R.string.all_dialog_warnings_reset))
             _uiState.update { it.copy(showResetDialogsConfirmation = false) }
         }
     }
@@ -782,7 +779,7 @@ class SettingsViewModel @Inject constructor(
             preferencesRepository.clearProcessedMediaPaths()
             preferencesRepository.clearPermanentlySortedFolders()
             folderUpdateEventBus.post(FolderUpdateEvent.FullRefreshRequired)
-            showToast("Sorted media history has been reset.")
+            showToast(context.getString(R.string.sorted_history_reset_success))
             _uiState.update { it.copy(showResetHistoryConfirmation = false, dontAskAgainResetHistory = false) }
         }
     }
@@ -820,7 +817,7 @@ class SettingsViewModel @Inject constructor(
             preferencesRepository.removeProcessedMediaPathsInFolder(folderPath)
             preferencesRepository.removePermanentlySortedFolder(folderPath)
             folderUpdateEventBus.post(FolderUpdateEvent.FullRefreshRequired)
-            showToast("Sorted history for '${File(folderPath).name}' has been forgotten.")
+            showToast(context.getString(R.string.folder_history_forgotten, File(folderPath).name))
             _uiState.update {
                 it.copy(
                     showConfirmForgetFolderDialog = false,
@@ -835,7 +832,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val favorites = preferencesRepository.sourceFavoriteFoldersFlow.first()
             if (favorites.isEmpty()) {
-                showToast("No source favorites to reset.")
+                showToast(context.getString(R.string.no_source_favs_to_reset))
                 return@launch
             }
 
@@ -860,7 +857,7 @@ class SettingsViewModel @Inject constructor(
     private fun performClearSourceFavorites() {
         viewModelScope.launch {
             preferencesRepository.clearAllSourceFavorites()
-            showToast("Source folder favorites cleared.")
+            showToast(context.getString(R.string.source_favs_cleared))
             _uiState.update { it.copy(showResetSourceFavoritesConfirmation = false, dontAskAgainResetSourceFavorites = false) }
         }
     }
@@ -869,7 +866,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val favorites = preferencesRepository.targetFavoriteFoldersFlow.first()
             if (favorites.isEmpty()) {
-                showToast("No target favorites to reset.")
+                showToast(context.getString(R.string.no_target_favs_to_reset))
                 return@launch
             }
 
@@ -894,7 +891,7 @@ class SettingsViewModel @Inject constructor(
     private fun performClearTargetFavorites() {
         viewModelScope.launch {
             preferencesRepository.clearAllTargetFavorites()
-            showToast("Target folder favorites cleared.")
+            showToast(context.getString(R.string.target_favs_cleared))
             _uiState.update { it.copy(showResetTargetFavoritesConfirmation = false, dontAskAgainResetTargetFavorites = false) }
         }
     }
@@ -919,7 +916,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val foldersWithHistory = mediaRepository.getFoldersWithProcessedMedia()
             if (foldersWithHistory.isEmpty()) {
-                showToast("No sorted media history found.")
+                showToast(context.getString(R.string.no_sorted_history_toast))
                 return@launch
             }
             folderSearchManager.prepareWithPreFilteredList(foldersWithHistory)
@@ -1001,9 +998,9 @@ class SettingsViewModel @Inject constructor(
             _uiState.update { it.copy(isIndexing = true) }
             val success = mediaRepository.triggerFullMediaStoreScan()
             if (success) {
-                showToast("Full device scan completed.")
+                showToast(context.getString(R.string.full_device_scan_complete))
             } else {
-                showToast("Scan failed or was interrupted.")
+                showToast(context.getString(R.string.scan_failed_interrupted))
             }
             refreshIndexingStatus() // Refresh status after scan
             _uiState.update { it.copy(isIndexing = false) }

@@ -30,9 +30,6 @@ interface UnreadableFileCacheDao {
     @Query("SELECT * FROM unreadable_file_cache")
     suspend fun getAll(): List<UnreadableFileCache>
 
-    @Query("DELETE FROM unreadable_file_cache WHERE filePath IN (:paths)")
-    suspend fun deleteByPaths(paths: List<String>)
-
     @Query("DELETE FROM unreadable_file_cache")
     suspend fun clear()
 }

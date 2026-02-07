@@ -35,7 +35,7 @@ class ProactiveIndexer @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val workManager = WorkManager.getInstance(context)
-    private val LOG_TAG = "ProactiveIndexer"
+    private val logTag ="ProactiveIndexer"
     companion object {
         private const val UNIQUE_WORK_NAME = "GlobalMediaIndex"
     }
@@ -50,7 +50,7 @@ class ProactiveIndexer @Inject constructor(
      * making it a low-impact maintenance task.
      */
     fun scheduleGlobalIndex() {
-        Log.d(LOG_TAG, "Attempting to schedule global proactive indexing work.")
+        Log.d(logTag, "Attempting to schedule global proactive indexing work.")
 
         val constraints = Constraints.Builder()
             .setRequiresStorageNotLow(true)
@@ -72,6 +72,6 @@ class ProactiveIndexer @Inject constructor(
             ExistingWorkPolicy.KEEP,
             indexingRequest
         )
-        Log.d(LOG_TAG, "Enqueue request sent to WorkManager with KEEP policy.")
+        Log.d(logTag, "Enqueue request sent to WorkManager with KEEP policy.")
     }
 }

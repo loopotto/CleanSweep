@@ -34,7 +34,7 @@ class ThumbnailPrewarmer @Inject constructor(
     private val mediaRepository: MediaRepository
 ) {
     private val contentResolver = context.contentResolver
-    private val LOG_TAG = "ThumbnailPrewarmer"
+    private val logTag ="ThumbnailPrewarmer"
 
     /**
      * A robust, multi-step process to ensure newly discovered media files are fully indexed
@@ -50,21 +50,21 @@ class ThumbnailPrewarmer @Inject constructor(
         }
 
         withContext(Dispatchers.IO) {
-            Log.d(LOG_TAG, "Starting pre-warm process for ${filePaths.size} files.")
+            Log.d(logTag, "Starting pre-warm process for ${filePaths.size} files.")
 
             // Step 1: Scan files and wait for MediaStore to acknowledge them.
             // This is critical to get a content:// URI.
             val scanSuccess = mediaRepository.scanPathsAndWait(filePaths)
             if (!scanSuccess) {
-                Log.e(LOG_TAG, "Pre-warm failed: scanPathsAndWait returned false.")
+                Log.e(logTag, "Pre-warm failed: scanPathsAndWait returned false.")
                 return@withContext
             }
-            Log.d(LOG_TAG, "Scan successful. Fetching refreshed media items.")
+            Log.d(logTag, "Scan successful. Fetching refreshed media items.")
 
             // Step 2: Fetch the full MediaItem objects, which should now have content:// URIs.
             val mediaItems = mediaRepository.getMediaItemsFromPaths(filePaths)
             if (mediaItems.isEmpty()) {
-                Log.w(LOG_TAG, "Pre-warm warning: No media items found after successful scan for paths: $filePaths")
+                Log.w(logTag, "Pre-warm warning: No media items found after successful scan for paths: $filePaths")
                 return@withContext
             }
 
@@ -80,11 +80,11 @@ class ThumbnailPrewarmer @Inject constructor(
                         prewarmedCount++
                     } catch (e: Exception) {
                         // This can happen if the file is corrupt, already deleted, etc.
-                        Log.w(LOG_TAG, "Failed to pre-warm thumbnail for ${item.id}", e)
+                        Log.w(logTag, "Failed to pre-warm thumbnail for ${item.id}", e)
                     }
                 }
             }
-            Log.d(LOG_TAG, "Pre-warm process complete. Successfully pre-warmed $prewarmedCount of ${mediaItems.size} items.")
+            Log.d(logTag, "Pre-warm process complete. Successfully pre-warmed $prewarmedCount of ${mediaItems.size} items.")
         }
     }
 }

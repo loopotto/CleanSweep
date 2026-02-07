@@ -21,7 +21,6 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.view.KeyEvent
 import android.view.TextureView
 import android.view.ViewGroup
@@ -75,7 +74,10 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -84,7 +86,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
-import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -96,6 +97,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.cleansweep.R
 import com.cleansweep.data.model.MediaItem
 import com.cleansweep.data.repository.FolderBarLayout
 import com.cleansweep.data.repository.FolderNameLayout
@@ -115,10 +117,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material3.ButtonDefaults
-import com.cleansweep.ui.components.FastScrollbar
 import java.text.DecimalFormat
 import kotlin.math.abs
 import kotlin.math.log10
@@ -243,18 +243,18 @@ fun SwiperScreen(
     if (uiState.showConfirmExitDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.cancelExit() },
-            title = { Text("Unsaved Changes") },
-            text = { Text("You have unsaved changes. Are you sure you want to exit?") },
+            title = { Text(stringResource(R.string.unsaved_changes_title)) },
+            text = { Text(stringResource(R.string.unsaved_changes_message)) },
             confirmButton = {
                 Button(
                     onClick = { viewModel.confirmExit() }
                 ) {
-                    Text("Exit Anyway")
+                    Text(stringResource(R.string.cancel_all_changes))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.cancelExitAndShowSummary() }) {
-                    Text("Review Changes")
+                    Text(stringResource(R.string.review_changes))
                 }
             }
         )
@@ -266,31 +266,40 @@ fun SwiperScreen(
                 title = { Text("") }, // Not sure
                 navigationIcon = {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Navigate back") } },
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            positioning = TooltipAnchorPosition.Above,
+                            spacingBetweenTooltipAndAnchor = 4.dp
+                        ),
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.navigate_back)) } },
                         state = rememberTooltipState()
                     ) {
                         IconButton(onClick = { viewModel.onNavigateUp() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.navigate_back))
                         }
                     }
                 },
                 actions = {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Find Duplicates") } },
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            positioning = TooltipAnchorPosition.Above,
+                            spacingBetweenTooltipAndAnchor = 4.dp
+                        ),
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.find_duplicates)) } },
                         state = rememberTooltipState()
                     ) {
                         IconButton(onClick = onNavigateToDuplicates) {
-                            Icon(Icons.Default.ControlPointDuplicate, contentDescription = "Find Duplicates")
+                            Icon(Icons.Default.ControlPointDuplicate, contentDescription = stringResource(R.string.find_duplicates))
                         }
                     }
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        tooltip = { PlainTooltip { Text("Settings") } },
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            positioning = TooltipAnchorPosition.Above,
+                            spacingBetweenTooltipAndAnchor = 4.dp
+                        ),
+                        tooltip = { PlainTooltip { Text(stringResource(R.string.settings)) } },
                         state = rememberTooltipState()
                     ) {
-                        IconButton(onClick = onNavigateToSettings) { Icon(Icons.Default.Settings, contentDescription = "Settings") }
+                        IconButton(onClick = onNavigateToSettings) { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) }
                     }
                 }
             )
@@ -333,7 +342,6 @@ fun SwiperScreen(
                                 onSwipeRight = viewModel::handleSwipeRight,
                                 onSwipeDown = viewModel::handleSwipeDown,
                                 onLongPress = viewModel::showMediaItemMenu,
-                                onMoveToEdit = viewModel::moveToEditFolder,
                                 hideFilename = uiState.hideFilename,
                                 invertSwipe = invertSwipe,
                                 sensitivity = swipeSensitivity,
@@ -395,7 +403,6 @@ fun SwiperScreen(
                                 onSwipeRight = viewModel::handleSwipeRight,
                                 onSwipeDown = viewModel::handleSwipeDown,
                                 onLongPress = viewModel::showMediaItemMenu,
-                                onMoveToEdit = viewModel::moveToEditFolder,
                                 hideFilename = uiState.hideFilename,
                                 invertSwipe = invertSwipe,
                                 sensitivity = swipeSensitivity,
@@ -481,9 +488,9 @@ fun SwiperScreen(
                 val folderToForget = folderSearchState.browsePath
                 FolderSearchDialog(
                     state = folderSearchState,
-                    title = "Forget Sorted Media",
-                    searchLabel = "Search for a folder to reset...",
-                    confirmButtonText = "Forget",
+                    title = stringResource(R.string.forget_sorted_media_title),
+                    searchLabel = stringResource(R.string.search_folder_reset_label),
+                    confirmButtonText = stringResource(R.string.forget_action),
                     autoConfirmOnSelection = false,
                     onDismiss = viewModel::dismissForgetMediaSearchDialog,
                     onQueryChanged = viewModel.folderSearchManager::updateSearchQuery,
@@ -497,17 +504,17 @@ fun SwiperScreen(
                 if (showConfirmDialog && folderToForget != null) {
                     AlertDialog(
                         onDismissRequest = { showConfirmDialog = false },
-                        title = { Text("Confirm Action") },
-                        text = { Text("Are you sure you want to forget all sorted media history for the folder '${File(folderToForget).name}'? This folder will reappear for sorting if it still contains media.") },
+                        title = { Text(stringResource(R.string.forget_confirm_title)) },
+                        text = { Text(stringResource(R.string.forget_confirm_body, File(folderToForget).name)) },
                         confirmButton = {
                             Button(onClick = {
                                 viewModel.forgetSortedMediaInFolder(folderToForget)
                                 showConfirmDialog = false
                                 viewModel.dismissForgetMediaSearchDialog()
-                            }) { Text("Confirm") }
+                            }) { Text(stringResource(R.string.confirm)) }
                         },
                         dismissButton = {
-                            TextButton(onClick = { showConfirmDialog = false }) { Text("Cancel") }
+                            TextButton(onClick = { showConfirmDialog = false }) { Text(stringResource(R.string.cancel)) }
                         }
                     )
                 }
@@ -572,7 +579,8 @@ fun SwiperScreen(
                     onRevertChange = viewModel::revertChange,
                     viewMode = uiState.summaryViewMode,
                     onToggleViewMode = viewModel::toggleSummaryViewMode,
-                    applyChangesButtonLabel = uiState.applyChangesButtonLabel,
+                    applyChangesButtonLabel = stringResource(R.string.apply_changes_button),
+                    cancelChangesButtonLabel = stringResource(R.string.cancel_all_changes),
                     sheetScrollState = summaryListState,
                     isMaximized = uiState.useFullScreenSummarySheet,
                     onDynamicHeightChange = { shouldBeMaximized ->
@@ -609,7 +617,6 @@ private fun MainContent(
     onSwipeRight: () -> Unit,
     onSwipeDown: () -> Unit,
     onLongPress: (offset: DpOffset) -> Unit,
-    onMoveToEdit: () -> Unit,
     hideFilename: Boolean,
     invertSwipe: Boolean,
     sensitivity: SwipeSensitivity,
@@ -691,7 +698,7 @@ private fun FolderContextMenu(
             offset = folderMenuState.pressOffset
         ) {
             DropdownMenuItem(
-                text = { Text("Rename") },
+                text = { Text(stringResource(R.string.rename)) },
                 onClick = {
                     onRename(folderMenuState.folderPath)
                     onDismiss()
@@ -699,7 +706,7 @@ private fun FolderContextMenu(
                 leadingIcon = { Icon(Icons.Default.Edit, null) }
             )
             DropdownMenuItem(
-                text = { Text(if (isFavorite) "Unfavorite" else "Favorite") },
+                text = { Text(if (isFavorite) stringResource(R.string.unfavorite) else stringResource(R.string.favorite)) },
                 onClick = {
                     onToggleFavorite(folderMenuState.folderPath)
                     onDismiss()
@@ -708,7 +715,7 @@ private fun FolderContextMenu(
             )
             AppMenuDivider()
             DropdownMenuItem(
-                text = { Text("Remove from bar", color = MaterialTheme.colorScheme.error) },
+                text = { Text(stringResource(R.string.remove_from_bar), color = MaterialTheme.colorScheme.error) },
                 onClick = {
                     onRemove(folderMenuState.folderPath)
                     onDismiss()
@@ -741,6 +748,8 @@ private fun MediaItemContextMenu(
     onOpen: () -> Unit
 ) {
     val appContext = LocalContext.current
+    val copiedString = stringResource(R.string.filename_copied)
+
     if (isVisible && currentItem != null) {
         AppDropdownMenu(
             expanded = true,
@@ -760,7 +769,7 @@ private fun MediaItemContextMenu(
                         )
                         Spacer(Modifier.height(2.dp))
                         Text(
-                            "Size: ${formatFileSize(currentItem.size)}",
+                            stringResource(R.string.file_size_label, formatFileSize(currentItem.size)),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -770,19 +779,19 @@ private fun MediaItemContextMenu(
                     val clipboard = appContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     val clip = ClipData.newPlainText("Filename", currentItem.displayName)
                     clipboard.setPrimaryClip(clip)
-                    Toast.makeText(appContext, "Filename copied!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(appContext, copiedString, Toast.LENGTH_SHORT).show()
                     onDismiss()
                 }
             )
             AppMenuDivider()
             DropdownMenuItem(
-                text = { Text("Move to 'To Edit'") },
+                text = { Text(stringResource(R.string.move_to_to_edit)) },
                 leadingIcon = { Icon(Icons.Default.Edit, null) },
                 onClick = onMoveToEdit
             )
             if (currentItem.isVideo) {
                 DropdownMenuItem(
-                    text = { Text("Screenshot") },
+                    text = { Text(stringResource(R.string.screenshot)) },
                     leadingIcon = { Icon(Icons.Default.Image, null) },
                     onClick = {
                         val timestampMicros = exoPlayer.currentPosition * 1000
@@ -792,12 +801,12 @@ private fun MediaItemContextMenu(
                 )
             }
             DropdownMenuItem(
-                text = { Text("Share") },
+                text = { Text(stringResource(R.string.share)) },
                 onClick = onShare,
                 leadingIcon = { Icon(Icons.Default.Share, null) }
             )
             DropdownMenuItem(
-                text = { Text("Open with") },
+                text = { Text(stringResource(R.string.open_with)) },
                 onClick = onOpen,
                 leadingIcon = { Icon(Icons.AutoMirrored.Filled.OpenInNew, null) }
             )
@@ -827,12 +836,15 @@ private fun ControlBar(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         TooltipBox(
-            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-            tooltip = { PlainTooltip { Text("Add Target Folder") } },
+            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                positioning = TooltipAnchorPosition.Above,
+                spacingBetweenTooltipAndAnchor = 4.dp
+            ),
+            tooltip = { PlainTooltip { Text(stringResource(R.string.add_target_folder)) } },
             state = rememberTooltipState()
         ) {
             IconButton(onClick = onCreateNewAlbum) {
-                Icon(Icons.Default.CreateNewFolder, "Add Target Folder")
+                Icon(Icons.Default.CreateNewFolder, stringResource(R.string.add_target_folder))
             }
         }
 
@@ -841,36 +853,45 @@ private fun ControlBar(
         ) {
             AnimatedVisibility(visible = hasPendingChanges) {
                 TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text("Review Changes") } },
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                        positioning = TooltipAnchorPosition.Above,
+                        spacingBetweenTooltipAndAnchor = 4.dp
+                    ),
+                    tooltip = { PlainTooltip { Text(stringResource(R.string.review_changes)) } },
                     state = rememberTooltipState()
                 ) {
                     IconButton(onClick = onShowSummary) {
-                        Icon(Icons.Default.Preview, "Review Changes")
+                        Icon(Icons.Default.Preview, stringResource(R.string.review_changes))
                     }
                 }
             }
             Spacer(modifier = Modifier.width(8.dp))
             AnimatedVisibility(visible = !isSkipButtonHidden) {
                 TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text("Skip Item") } },
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                        positioning = TooltipAnchorPosition.Above,
+                        spacingBetweenTooltipAndAnchor = 4.dp
+                    ),
+                    tooltip = { PlainTooltip { Text(stringResource(R.string.skip_item)) } },
                     state = rememberTooltipState()
                 ) {
                     IconButton(onClick = onSkip) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, "Skip Item")
+                        Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, stringResource(R.string.skip_item))
                     }
                 }
             }
             Spacer(modifier = Modifier.width(8.dp))
             AnimatedVisibility(visible = hasPendingChanges) {
                 TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text("Undo Last Action") } },
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                        positioning = TooltipAnchorPosition.Above,
+                        spacingBetweenTooltipAndAnchor = 4.dp
+                    ),
+                    tooltip = { PlainTooltip { Text(stringResource(R.string.undo_last_action)) } },
                     state = rememberTooltipState()
                 ) {
                     IconButton(onClick = onUndo) {
-                        Icon(Icons.AutoMirrored.Filled.Undo, "Undo Last Action")
+                        Icon(Icons.AutoMirrored.Filled.Undo, stringResource(R.string.undo_last_action))
                     }
                 }
             }
@@ -881,9 +902,12 @@ private fun ControlBar(
                 targetValue = if (isExpanded) 180f else 0f,
                 label = "expand_icon_rotation"
             )
-            val contentDesc = if (isExpanded) "Collapse" else "Expand"
+            val contentDesc = if (isExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand)
             TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    positioning = TooltipAnchorPosition.Above,
+                    spacingBetweenTooltipAndAnchor = 4.dp
+                ),
                 tooltip = { PlainTooltip { Text(contentDesc) } },
                 state = rememberTooltipState()
             ) {
@@ -1198,7 +1222,7 @@ private fun FolderChip(
                     }
                     Icon(
                         imageVector = Icons.Default.Star,
-                        contentDescription = "Favorite",
+                        contentDescription = stringResource(R.string.favorite),
                         tint = Color.White,
                         modifier = Modifier.size(iconSize / 3.5f)
                     )
@@ -1435,20 +1459,23 @@ private fun MediaItemCard(
                         if (leftBorderAlpha > 0f) {
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 val intensity = (leftBorderAlpha * 0.7f).coerceAtMost(0.7f)
-                                drawRect(brush = Brush.radialGradient(0.0f to leftColor.copy(alpha = intensity), 0.15f to leftColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = androidx.compose.ui.geometry.Offset(0f, size.height), radius = size.maxDimension * (1.0f + leftBorderAlpha)))
+                                drawRect(brush = Brush.radialGradient(0.0f to leftColor.copy(alpha = intensity), 0.15f to leftColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = Offset(0f, size.height), radius = size.maxDimension * (1.0f + leftBorderAlpha)))
                             }
                         }
                         if (rightBorderAlpha > 0f) {
                             Canvas(modifier = Modifier.fillMaxSize()) {
                                 val intensity = (rightBorderAlpha * 0.6f).coerceAtMost(0.6f)
-                                drawRect(brush = Brush.radialGradient(0.0f to rightColor.copy(alpha = intensity), 0.15f to rightColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = androidx.compose.ui.geometry.Offset(size.width, size.height), radius = size.maxDimension * (1.0f + rightBorderAlpha)))
+                                drawRect(brush = Brush.radialGradient(0.0f to rightColor.copy(alpha = intensity), 0.15f to rightColor.copy(alpha = intensity * 0.2f), 1.0f to Color.Transparent, center = Offset(size.width, size.height), radius = size.maxDimension * (1.0f + rightBorderAlpha)))
                             }
                         }
                         Box(modifier = Modifier.fillMaxSize()) {
                             if (item.isVideo) {
-                                val muteDesc = if (isVideoMuted) "Unmute video" else "Mute video"
+                                val muteDesc = if (isVideoMuted) stringResource(R.string.unmute_video) else stringResource(R.string.mute_video)
                                 TooltipBox(
-                                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                        positioning = TooltipAnchorPosition.Above,
+                                        spacingBetweenTooltipAndAnchor = 4.dp
+                                    ),
                                     tooltip = { PlainTooltip { Text(muteDesc) } },
                                     state = rememberTooltipState()
                                 ) {
@@ -1476,7 +1503,7 @@ private fun MediaItemCard(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Photo,
-                                            contentDescription = "Pending conversion to image",
+                                            contentDescription = stringResource(R.string.pending_conversion_desc),
                                             tint = Color.White,
                                             modifier = Modifier.size(24.dp)
                                         )
@@ -1571,10 +1598,10 @@ private fun NoMoreItemsMessage(pendingChanges: List<PendingChange>, onShowSummar
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Text("No more items to sort!")
+        Text(stringResource(R.string.no_more_items))
         Spacer(modifier = Modifier.height(16.dp))
         if (pendingChanges.isNotEmpty()) {
-            Button(onClick = onShowSummarySheet) { Text("Review Changes") }
+            Button(onClick = onShowSummarySheet) { Text(stringResource(R.string.review_changes)) }
         }
     }
 }
@@ -1586,7 +1613,7 @@ private fun ErrorMessage(message: String, onRetry: () -> Unit) {
         .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(message)
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onRetry) { Text("Retry") }
+        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
     }
 }
 
@@ -1615,15 +1642,15 @@ private fun AlreadyOrganizedDialog(
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            "All media has been organized. Great job!",
+            stringResource(R.string.all_organized_title),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center
         )
         if (skippedCount > 0) {
             Spacer(modifier = Modifier.height(8.dp))
-            val itemText = if (skippedCount == 1) "item" else "items"
+            val skippedText = pluralStringResource(R.plurals.skipped_session_items_plurals, skippedCount, skippedCount)
             Text(
-                "You skipped $skippedCount $itemText during this session.",
+                text = skippedText,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -1642,7 +1669,7 @@ private fun AlreadyOrganizedDialog(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Review Skipped Items")
+                Text(stringResource(R.string.review_skipped_items))
             }
         }
         Button(
@@ -1657,7 +1684,7 @@ private fun AlreadyOrganizedDialog(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Select Different Folders")
+            Text(stringResource(R.string.select_different_folders))
         }
         Button(
             onClick = onResetSingleFolderHistory,
@@ -1671,7 +1698,7 @@ private fun AlreadyOrganizedDialog(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Reset Single Folder")
+            Text(stringResource(R.string.reset_single_folder))
         }
         if (showResetHistoryButton) {
             Button(
@@ -1686,7 +1713,7 @@ private fun AlreadyOrganizedDialog(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Reset All Sorted Media")
+                Text(stringResource(R.string.reset_all_sorted_media))
             }
         }
         OutlinedButton(
@@ -1701,7 +1728,7 @@ private fun AlreadyOrganizedDialog(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Close App")
+            Text(stringResource(R.string.close_app))
         }
     }
 }
