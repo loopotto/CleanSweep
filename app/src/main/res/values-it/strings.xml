@@ -78,6 +78,8 @@
     <string name="no_results_found">Nessun risultato trovato</string>
     <string name="no_search_results_desc">La ricerca per \"%1$s\" non ha trovato nomi di cartelle corrispondenti.</string>
     <string name="find_duplicates">Trova Duplicati</string>
+    <string name="scanning_progress_title">Cercando Duplicati</string>
+    <string name="scan_complete_title">Scansione Completata</string>
     <string name="sort">Ordina</string>
     <string name="sort_name_az">Nome (A-Z)</string>
     <string name="sort_name_za">Nome (Z-A)</string>

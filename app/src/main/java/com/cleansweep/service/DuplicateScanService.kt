@@ -447,7 +447,7 @@ class DuplicateScanService : LifecycleService() {
         val cancelPendingIntent = PendingIntent.getService(this, 1, cancelIntent, PendingIntent.FLAG_IMMUTABLE)
 
         return NotificationCompat.Builder(this, PROGRESS_CHANNEL_ID)
-            .setContentTitle("Scanning for Duplicates")
+            .setContentTitle(getString(R.string.scanning_progress_title))
             .setContentText(phase)
             .setSmallIcon(R.drawable.ic_duplicates_scan)
             .setProgress(100, progress, false)
@@ -483,13 +483,13 @@ class DuplicateScanService : LifecycleService() {
 
                 notificationBuilder
                     .setSmallIcon(R.drawable.ic_duplicates_scan)
-                    .setContentTitle("Scan Complete")
+                    .setContentTitle(getString(R.string.scan_complete_title))
 
                 if (summaryLines.isEmpty()) {
                     notificationBuilder.setContentText("No duplicates found.")
                 } else {
                     val inboxStyle = NotificationCompat.InboxStyle()
-                        .setBigContentTitle("Scan Complete")
+                        .setBigContentTitle(getString(R.string.scan_complete_title))
                     summaryLines.forEach { inboxStyle.addLine(it) }
 
                     if (finalState.unscannableFiles.isNotEmpty() && finalState.unscannableFiles.size <= 5) {

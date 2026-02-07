@@ -76,6 +76,8 @@
     <string name="no_results_found">No results found</string>
     <string name="no_search_results_desc">Your search for \"%1$s\" did not match any folder names.</string>
     <string name="find_duplicates">Find Duplicates</string>
+    <string name="scanning_progress_title">Scanning for Duplicates</string>
+    <string name="scan_complete_title">Scan Complete</string>
     <string name="sort">Sort</string>
     <string name="sort_name_az">Name (A-Z)</string>
     <string name="sort_name_za">Name (Z-A)</string>
