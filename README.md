@@ -11,8 +11,7 @@ Best of all, **CleanSweep is 100% offline.** Your files and your data never leav
 
 ## Key Features
 
-CleanSweep is packed with smart features to make media management a breeze.
-
+CleanSweep is packed with smart features to make media management a breeze. **We are actively seeking translations for new and existing strings to make the app available worldwide!**
 ### The Fun & Easy Way to Organize
 *   ✨ **Intuitive Swiping:** Quickly sort through thousands of files. Swipe right to keep, left to delete.
 *   📁 **One-Tap Sorting:** Add your favorite folders, and they'll appear at the bottom of the screen. Simply tap a folder icon to instantly move the current photo or video.
@@ -66,10 +65,10 @@ We take your privacy seriously. CleanSweep is designed from the ground up to res
 ## Permissions Explained
 CleanSweep needs certain permissions to manage your files. Here’s a simple breakdown of why each one is necessary:
 
-| Permission Needed | Why We Need It |
-| :--- | :--- |
+| Permission Needed    | Why We Need It                                                                                                                                      |
+|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
 | **All Files Access** | This is the core permission. It allows CleanSweep to find, move, and delete your photos and videos, no matter where they are stored on your device. |
-| **Notifications** | To show you the progress of long-running tasks, like a duplicate scan, even when the app is in the background. |
+| **Notifications**    | To show you the progress of long-running tasks, like a duplicate scan, even when the app is in the background.                                      |
 
 ## For Developers
 
@@ -90,8 +89,7 @@ We welcome contributions of all kinds, from bug reports to feature requests, cod
 
 To ensure a smooth and collaborative process, please read our **[Contributing Guidelines](CONTRIBUTING.md)** before you start. This document outlines our development workflow, coding standards, and how to submit your changes.
 
-**Note:** Feature requests from project supporters, such as donors and contributors, will be prioritized.
-
+**Note:** Translation contributions are highly valued and will be merged promptly after review. Feature requests from project supporters, such as donors and contributors, will also receive priority.
 ## Donating
 If you enjoy using CleanSweep and want to support its development, check out our **[Funding Page](FUNDING.md)**(only crypto for now, GitHub sponsors coming soon)
 
