@@ -101,6 +101,7 @@ fun DuplicatesScreen(
     var showConfirmDeleteDialog by remember { mutableStateOf(false) }
     var showConfirmDeleteAllExactDialog by remember { mutableStateOf(false) }
     val displayedUnscannableFiles by viewModel.displayedUnscannableFiles.collectAsState()
+    val permissionRequiredMessage = stringResource(R.string.notification_permission_required)
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -110,7 +111,7 @@ fun DuplicatesScreen(
         } else {
             Toast.makeText(
                 context,
-                context.getString(R.string.notification_permission_required),
+                permissionRequiredMessage,
                 Toast.LENGTH_LONG
             ).show()
         }
@@ -225,7 +226,10 @@ fun DuplicatesScreen(
                 title = { Text(title) },
                 navigationIcon = {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            positioning = TooltipAnchorPosition.Above,
+                            spacingBetweenTooltipAndAnchor = 4.dp
+                        ),
                         tooltip = { PlainTooltip { Text(stringResource(R.string.navigate_back)) } },
                         state = rememberTooltipState()
                     ) {
@@ -239,7 +243,10 @@ fun DuplicatesScreen(
                         val hasExactDuplicates = uiState.resultGroups.any { it is DuplicateGroup }
                         if (hasExactDuplicates) {
                             TooltipBox(
-                                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                    positioning = TooltipAnchorPosition.Above,
+                                    spacingBetweenTooltipAndAnchor = 4.dp
+                                ),
                                 tooltip = { PlainTooltip { Text(stringResource(R.string.delete_all_exact_duplicates)) } },
                                 state = rememberTooltipState()
                             ) {
@@ -256,7 +263,10 @@ fun DuplicatesScreen(
                         }
 
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                positioning = TooltipAnchorPosition.Above,
+                                spacingBetweenTooltipAndAnchor = 4.dp
+                            ),
                             tooltip = { PlainTooltip { Text(stringResource(R.string.new_scan)) } },
                             state = rememberTooltipState()
                         ) {
@@ -267,7 +277,10 @@ fun DuplicatesScreen(
                     }
                     if (uiState.resultViewMode == ResultViewMode.GRID && uiState.scanState == ScanState.Complete) {
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                positioning = TooltipAnchorPosition.Above,
+                                spacingBetweenTooltipAndAnchor = 4.dp
+                            ),
                             tooltip = { PlainTooltip { Text(stringResource(R.string.change_grid_columns)) } },
                             state = rememberTooltipState()
                         ) {
@@ -278,7 +291,10 @@ fun DuplicatesScreen(
                     }
                     if (uiState.scanState == ScanState.Complete && uiState.resultGroups.isNotEmpty()) {
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                positioning = TooltipAnchorPosition.Above,
+                                spacingBetweenTooltipAndAnchor = 4.dp
+                            ),
                             tooltip = { PlainTooltip { Text(stringResource(R.string.toggle_view_mode)) } },
                             state = rememberTooltipState()
                         ) {
@@ -373,6 +389,7 @@ fun GroupDetailsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val group = uiState.detailedGroup
     val context = LocalContext.current
+    val noAppToOpenMessage = stringResource(R.string.no_app_to_open)
 
     LaunchedEffect(groupId) {
         viewModel.prepareForGroupDetailView(groupId)
@@ -394,7 +411,10 @@ fun GroupDetailsScreen(
                 title = { Text(if (group != null) pluralStringResource(R.plurals.view_group_items_title, group.items.size, group.items.size) else stringResource(R.string.view_group_title)) },
                 navigationIcon = {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            positioning = TooltipAnchorPosition.Above,
+                            spacingBetweenTooltipAndAnchor = 4.dp
+                        ),
                         tooltip = { PlainTooltip { Text(stringResource(R.string.back)) } },
                         state = rememberTooltipState()
                     ) {
@@ -406,7 +426,10 @@ fun GroupDetailsScreen(
                 actions = {
                     if (group != null) {
                         TooltipBox(
-                            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                positioning = TooltipAnchorPosition.Above,
+                                spacingBetweenTooltipAndAnchor = 4.dp
+                            ),
                             tooltip = { PlainTooltip { Text(stringResource(R.string.change_layout_columns)) } },
                             state = rememberTooltipState()
                         ) {
@@ -417,7 +440,10 @@ fun GroupDetailsScreen(
                         var showMenu by remember { mutableStateOf(false) }
                         Box {
                             TooltipBox(
-                                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                    positioning = TooltipAnchorPosition.Above,
+                                    spacingBetweenTooltipAndAnchor = 4.dp
+                                ),
                                 tooltip = { PlainTooltip { Text(stringResource(R.string.more_options)) } },
                                 state = rememberTooltipState()
                             ) {
@@ -561,7 +587,7 @@ fun GroupDetailsScreen(
                                         Toast
                                             .makeText(
                                                 context,
-                                                context.getString(R.string.no_app_to_open),
+                                                noAppToOpenMessage,
                                                 Toast.LENGTH_LONG
                                             )
                                             .show()
@@ -809,6 +835,7 @@ private fun ResultsView(
     startScanWithPermissionCheck: () -> Unit
 ) {
     val context = LocalContext.current
+    val noAppToOpenMessage = stringResource(R.string.no_app_to_open)
     val showEmptyMessage = uiState.resultGroups.isEmpty() && (uiState.unscannableFiles.isEmpty() || !uiState.showUnscannableSummaryCard)
 
     Column(Modifier.fillMaxSize()) {
@@ -845,7 +872,7 @@ private fun ResultsView(
                         try {
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            Toast.makeText(context, context.getString(R.string.no_app_to_open), Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, noAppToOpenMessage, Toast.LENGTH_SHORT).show()
                         }
                     },
                     onShowUnscannableFiles = viewModel::showUnscannableFiles,
@@ -922,7 +949,10 @@ private fun StaleResultsWarningCard(
                     }
                 }
                 TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                        positioning = TooltipAnchorPosition.Above,
+                        spacingBetweenTooltipAndAnchor = 4.dp
+                    ),
                     tooltip = { PlainTooltip { Text(stringResource(R.string.dismiss_warning)) } },
                     state = rememberTooltipState()
                 ) {
@@ -995,7 +1025,10 @@ private fun UnscannableFilesSummaryCard(
                 }
             }
             TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    positioning = TooltipAnchorPosition.Above,
+                    spacingBetweenTooltipAndAnchor = 4.dp
+                ),
                 tooltip = { PlainTooltip { Text(stringResource(R.string.dismiss_warning)) } },
                 state = rememberTooltipState()
             ) {
@@ -1462,7 +1495,10 @@ private fun DuplicateGroupCard(
                 }
                 Box(modifier = Modifier.align(Alignment.TopEnd)) {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            positioning = TooltipAnchorPosition.Above,
+                            spacingBetweenTooltipAndAnchor = 4.dp
+                        ),
                         tooltip = { PlainTooltip { Text(stringResource(R.string.more_options)) } },
                         state = rememberTooltipState()
                     ) {
@@ -1560,7 +1596,10 @@ private fun SimilarMediaGroupCard(
                 }
                 Box(modifier = Modifier.align(Alignment.TopEnd)) {
                     TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            positioning = TooltipAnchorPosition.Above,
+                            spacingBetweenTooltipAndAnchor = 4.dp
+                        ),
                         tooltip = { PlainTooltip { Text(stringResource(R.string.more_options)) } },
                         state = rememberTooltipState()
                     ) {

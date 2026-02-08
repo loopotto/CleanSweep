@@ -1034,10 +1034,6 @@ class SwiperViewModel @Inject constructor(
         }
     }
 
-    fun onDialogSearchQueryChanged(query: String) {
-        _dialogSearchQuery.value = query
-    }
-
     fun onPathSelected(path: String) {
         folderSearchManager.selectPath(path)
     }

@@ -391,7 +391,7 @@ class DuplicatesViewModel @Inject constructor(
                 selectedForDeletion = emptySet(),
                 spaceToReclaim = 0L,
                 detailedGroup = null,
-                showUnscannableSummaryCard = true
+                showUnscannableSummaryCard = if (shouldShowResultsDuringScan) it.nonHiddenUnscannableFilesCount > 0 else false
                 // Do not hide stale info, let the UI logic handle it
             )
         }
